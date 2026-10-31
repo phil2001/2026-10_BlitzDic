@@ -1,4 +1,4 @@
-$ErrorActionPreference = 'Stop'
+﻿$ErrorActionPreference = 'Stop'
 [Console]::InputEncoding = [Text.UTF8Encoding]::new($false)
 [Console]::OutputEncoding = [Text.UTF8Encoding]::new($false)
 Add-Type -AssemblyName UIAutomationClient, UIAutomationTypes
@@ -7,6 +7,7 @@ using System;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
+using System.Reflection;
 using System.Windows.Automation;
 using System.Windows.Automation.Text;
 
@@ -14,6 +15,8 @@ public static class BlitzDicUia {
     [DllImport("user32.dll")] static extern IntPtr GetForegroundWindow();
     [DllImport("user32.dll")] static extern uint GetWindowThreadProcessId(IntPtr hwnd, out uint pid);
     [DllImport("user32.dll")] static extern short GetAsyncKeyState(int key);
+    [DllImport("oleacc.dll")] static extern int AccessibleObjectFromWindow(IntPtr window, uint objectId,
+        ref Guid interfaceId, [MarshalAs(UnmanagedType.Interface)] out object native);
     [DllImport("user32.dll", SetLastError=true)] static extern uint SendInput(uint count, INPUT[] inputs, int size);
     [StructLayout(LayoutKind.Sequential)] struct KEYBDINPUT {
         public ushort vk, scan; public uint flags, time; public UIntPtr extra;
@@ -30,6 +33,42 @@ public static class BlitzDicUia {
     // The signature contains hashes and selection lengths, never the document text.
     public static string Reason = "";
     static string Reject(string reason) { Reason = reason; return null; }
+    static object WordMember(object instance, string name, BindingFlags operation, params object[] args) {
+        return instance.GetType().InvokeMember(name, operation, null, instance, args,
+            System.Globalization.CultureInfo.InvariantCulture);
+    }
+    static bool InsertWord(string signature, string text) {
+        var element = AutomationElement.FocusedElement;
+        if (element == null || element.Current.ControlType != ControlType.Document ||
+                element.Current.ClassName != "_WwG") return false;
+        // OBJID_NATIVEOM resolves the exact focused Word document window, rather
+        // than attaching to an arbitrary running Word instance or launching one.
+        object window = null, selection = null, range = null;
+        try {
+            Guid dispatch = new Guid("00020400-0000-0000-C000-000000000046");
+            IntPtr handle = new IntPtr(element.Current.NativeWindowHandle);
+            if (handle == IntPtr.Zero || AccessibleObjectFromWindow(handle, 0xFFFFFFF0, ref dispatch, out window) != 0)
+                throw new InvalidOperationException("Word-Dokumentzugriff nicht verfügbar.");
+            long foreground = GetForegroundWindow().ToInt64();
+            long owned = Convert.ToInt64(WordMember(window, "Hwnd", BindingFlags.GetProperty));
+            if (owned != foreground) throw new InvalidOperationException("Word-Fenster geändert.");
+            selection = WordMember(window, "Selection", BindingFlags.GetProperty);
+            int selectionType = Convert.ToInt32(WordMember(selection, "Type", BindingFlags.GetProperty));
+            if (selectionType != 1 && selectionType != 2)
+                throw new InvalidOperationException("Keine eindeutige Word-Textauswahl.");
+            range = WordMember(selection, "Range", BindingFlags.GetProperty);
+            if (Capture() != signature) throw new InvalidOperationException("Word-Auswahl geändert.");
+            // Range.Text preserves supplementary Unicode characters and replaces
+            // only the verified selection without touching the clipboard/options.
+            WordMember(range, "Text", BindingFlags.SetProperty, text.Replace("\n", "\r"));
+            WordMember(range, "Collapse", BindingFlags.InvokeMethod, 0);
+            WordMember(range, "Select", BindingFlags.InvokeMethod);
+            return true;
+        } finally {
+            foreach (object item in new object[] { range, selection, window })
+                if (item != null && Marshal.IsComObject(item)) Marshal.ReleaseComObject(item);
+        }
+    }
     public static string Capture() {
         Reason = "";
         IntPtr window = GetForegroundWindow();
@@ -65,6 +104,8 @@ public static class BlitzDicUia {
         foreach (int key in new int[] { 0x10, 0x11, 0x12, 0x5B, 0x5C })
             if ((GetAsyncKeyState(key) & 0x8000) != 0) return false;
         text = text.Replace("\r\n", "\n").Replace('\r', '\n');
+        if (Capture() != signature) return false;
+        if (InsertWord(signature, text)) return true;
         INPUT[] inputs = new INPUT[text.Length * 2];
         for (int i = 0; i < text.Length; i++) {
             KEYBDINPUT key = new KEYBDINPUT();

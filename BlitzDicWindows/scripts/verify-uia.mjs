@@ -7,7 +7,7 @@ const root = resolve(import.meta.dirname, '..');
 const env = {...process.env}; delete env.ELECTRON_RUN_AS_NODE;
 const app = await electron.launch({args: [resolve(import.meta.dirname, 'uia-test-app.cjs'),
   `--user-data-dir=${root}/.runtime/uia-test-profile`], env});
-const worker = request => runSpeech(request, {pythonPath: `${root}/.runtime/venv/Scripts/python.exe`, timeoutMs: 10000});
+const worker = request => runSpeech(request, {pythonPath: process.env.BLITZDIC_TEST_SPEECH_EXECUTABLE || `${root}/.runtime/venv/Scripts/python.exe`, timeoutMs: 10000});
 try {
   const page = await app.firstWindow();
   await app.evaluate(({app, BrowserWindow}) => { app.focus({steal: true}); BrowserWindow.getAllWindows()[0].focus(); });

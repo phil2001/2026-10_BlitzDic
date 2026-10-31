@@ -15,7 +15,10 @@ Keine separate Python-Installation, kein LM Studio und kein nachträglicher Mode
   KI-Computer im Netzwerk oder einer API. Anbieter und Modell sind frei wählbar.
 - OpenAI, Anthropic, Gemini, Mistral, OpenRouter und kompatible eigene Endpunkte.
 - Eigene kompatible Sprachmodelle über lokale Modellordner.
-- Windows-Infobereich, einstellbare globale Tastenkürzel, Wörterbuch-Ersetzungen.
+- Windows-Infobereich, einstellbare globale Tastenkürzel, Wörterbuch-Ersetzungen
+  und Schreibmodus-Regeln je Programm.
+- Meetings mit Mikrofon, Systemaudio oder beiden Quellen; optionale Sprecherzuordnung,
+  lokales Speichern von Transkripten und Zusammenfassungen über den gewählten LLM-Anbieter.
 - Verschlüsselte Einstellungen, API-Schlüssel und Verlauf über Windows-DPAPI.
 - Systemvoraussetzungen direkt bei der Modellauswahl.
 
@@ -31,9 +34,11 @@ Ein zusätzliches lokales LLM hat eigene RAM-/VRAM-Anforderungen.
 
 ## Installation und Bedienung
 
-Der bisher lokal gebaute Entwicklungsinstaller liegt unter
-`BlitzDicWindows/dist/windows-2026-10-31T17-23-25-351Z-fd5908/BlitzDic Setup 0.3.1.exe` und ist etwa
-1,14 GB groß. Er ist nicht signiert und enthält die aktuelle Diktat- und Einfügelaufzeit. Eine fertige Release-Datei ist noch nicht veröffentlicht.
+Der aktuelle lokal gebaute Entwicklungsinstaller ist **0.3.4** unter
+`BlitzDicWindows/dist/windows-2026-10-31T21-12-11-505Z-1fdc73/BlitzDic Setup 0.3.4.exe`
+(etwa 1,14 GB). Er ist nicht signiert. Eine fertige Release-Datei ist noch nicht
+veröffentlicht. Ältere Testbuilds bitte durch diesen Stand ersetzen: 0.3.4 behebt
+die UTF-8-Verarbeitung von Umlauten und Emoji in der gebündelten Sprachlaufzeit.
 
 1. Nach Installation BlitzDic öffnen und unter **Modelle** Whisper oder Parakeet wählen.
 2. Unter **Diktat** Mikrofon und Schreibmodus wählen, Aufnahme starten und beenden.
@@ -45,6 +50,36 @@ Der bisher lokal gebaute Entwicklungsinstaller liegt unter
 
 Standard-Tastenkürzel: Strg+Umschalt+1 bis 4 für die vier Modi.
 Einmal drücken startet, erneut drücken beendet die Aufnahme.
+Zum Einfügen den Cursor zuerst im Zielprogramm setzen und dort das Kürzel benutzen.
+Bleiben Feld, Inhalt und Auswahl unverändert, wird das Ergebnis dort eingefügt.
+Bei einer Änderung oder verweigertem Zugriff bleibt der Text in BlitzDic verfügbar.
+Geprüft wurden klassische Edit-/RichEdit-Felder, Chromium und Word;
+Details und Grenzen stehen unter [Windows-Einfügen](BlitzDicWindows/speech/WINDOWS_INSERTION.md).
+
+## Programmregeln und Meetings
+
+Unter **Einstellungen** lassen sich Regeln wie `winword.exe => clean` und
+`chrome.exe => calm` speichern. Erlaubte Modi: `verbatim`, `clean`, `calm`,
+`emoji`. Regeln gelten für das Wortgenau-Kürzel; andere Modus-Kürzel behalten
+ihre ausdrückliche Auswahl.
+
+Unter **Meetings** vorhandene Transkripte eingeben, das letzte Diktat übernehmen
+oder Audio aufnehmen. Quellen sind Mikrofon, gesamte Windows-Audioausgabe oder
+beides. Das Mikrofon wird unter **Diktat** gewählt. Nach dem Beenden wird jeder
+Abschnitt lokal erkannt und ans Transkript angehängt. Maximal 30 Minuten pro
+Abschnitt; Systemaudio benötigt eine kurze Anlaufzeit. Endet eine Quelle während
+der Aufnahme, wird das vorhandene Audio abgeschlossen und der Vorfall angezeigt.
+
+Sprechertrennung ist optional und experimentell. Eine bekannte Sprecherzahl
+von 1 bis 20 ist zuverlässiger als die automatische Schätzung. Sprecherkennungen
+gelten nur innerhalb eines Aufnahmeabschnitts; echte Namen werden nicht erkannt.
+Die dafür nötigen Zusatzmodelle sind enthalten.
+
+**Transkript lokal speichern** arbeitet ohne LLM. **Zusammenfassen und speichern**
+sendet das Transkript an den unter **Verbindungen** gewählten Endpunkt und speichert
+Original und Zusammenfassung verschlüsselt. Bis zum Speichern bleibt das Transkript
+nur im geöffneten Fenster. Gespeichert werden maximal 100 Meetings. LLM-Ergebnisse
+müssen auf Zuordnung von Aufgaben, Zahlen und offenen Fragen geprüft werden.
 
 ## Entwicklung unter Windows 11
 
@@ -82,9 +117,10 @@ sie aus den lokalen Modellordnern. Sprachtests mit echten Gewichten werden über
 
 ## Noch offen
 
-Automatisches Einfügen wurde in klassischen Windows-Textfeldern und Chromium-Webfeldern geprüft. Details und Grenzen: [Windows-Einfügen](BlitzDicWindows/speech/WINDOWS_INSERTION.md). Office-Unterstützung,
-Meeting-Funktionen, physische Mikrofontests, abschließender Designabgleich,
-vollständige Lizenzpaketierung und der Test in einer frischen Windows-VM bleiben offen. Installation und beide enthaltenen Sprachmodelle wurden auf dem Entwicklungs-PC mit frischem App-Profil geprüft.
+Physische Mikrofontests, weitere Office-/Browser-Versionen, abschließender
+Designabgleich, vollständige Prüfung der nativen Lizenzpflichten, Signierung und
+der Test in einer frischen Windows-VM bleiben offen. Beide enthaltenen Sprachmodelle
+und die gepackte App wurden auf dem Entwicklungs-PC mit frischem App-Profil geprüft.
 Der verfügbare Installer ist daher kein Nachweis der Fertigstellung.
 
 [Arbeitsstand](WINDOWS_PORT.md) · [Datenschutz](PRIVACY.md) · [Mitwirken](CONTRIBUTING.md)
@@ -96,56 +132,3 @@ Die ursprüngliche Git-Historie bleibt erhalten. BlitzDic verwendet einen eigene
 Namen und eigene Oberfläche. Dieses Repository entwickelt ausschließlich Windows 11.
 MIT-Lizenz: [LICENSE](LICENSE). Modelle und Abhängigkeiten haben eigene
 [Lizenzhinweise](THIRD_PARTY_NOTICES.md).
-
-## Programmregeln und Meetings
-
-Unter Einstellungen lassen sich Regeln wie `winword.exe => clean` und
-`chrome.exe => calm` speichern. Erlaubte Modi: `verbatim`, `clean`, `calm`,
-`emoji`. Regeln gelten für das Wortgenau-Kürzel; andere Modus-Kürzel behalten
-ihre ausdrückliche Auswahl.
-
-Unter Meetings kannst du vorhandene Transkripte eingeben, das letzte Diktat
-übernehmen oder Audio aufnehmen. Quellen: Mikrofon, gesamte Windows-Audioausgabe
-oder beides. Die Mikrofonwahl erfolgt unter Diktat. Nach dem Beenden wird jeder
-Abschnitt lokal erkannt und ans Transkript angehängt. Maximal 30 Minuten pro
-Abschnitt. Systemaudio benötigt eine kurze Anlaufzeit, bevor die Aufnahme als
-bereit angezeigt wird.
-
-„Zusammenfassen und speichern“ sendet das Transkript an den unter Verbindungen
-gewählten LLM-Endpunkt und speichert Original und Zusammenfassung verschlüsselt.
-Zuvor bleibt das Meeting-Transkript nur im geöffneten Fenster. Kleine Modelle
-können Aufgaben und offene Fragen falsch zuordnen; Ergebnisse müssen geprüft
-werden. Ein tatsächlicher Test mit Qwen 2.5 Coder 3B hat solche Fehler gezeigt.
-
-Version 0.3.0 enthält diese Funktionen. Sprecherzuordnung, Live-Notizen und
-Langaufnahmequalität sind noch nicht abschließend umgesetzt beziehungsweise geprüft.
-
-Version 0.3.0 bietet optionale experimentelle Sprechertrennung mit enthaltenen
-Zusatzmodellen. Sprecherkennungen gelten je Aufnahmeabschnitt und werden als Teil
-des Transkripts gespeichert. Die automatische Sprecherzahl ist noch unzuverlaessig;
-eine bekannte Zahl kann von 1 bis 20 vorgegeben werden. Auf dem Ziel-PC sind keine
-separaten Modell- oder Python-Installationen erforderlich.
-
-Der aktuelle lokale Test-Installer 0.3.2 verwendet die bereinigte DLL-Aufloesung des Builds.
-Die enthaltenen nativen Herkunftsinventare wurden gegen die paketierten Dateien
-geprueft. Die gepackte App bestand beide Sprachmodelle sowie Meeting-Aufnahme,
-Sprechertrennung und verschluesseltes Speichern mit frischem Profil.
-Version 0.3.2 enthält außerdem die begrenzte Zusammenführung langer Meeting-Texte,
-das automatische Abschließen bei unerwartetem Ende einer Aufnahmequelle und den
-gemeinsamen Audiodecoder für Parakeet und Sprecherzuordnung. M4A/AAC und WebM/Opus
-wurden mit echten Sprachmodellen geprüft, auch in der gepackten Laufzeit.
-Whisper und Parakeet benötigen auf dem Ziel-PC keine separate Python-, FFmpeg-
-oder LM-Studio-Installation. Der Installer ist noch unsigniert; ein öffentlicher
-Release und die vollständige Prüfung der nativen Lizenzpflichten stehen aus.
-
-Ein kurzer synthetischer deutscher Meeting-Test wurde mit einem bereits lokal
-installierten Gemma-4-E4B-Modell erfolgreich durch die gesamte Oberfläche bis zum
-verschlüsselten Speichern und Neuladen geprüft. Das Modell ist nicht im Installer
-enthalten. Dieser einzelne Qualitätsnachweis ersetzt keine Prüfung der Ergebnisse
-bei eigenen Meetings oder anderen Modellen.
-
-Deutsche Erkennung wurde mit beiden gebündelten Sprachmodellen und einem lokal
-erzeugten deutschen Testsatz geprüft, auch ohne Sprachvorgabe in der gepackten
-Windows-Laufzeit. Umlaute, Uhrzeit und Budget wurden korrekt erkannt. Die dafür
-verwendete Windows-Teststimme wird von BlitzDic selbst nicht benötigt; reale
-Mikrofonqualität, Dialekte und Fachwortschatz sind damit noch nicht belegt.

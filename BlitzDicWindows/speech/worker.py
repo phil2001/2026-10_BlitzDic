@@ -99,7 +99,9 @@ def run(request):
 
 if __name__ == "__main__":
     try:
-        request = json.load(sys.stdin)
+        # PyInstaller can ignore PYTHONIOENCODING and inherit a Windows code
+        # page. Electron always sends UTF-8 JSON, including paths and dictation.
+        request = json.loads(sys.stdin.buffer.read().decode('utf-8'))
         # Libraries may log to stdout; reserve stdout for the IPC response.
         from contextlib import redirect_stdout
         with redirect_stdout(sys.stderr):

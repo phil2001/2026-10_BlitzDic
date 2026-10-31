@@ -5,6 +5,7 @@ Password contents are never read; document fingerprints are not persisted.
 """
 import ctypes as c
 from ctypes import wintypes as w
+import hashlib
 from pathlib import PureWindowsPath
 
 user32 = c.WinDLL('user32', use_last_error=True)
@@ -56,11 +57,13 @@ def capture():
     name = c.create_unicode_buffer(256)
     user32.GetClassNameW(info.hwndFocus, name, len(name))
     class_name = name.value.lower()
-    if class_name != 'edit' and not class_name.startswith('richedit'):
+    def uia_fallback():
         from uia_target import capture as uia_capture
         target = uia_capture()
         capture.reason = uia_capture.reason
         return target
+    if class_name != 'edit' and not class_name.startswith('richedit'):
+        return uia_fallback()
     style = user32.GetWindowLongW(info.hwndFocus, -16)
     if style & (0x20 | 0x800):  # ES_PASSWORD or ES_READONLY
         return None
@@ -69,9 +72,32 @@ def capture():
         return None
     start, end = w.DWORD(), w.DWORD()
     message(info.hwndFocus, 0xB0, c.addressof(start), c.addressof(end))
+    length = message(info.hwndFocus, 0xE)  # WM_GETTEXTLENGTH, UTF-16 units
+    # WM_GETTEXT is documented only up to 64K for RichEdit. Larger rich
+    # documents use TextPattern rather than a partial native fingerprint.
+    if class_name.startswith('richedit') and length >= 64000:
+        return uia_fallback()
+    if length > 1000000:
+        capture.reason = 'Dokument zu groß für sicheres automatisches Einfügen.'
+        return None
+    value = c.create_unicode_buffer(length + 1)
+    copied = message(info.hwndFocus, 0xD, length + 1, c.addressof(value))
+    if copied != length or message(info.hwndFocus, 0xE) != length:
+        capture.reason = 'Dokument während Zielerfassung geändert oder nicht vollständig lesbar.'
+        return None
+    fingerprint = hashlib.sha256(c.string_at(c.addressof(value), copied * 2)).hexdigest()
+    current = GUI(); current.cbSize = c.sizeof(GUI)
+    selected_start, selected_end = w.DWORD(), w.DWORD()
+    message(info.hwndFocus, 0xB0, c.addressof(selected_start), c.addressof(selected_end))
+    if (not user32.GetGUIThreadInfo(0, c.byref(current)) or
+            current.hwndActive != info.hwndActive or current.hwndFocus != info.hwndFocus or
+            (selected_start.value, selected_end.value) != (start.value, end.value)):
+        capture.reason = 'Fokus oder Auswahl während Zielerfassung geändert.'
+        return None
     pid = w.DWORD(); thread = user32.GetWindowThreadProcessId(info.hwndFocus, c.byref(pid))
     return {'window': info.hwndActive, 'focus': info.hwndFocus, 'pid': pid.value,
-            'thread': thread, 'class': class_name, 'start': start.value, 'end': end.value}
+            'thread': thread, 'class': class_name, 'start': start.value, 'end': end.value,
+            'length': length, 'hash': fingerprint}
 
 def insert(target, text):
     if target and target.get('kind') == 'uia':

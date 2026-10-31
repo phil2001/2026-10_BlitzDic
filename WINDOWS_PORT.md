@@ -571,3 +571,55 @@ corresponding-source/license obligations remain under review.
 
 Installer 0.3.2: 1,140,226,775 bytes; SHA-256
 F3D46353C2B903989EEFF8BA5F33B9DEF10689D77C21C393A8B284B3875A84CA.
+
+## Native text guards, Word and UTF-8 IPC, 2026-10-31
+
+The native Edit/RichEdit capture previously compared the window and selection but
+not document contents. A regression reproduced insertion into changed text at
+an unchanged cursor. Captures now include a complete UTF-16 SHA-256 fingerprint
+and length, recheck selection/focus, and refuse incomplete reads. RichEdit at
+64,000 units and above uses UI Automation, following the documented WM_GETTEXT
+limit. The real 70,000-character RichEdit50W test passed this fallback.
+
+Word's generic Unicode keyboard path changed the test emoji to digits even when
+SendInput reported success. Word document controls now resolve OBJID_NATIVEOM
+from the exact focused _WwG window. Its owning window, normal selection type,
+UI Automation document fingerprint, protection and cursor are checked before
+Range.Text replaces the selected range; the caret is collapsed at its end.
+No running Word instance is selected arbitrarily, no instance is launched by
+production code, and no clipboard or Word options are changed. Reflection uses
+the installed Office object model without an extra interop package.
+
+verify-word-insertion.ps1 creates its own unsaved Word documents and discards
+them. Against Word 16.0 build 16.0.20527 it passed Unicode/emoji, replacement,
+undo/redo, paragraph insertion, rejection after document/cursor/text changes,
+document protection and unchanged clipboard. These are not proofs for every
+Office version, table/form selection, protected view or elevated process.
+verify-insertion.py now covers Edit and RichEdit, unchanged-position content
+changes, multi-line insertion and the large-document fallback. The undo check
+uses single-line native controls; multi-line classic Edit undo grouping differs
+and is not established as one atomic selection-replacement undo step.
+
+Testing frozen 0.3.3 exposed a separate defect: PyInstaller's interpreter could
+ignore PYTHONIOENCODING and decode stdin as a Windows code page. UTF-8 dictation
+and filenames were corrupted even though ASCII-based tests passed. worker.py
+now reads stdin bytes and explicitly decodes UTF-8; output remains ASCII-escaped
+JSON. Native regression requests now send actual UTF-8 rather than escaping all
+non-ASCII characters. verify-unicode-speech-path.mjs passed both actual ASR models
+with a WAV path containing umlauts, a space and an emoji using the 0.3.4 packed
+runtime and packed model directories. The helper PowerShell file has a UTF-8 BOM
+so Windows PowerShell 5 also decodes its German messages correctly.
+
+The frozen 0.3.4 runtime passed the native Edit, large RichEdit, Word and Chromium
+tests. Installer 0.3.3 remains a failed local test build, not a delivered release.
+The README now describes the current build and workflows in one place rather
+than repeating outdated release-stage paragraphs. No local directories were
+deleted. The overall release gates remain open.
+
+The packed 0.3.4 app passed fresh-profile startup and file imports through both
+bundled models. Both actual global-shortcut -> synthetic microphone -> local ASR
+-> external Chromium insertion runs passed with the packaged application.
+Installer: BlitzDicWindows/dist/windows-2026-10-31T21-12-11-505Z-1fdc73/BlitzDic Setup 0.3.4.exe;
+1,140,229,047 bytes; SHA-256
+1A8440669E4E1471293FAC60091B455C979A7C7F81130DFB1D506D3810D013D5.
+It remains unsigned and was not installed on a clean Windows VM.
