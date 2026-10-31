@@ -114,3 +114,9 @@ Nach dem Beenden transkribiert das ausgewählte lokale Sprachmodell den Abschnit
 und hängt ihn an das Transkript an. Die Mikrofonwahl erfolgt unter Diktat.
 Die Zusammenfassung wird separat gestartet; zuvor ist das Meeting-Transkript nur
 im geöffneten Fenster vorhanden. Systemaudio und Sprecherzuordnung fehlen noch.
+
+Meeting-Aufnahmen unterstützen inzwischen auch Systemaudio und die Kombination
+mit dem Mikrofon. Windows-Systemaudio umfasst die gesamte Audioausgabe.
+Ein echter Loopback-Test mit Testton war erfolgreich; gemischte Sprachqualität
+und lange Aufnahmen müssen noch geprüft werden. Der aktuelle Installer enthält
+diese jüngsten Änderungen noch nicht.

@@ -26,7 +26,7 @@ $('meeting-record').onclick = attempt(async () => {
     } finally { meetingBusy = false; meetingRecordingUI(false); }
   } else {
     $('meeting-cancel').hidden = false; status('Mikrofon wird gestartet …');
-    try { if (!await meetingRecorder.start($('microphone').value)) return; }
+    try { if (!await meetingRecorder.start($('microphone').value, {source: $('meeting-source').value})) return; }
     catch (error) { await api.cancel(); meetingRecordingUI(false); throw error; }
     meetingRecordingUI(true); status('Meeting-Aufnahme läuft …');
   }

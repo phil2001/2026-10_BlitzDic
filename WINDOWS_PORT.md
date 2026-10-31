@@ -188,3 +188,24 @@ recognized text, empty dictation history, no saved meeting and no automatic summ
 This is post-recording transcription, not streaming live notes. System audio,
 speaker diarization, physical microphone and long-recording quality remain open.
 The existing installer still predates the Meeting page and needs rebuilding.
+
+## Windows system audio, 2026-10-31
+
+Meeting capture now offers microphone, system audio or both. The Electron
+setDisplayMediaRequestHandler permits only the app main frame with a user gesture
+and an audio request. Windows loopback supplies the whole output mix, not a single
+meeting application. Both inputs are mixed with equal gain and transcribed locally
+on stop. Missing live system-audio tracks cause a visible error, without fallback.
+The required display capture also acquires a low-frame-rate video track; the app
+does not consume, save or send video frames, and stops all tracks on cancellation.
+
+scripts/verify-system-audio.mjs passed an actual Windows loopback test using a quiet
+oscillator on the real output device, verifying AudioWorklet meter activity and
+cancellation without persistence. This is stronger than a fake-stream test, but
+not a speech accuracy or mixed-source quality test. The first attempt exposed a
+missing display-capture permission; the app-scoped permission was added and the
+same test then passed. 30 regression tests also passed before that permission fix.
+
+API reference: https://www.electronjs.org/docs/latest/api/desktop-capturer
+The current installer predates this change and must be rebuilt. Long recordings,
+combined microphone/loopback speech quality and diarization remain open.

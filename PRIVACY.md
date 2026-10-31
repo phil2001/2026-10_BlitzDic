@@ -29,3 +29,9 @@ Sammlung mit maximal 100 Einträgen; sie lässt sich auf der Meeting-Seite leere
 Die allgemeine Option „Verlauf speichern“ betrifft den Diktatverlauf. Meetings
 werden durch den ausdrücklich beschrifteten Zusammenfassen-und-Speichern-Schritt
 unabhängig davon gespeichert.
+
+Für Online-Meetings ist unter **Audioquelle** auch **Systemaudio** oder
+**Mikrofon und Systemaudio** wählbar. Systemaudio erfasst die gesamte Windows-
+Audioausgabe. Die Streams werden lokal verarbeitet. Die technische Bildschirm-
+Freigabe liefert zusätzlich einen Videostream, der weder gespeichert noch an
+Anbieter gesendet wird. Bei Abbruch werden alle Aufnahmespuren beendet.

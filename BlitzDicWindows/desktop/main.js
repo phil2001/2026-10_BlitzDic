@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, dialog, clipboard, session, globalShortcut, Tray, Menu, nativeImage } from 'electron';
+import { app, BrowserWindow, ipcMain, dialog, clipboard, session, globalShortcut, Tray, Menu, nativeImage, desktopCapturer } from 'electron';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
 import { PrivateStore } from '../src/store.js';
@@ -64,7 +64,17 @@ else app.whenReady().then(async () => {
   window.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
   window.webContents.on('will-navigate', event => event.preventDefault());
   session.defaultSession.setPermissionRequestHandler((contents, permission, callback, details) =>
-    callback(contents === window.webContents && permission === 'media' && details.mediaTypes?.every(t => t === 'audio')));
+    callback(contents === window.webContents &&
+      ((permission === 'media' && details.mediaTypes?.every(t => t === 'audio')) || permission === 'display-capture')));
+  session.defaultSession.setDisplayMediaRequestHandler(async (request, callback) => {
+    if (request.frame !== window.webContents.mainFrame || request.frame?.url !== uiURL || !request.userGesture || !request.audioRequested)
+      return callback({});
+    try {
+      const sources = await desktopCapturer.getSources({types: ['screen'], thumbnailSize: {width: 0, height: 0}});
+      if (!sources.length || request.frame !== window.webContents.mainFrame) return callback({});
+      callback({video: sources[0], audio: 'loopback'});
+    } catch { callback({}); }
+  });
   const handle = (name, fn) => ipcMain.handle(name, async (event, ...args) => {
     if (event.sender !== window.webContents || event.senderFrame !== window.webContents.mainFrame || event.senderFrame.url !== uiURL) throw new Error('Unzulässiger Aufruf.');
     return fn(...args);
