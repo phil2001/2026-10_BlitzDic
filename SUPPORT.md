@@ -1,25 +1,12 @@
-# Support
+# Hilfe für BlitzDic unter Windows 11
 
-Blitztext is free and open source, maintained by Blackboat alongside our client work. There is no service-level agreement, paid support channel, or guarantee that issues will be fixed.
+Prüfe zuerst die [Systemvoraussetzungen](BlitzDicWindows/SYSTEMVORAUSSETZUNGEN.md).
+Windows-Einstellungen > Datenschutz und Sicherheit > Mikrofon muss den Zugriff
+für Desktop-Apps erlauben. Unter Modelle das gewünschte Sprachmodell wählen.
+Für LLM-Schreibmodi Serveradresse, Modell und gegebenenfalls API-Schlüssel unter
+Verbindungen prüfen. Wortgenau benötigt keinen LLM-Server.
 
-## Before Asking For Help
-
-- Make sure you can build the app with `./build.sh --debug`.
-- Check that a local speech model is loaded (Settings > Modelle > Spracherkennung).
-- Confirm that macOS microphone permission is granted.
-- Grant Accessibility permission if you expect automatic paste into other apps.
-- Read [docs/privacy.md](docs/privacy.md) before testing with sensitive content.
-
-## Where To Ask
-
-Use GitHub Issues for reproducible bugs and focused feature ideas.
-
-Please do not post:
-
-- API keys of your model provider
-- access tokens
-- private audio recordings
-- confidential transcripts
-- screenshots that show sensitive content
-
-For security-sensitive reports, follow [SECURITY.md](SECURITY.md) instead of opening a public issue.
+Fehler im [Zielrepository](https://github.com/phil2001/2026-10_BlitzDic/issues)
+melden: Windows-Version, CPU, RAM, App-Version, Modell und Reproduktionsschritte
+angeben. Keine Schlüssel, privaten Audiodateien oder vertraulichen Texte posten.
+Sicherheitsmeldungen: [SECURITY.md](SECURITY.md). Es gibt keine Supportgarantie.

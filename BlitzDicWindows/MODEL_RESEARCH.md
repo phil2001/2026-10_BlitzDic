@@ -16,8 +16,7 @@ https://github.com/ggml-org/whisper.cpp/blob/master/examples/cli/README.md
 
 The source is https://huggingface.co/moondream/parakeet-ultra, a post-trained
 NVIDIA Parakeet v3 model, licensed CC-BY-4.0. It must not be confused with the
-original NVIDIA v3 weights. The macOS application's Core ML format cannot be
-used directly by a Windows ONNX runtime.
+original NVIDIA v3 weights. Windows uses the ONNX export described below.
 
 A candidate Windows export exists:
 https://huggingface.co/Masterx/parakeet-tdt-0.6b-ultra-onnx

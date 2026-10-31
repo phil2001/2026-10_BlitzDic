@@ -1,6 +1,6 @@
 ---
 name: Feature request
-about: Suggest an idea for Blitztext
+about: Suggest an idea for BlitzDic on Windows 11
 title: ""
 labels: enhancement
 assignees: ""

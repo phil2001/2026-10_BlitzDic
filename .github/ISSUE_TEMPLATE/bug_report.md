@@ -1,30 +1,19 @@
 ---
-name: Bug report
-about: Report something broken in Blitztext for macOS
+name: Fehlerbericht
+about: Fehler in BlitzDic für Windows 11 melden
 title: ""
 labels: bug
 assignees: ""
 ---
 
-## What happened?
+## Problem und erwartetes Verhalten
 
+## Reproduktionsschritte
 
-## What did you expect?
+## Umgebung
+- Windows-11-Version:
+- CPU und RAM:
+- BlitzDic-Version:
+- Sprachmodell und LLM-Anbieter:
 
-
-## Steps to reproduce
-
-1.
-2.
-3.
-
-## Environment
-
-- macOS version:
-- Mac model/chip:
-- Xcode version:
-- Did this happen before or after entering an OpenAI API key?:
-
-## Notes
-
-Do not paste API keys, private recordings, confidential transcripts, or screenshots with sensitive content.
+Keine API-Schlüssel, privaten Aufnahmen oder vertraulichen Transkripte beifügen.

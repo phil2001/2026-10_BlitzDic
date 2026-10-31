@@ -44,9 +44,8 @@ $env:BLITZDIC_ASR_TEST = '1'
 npm.cmd test
 ```
 
-All 15 tests passed, including both actual-model tests. Without the environment
-variable, those two tests are explicitly skipped. Audio capture, real microphone
-tests, German accuracy, GPU operation and packaged distribution remain pending.
+Both actual-model tests passed. Without the environment
+variable, those two tests are explicitly skipped. Synthetic microphone capture and bundled packaged inference have since passed. Physical microphone tests, German accuracy evaluation, GPU operation and a clean installation test remain pending.
 
 ## Attribution
 

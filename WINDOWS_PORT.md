@@ -13,8 +13,8 @@ BlitzDic branding; upstream brand assets are not licensed for reuse.
 
 ## Implementation and acceptance checklist
 
-The imported Swift application is not a Windows application. No Windows release
-has been produced yet. This checklist defines the remaining deliverable.
+The Windows application is in development. A bundled development installer exists;
+a finished release remains pending. This checklist tracks the full deliverable.
 
 - [x] Import original source and ancestry into the target repository.
 - [ ] Windows 11 desktop application, tray, microphone selection, recording
@@ -85,11 +85,6 @@ the attempted native-window test could not acquire foreground focus. Successful
 insertion is therefore not yet verified. Browser/Office UI Automation remains
 outstanding; unknown controls are rejected rather than guessed.
 
-Upstream uses SwiftUI/AppKit, Core ML, WhisperKit, Apple Intelligence, Keychain,
-Accessibility and Sparkle. These require Windows replacements. Shared mode
-prompts and provider behavior are available in `BlitztextShared/AI` and should
-be carried over rather than invented anew.
+The application now targets Windows 11 exclusively. Legacy platform sources and documentation have been removed. Ported mode prompts and provider behavior live in BlitzDicWindows/src. The original ancestry and MIT notices remain available in Git history and LICENSE.
 
-The current workstation has Node 24 and npm 11 available. `dotnet` and `cargo`
-were not found on PATH during the initial inspection. The Python command is a
-WindowsApps alias and has not yet been verified as a working runtime.
+A real LM Studio integration test passed with the already installed qwen2.5-coder-3b-instruct model: discovery, connection check and German text rewriting. The test server was stopped and its model unloaded afterwards. LAN and cloud endpoints remain unverified. Whisper and Parakeet run independently of LM Studio through the bundled speech runtime.

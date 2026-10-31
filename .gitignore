@@ -1,34 +1,14 @@
-# Xcode
-*.xcuserstate
-*.xcuserdatad/
-xcuserdata/
-*.xcodeproj/
-DerivedData/
-.derivedData*/
+# Build-Ausgaben und lokale Sprachmodelle
 build/
-*.xcarchive
-*.dSYM
-*.dSYM.zip
-
-# macOS
-.DS_Store
-
-# Local app artifacts
-Blitztext.app
 dist/
 models/
-*.mlmodel
-*.mlmodelc/
-*.mlpackage/
 
-# Secrets and local config
+# Zugangsdaten und lokale Konfiguration
 .env
 .env.*
 *.local
-Secrets.swift
-*.xcconfig
 
-# Tooling
+# Entwicklungswerkzeuge
 node_modules/
 .runtime/
 __pycache__/

@@ -1,48 +1,13 @@
-# Contributing
+# Mitwirken an BlitzDic
 
-Thanks for taking a look at Blitztext.
+Zielplattform ist ausschließlich Windows 11 x64. Der Anwendungscode liegt in
+BlitzDicWindows. Einrichtung und Build stehen in der [README](README.md).
 
-Contributions should make Blitztext better to use, easier to learn from, build, fork, or safely extend.
+Vor einem Pull Request `npm.cmd test` in BlitzDicWindows ausführen. Änderungen
+an der Oberfläche zusätzlich mit Electron prüfen, Änderungen an Spracherkennung
+mit echten Modellgewichten. Übersprungene Tests und fehlende Hardware nennen.
 
-## Good First Contributions
-
-- improve build instructions
-- fix confusing UI text
-- improve error messages
-- add tests around parsing or quality filters
-- document local model experiments
-- simplify setup
-
-## Before Opening A Pull Request
-
-Please include:
-
-- what changed
-- why it changed
-- how you tested it
-- whether you used AI-assisted coding tools
-
-Keep changes small when possible. Avoid unrelated cleanup in the same PR.
-
-## Local Build
-
-```bash
-./build.sh --debug
-```
-
-## Security And Privacy
-
-- Never commit API keys, tokens, private audio, or confidential transcripts.
-- Avoid adding telemetry, hosted services, or external dependencies without a clear issue first.
-- Call out privacy-impacting changes in the pull request description.
-- Keep it honest: only describe something as local if it really runs on the device.
-
-## Project Boundaries
-
-Blitztext currently does not include:
-
-- other platforms (the iOS app is not public yet; Linux and Windows ports live in their own community projects, see the README)
-- a hosted backend or accounts
-- bundled model files (models are downloaded once on first use)
-
-Those can be discussed in issues, but please keep PRs focused on the macOS app unless a maintainer agrees on a larger direction first.
+Beschreibe Problem, Änderung und Testergebnis. Keine API-Schlüssel, privaten
+Aufnahmen, Modellgewichte oder vertraulichen Transkripte committen. Änderungen
+am Datenfluss ausdrücklich erläutern. Lokale Verarbeitung darf nicht still auf
+einen externen Anbieter wechseln.
