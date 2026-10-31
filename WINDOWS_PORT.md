@@ -131,3 +131,26 @@ instead of the test application's electron.exe. Actual per-program selection in
 the global-shortcut flow therefore still needs an uncontested desktop test.
 GitHub Windows tests for e6f8821 completed successfully. The prior Windows commits
 have been pushed to origin/main; model weights and local audio remain outside Git.
+
+## Installer execution verified, 2026-10-31
+
+The unsigned development installer from windows-2026-10-31T16-22-46-818Z-038b2c
+was executed silently into the previously nonexistent project-local directory
+BlitzDicWindows/.runtime/installed-test-20261031. Installer exit code was 0.
+No prior BlitzDic installation or BlitzDic desktop/start-menu shortcut was found
+in the preflight checks. The desktop shortcut was disabled for this test.
+
+scripts/verify-installed.mjs launched the installed executable with a fresh profile,
+verified app.isPackaged and bundled model/runtime files, then exercised audio import
+through the UI with both Whisper and Parakeet Ultra. Both produced the expected
+fixture sentence with no observed page errors. Speech was processed by the installed
+blitzdic-speech.exe, without copying models into the profile or installing Python
+for the application. Development Playwright and the test WAV remain test-harness
+requirements only. The test installation remains present; it was not uninstalled.
+
+This verifies installation on the current Windows workstation, not an isolated
+clean Windows VM. The installer predates per-program mode preferences and the
+three supplemental license notices; a later build must include those changes.
+The physical microphone, Office, meetings, visual polish and native-library license
+review remain open. Latest GitHub Windows tests for ed54fba completed successfully:
+https://github.com/phil2001/2026-10_BlitzDic/actions/runs/41220060386

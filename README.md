@@ -83,7 +83,7 @@ sie aus den lokalen Modellordnern. Sprachtests mit echten Gewichten werden über
 
 Automatisches Einfügen wurde in klassischen Windows-Textfeldern und Chromium-Webfeldern geprüft. Details und Grenzen: [Windows-Einfügen](BlitzDicWindows/speech/WINDOWS_INSERTION.md). Office-Unterstützung,
 Meeting-Funktionen, physische Mikrofontests, abschließender Designabgleich,
-vollständige Lizenzpaketierung und ein sauberer Installationstest bleiben offen.
+vollständige Lizenzpaketierung und der Test in einer frischen Windows-VM bleiben offen. Installation und beide enthaltenen Sprachmodelle wurden auf dem Entwicklungs-PC mit frischem App-Profil geprüft.
 Der verfügbare Installer ist daher kein Nachweis der Fertigstellung.
 
 [Arbeitsstand](WINDOWS_PORT.md) · [Datenschutz](PRIVACY.md) · [Mitwirken](CONTRIBUTING.md)
