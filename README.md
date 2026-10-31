@@ -32,7 +32,7 @@ Ein zusätzliches lokales LLM hat eigene RAM-/VRAM-Anforderungen.
 ## Installation und Bedienung
 
 Der bisher lokal gebaute Entwicklungsinstaller liegt unter
-`BlitzDicWindows/dist/windows-2026-10-31T17-12-37-801Z-29ba3b/BlitzDic Setup 0.3.0.exe` und ist etwa
+`BlitzDicWindows/dist/windows-2026-10-31T17-23-25-351Z-fd5908/BlitzDic Setup 0.3.1.exe` und ist etwa
 1,14 GB groß. Er ist nicht signiert und enthält die aktuelle Diktat- und Einfügelaufzeit. Eine fertige Release-Datei ist noch nicht veröffentlicht.
 
 1. Nach Installation BlitzDic öffnen und unter **Modelle** Whisper oder Parakeet wählen.
@@ -126,7 +126,7 @@ des Transkripts gespeichert. Die automatische Sprecherzahl ist noch unzuverlaess
 eine bekannte Zahl kann von 1 bis 20 vorgegeben werden. Auf dem Ziel-PC sind keine
 separaten Modell- oder Python-Installationen erforderlich.
 
-Der verlinkte Entwicklungsinstaller 0.3.0 entstand vor der inzwischen korrigierten
-DLL-Suchpfad-Isolation des Builds. Die bereinigte Sprachlaufzeit wurde separat mit
-beiden Modellen und Sprecherzuordnung geprüft; der vollständige Installer muss
-mit dieser Build-Korrektur neu erstellt werden.
+Der aktuelle Installer 0.3.1 verwendet die bereinigte DLL-Aufloesung des Builds.
+Die enthaltenen nativen Herkunftsinventare wurden gegen die paketierten Dateien
+geprueft. Die gepackte App bestand beide Sprachmodelle sowie Meeting-Aufnahme,
+Sprechertrennung und verschluesseltes Speichern mit frischem Profil.

@@ -12,6 +12,10 @@ for (const relative of ['models/whisper/model.bin', 'models/parakeet-ultra/encod
   await access(resolve(resources, relative));
 const inventory = JSON.parse(await readFile(resolve(resources, 'licenses/dependencies/inventory.json'), 'utf8'));
 assert.deepEqual(inventory.missingPackageNotices, []);
+const nativeMap = JSON.parse(await readFile(resolve(resources, 'licenses/dependencies/native-package-map.json'), 'utf8'));
+assert.deepEqual(nativeMap.unresolvedBuildOrigins, []);
+assert.deepEqual(nativeMap.externalBuildOrigins, []);
+console.log('Verified native origins:', nativeMap.files.length);
 const env = {...process.env}; delete env.ELECTRON_RUN_AS_NODE;
 const app = await electron.launch({executablePath,
   args: [`--user-data-dir=${root}/.runtime/installed-smoke-${Date.now()}`], env});

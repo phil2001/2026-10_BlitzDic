@@ -425,3 +425,28 @@ test worker's runtime PATH to Windows-only paths. The strict gate rejected the o
 unnecessary runtime files. The existing full installer still needs rebuilding with
 this worker; it has not been silently replaced. Native license/source review remains
 open independently. No user directories or existing builds were deleted.
+
+## Corrected complete package 0.3.1, 2026-10-31
+
+The full unsigned installer was rebuilt successfully using isolated DLL resolution:
+BlitzDicWindows/dist/windows-2026-10-31T17-23-25-351Z-fd5908/BlitzDic Setup 0.3.1.exe
+Size: 1,140,226,268 bytes. SHA-256:
+F855518EA51206362CC0BBBA077EA440979BAEBB202CA203D12753567AA37598
+
+The strict native-origin gate passed: 138 speech DLL/PYD files, all build-source
+hashes matched, no unresolved origins and no external developer-tool runtime origins.
+The installed resources include the origin map, native inventory, FFmpeg license
+references, 36 package notices and speaker-model attribution. Package notices have
+no missing entries; general corresponding-source/native-license review remains open.
+
+verify-installed.mjs passed against the packaged 0.3.1 executable with a fresh
+profile, validating contained inventories, both real ASR imports, meeting-source UI
+and program-rule UI. verify-meeting-audio.mjs then passed actual synthetic microphone
+capture -> local diarization -> Whisper/Parakeet -> speaker-labeled transcript ->
+encrypted save/reload through the frozen runtime and bundled models. No project
+Python was used as the application's speech runtime. Test harness Node/Playwright
+and the synthetic input fixture remain development-only tools.
+
+This supersedes the 0.3.0 build-origin issue. It is not actual 0.3.1 NSIS execution,
+a clean Windows VM, a physical microphone test, automatic speaker-count quality,
+or proof of every remaining upstream feature. The overall goal remains active.
