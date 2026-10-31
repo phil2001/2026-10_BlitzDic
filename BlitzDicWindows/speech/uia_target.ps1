@@ -28,31 +28,34 @@ public static class BlitzDicUia {
     [StructLayout(LayoutKind.Sequential)] struct INPUT { public uint type; public UNION data; }
 
     // The signature contains hashes and selection lengths, never the document text.
+    public static string Reason = "";
+    static string Reject(string reason) { Reason = reason; return null; }
     public static string Capture() {
+        Reason = "";
         IntPtr window = GetForegroundWindow();
         var element = AutomationElement.FocusedElement;
-        if (element == null) return null;
+        if (element == null) return Reject("Kein fokussiertes Element");
         var current = element.Current;
-        if (current.IsPassword || !current.IsEnabled || !current.HasKeyboardFocus) return null;
-        if (current.ControlType != ControlType.Edit && current.ControlType != ControlType.Document) return null;
+        if (current.IsPassword || !current.IsEnabled || !current.HasKeyboardFocus) return Reject("Feld geschützt, inaktiv oder ohne Tastaturfokus");
+        if (current.ControlType != ControlType.Edit && current.ControlType != ControlType.Document) return Reject("Kein Texteingabefeld");
         uint pid; GetWindowThreadProcessId(window, out pid);
-        if (pid != current.ProcessId) return null;
+        if (pid != current.ProcessId) return Reject("Prozess stimmt nicht mit Vordergrundfenster überein");
         object pattern;
-        if (!element.TryGetCurrentPattern(TextPattern.Pattern, out pattern)) return null;
+        if (!element.TryGetCurrentPattern(TextPattern.Pattern, out pattern)) return Reject("TextPattern nicht verfügbar");
         var text = (TextPattern)pattern;
         var range = text.DocumentRange;
         var readOnly = range.GetAttributeValue(TextPattern.IsReadOnlyAttribute);
-        if (!(readOnly is bool) || (bool)readOnly) return null;
+        if (!(readOnly is bool) || (bool)readOnly) return Reject("Schreibgeschützt oder Schreibschutz unklar");
         var selection = text.GetSelection();
-        if (selection == null || selection.Length != 1) return null;
+        if (selection == null || selection.Length != 1) return Reject("Keine eindeutige Textauswahl");
         var prefix = range.Clone();
         prefix.MoveEndpointByRange(TextPatternRangeEndpoint.End, selection[0], TextPatternRangeEndpoint.Start);
         string document = range.GetText(1000001);
-        if (document.Length > 1000000) return null;
+        if (document.Length > 1000000) return Reject("Dokument zu groß");
         string hash;
         using (var sha = SHA256.Create()) hash = Convert.ToBase64String(sha.ComputeHash(Encoding.Unicode.GetBytes(document)));
         var identity = String.Join(",", element.GetRuntimeId());
-        if (GetForegroundWindow() != window || !Automation.Compare(element, AutomationElement.FocusedElement)) return null;
+        if (GetForegroundWindow() != window || !Automation.Compare(element, AutomationElement.FocusedElement)) return Reject("Fokus während Erfassung geändert");
         return window.ToInt64() + ":" + pid + ":" + identity + ":" + prefix.GetText(-1).Length + ":" + selection[0].GetText(-1).Length + ":" + hash;
     }
 
@@ -81,7 +84,8 @@ public static class BlitzDicUia {
 try {
     $request = [Console]::In.ReadToEnd() | ConvertFrom-Json
     if ($request.action -eq 'capture') {
-        @{ signature = [BlitzDicUia]::Capture() } | ConvertTo-Json -Compress
+        $signature = [BlitzDicUia]::Capture()
+        @{ signature = $signature; reason = [BlitzDicUia]::Reason } | ConvertTo-Json -Compress
     } elseif ($request.action -eq 'insert') {
         @{ inserted = [BlitzDicUia]::Insert($request.signature, $request.text) } | ConvertTo-Json -Compress
     } else { throw 'Unbekannte UI-Automation-Aktion.' }

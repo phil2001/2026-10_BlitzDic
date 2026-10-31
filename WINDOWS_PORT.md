@@ -87,3 +87,14 @@ The application now targets Windows 11 exclusively. Legacy platform sources and 
 A real LM Studio integration test passed with the already installed qwen2.5-coder-3b-instruct model: discovery, connection check and German text rewriting. The test server was stopped and its model unloaded afterwards. LAN and cloud endpoints remain unverified. Whisper and Parakeet run independently of LM Studio through the bundled speech runtime.
 
 UI Automation now supports modern text fields via the bundled helper script and Windows system PowerShell/.NET. The Chromium test verifies textarea/contenteditable insertion and rejects changed document text, selection or focus. See BlitzDicWindows/speech/WINDOWS_INSERTION.md for exact coverage and SendInput limitations. Office and the complete shortcut flow remain unverified. Rebuild the speech runtime before packaging.
+
+The full global-shortcut flow has now passed with both Whisper and Parakeet Ultra:
+a resident keyboard test helper sends the real Windows shortcut, Chromium's
+synthetic microphone feeds the recording, actual local inference runs, and text
+appears in a separate Chromium editor without refocusing it. Physical microphone
+hardware remains unverified. The first test helper launched at shortcut time
+occasionally disturbed foreground focus; starting it beforehand fixed that test
+setup. Missing target capture is now explained in the app instead of silently
+leaving insertion unattempted. Recorder sessions now isolate asynchronous startup
+resources, preventing cancelled permission/resume requests from damaging a newer
+recording. A regression test covers both delayed microphone permission and resume.

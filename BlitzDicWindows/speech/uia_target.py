@@ -17,7 +17,9 @@ def request(action, **args):
 
 
 def capture():
-    signature = request('capture').get('signature')
+    result = request('capture')
+    capture.reason = result.get('reason', '')
+    signature = result.get('signature')
     return {'kind': 'uia', 'signature': signature} if signature else None
 
 

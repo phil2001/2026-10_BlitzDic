@@ -7,42 +7,52 @@ export class Recorder {
   async start(deviceId = '') {
     if (this.state !== 'idle') throw new Error('Aufnahme läuft bereits.');
     this.state = 'starting'; this.chunks = []; this.samples = 0;
+    const session = {}; this.session = session;
+    const current = () => this.session === session;
     try {
-      this.stream = await navigator.mediaDevices.getUserMedia({ audio: {
+      session.stream = await navigator.mediaDevices.getUserMedia({ audio: {
         deviceId: deviceId ? { exact: deviceId } : undefined,
         channelCount: 1, echoCancellation: true, noiseSuppression: true,
       } });
-      if (this.state !== 'starting') { this.release(); return; }
-      this.context = new AudioContext();
-      await this.context.audioWorklet.addModule(new URL('./recorder-worklet.js', import.meta.url));
-      if (this.state !== 'starting') { this.release(); return; }
-      this.node = new AudioWorkletNode(this.context, 'blitzdic-capture');
-      this.source = this.context.createMediaStreamSource(this.stream);
-      this.mute = this.context.createGain(); this.mute.gain.value = 0;
-      this.node.port.onmessage = ({ data }) => {
-        if (this.state !== 'recording') return;
+      if (!current()) { this.release(session); return false; }
+      session.context = new AudioContext();
+      await session.context.audioWorklet.addModule(new URL('./recorder-worklet.js', import.meta.url));
+      if (!current()) { this.release(session); return false; }
+      session.node = new AudioWorkletNode(session.context, 'blitzdic-capture');
+      session.source = session.context.createMediaStreamSource(session.stream);
+      session.mute = session.context.createGain(); session.mute.gain.value = 0;
+      session.node.port.onmessage = ({ data }) => {
+        if (!current() || this.state !== 'recording') return;
         this.chunks.push(data); this.samples += data.length;
         this.onLevel(Math.sqrt(data.reduce((sum, x) => sum + x * x, 0) / data.length));
-        if (this.samples >= this.context.sampleRate * 60 * 30) {
+        if (this.samples >= session.context.sampleRate * 60 * 30) {
           this.state = 'limit'; this.onLimit();
         }
       };
-      this.source.connect(this.node); this.node.connect(this.mute); this.mute.connect(this.context.destination);
-      await this.context.resume(); this.state = 'recording';
-    } catch (error) { this.release(); this.state = 'idle'; throw error; }
+      session.source.connect(session.node); session.node.connect(session.mute); session.mute.connect(session.context.destination);
+      await session.context.resume();
+      if (!current()) { this.release(session); return false; }
+      this.state = 'recording'; return true;
+    } catch (error) {
+      if (!current()) { this.release(session); return false; }
+      this.cancel(); throw error;
+    }
   }
   stop() {
     if (!['recording', 'limit'].includes(this.state)) throw new Error('Keine aktive Aufnahme.');
     this.state = 'stopping';
-    const result = encodeWav(this.chunks, this.context.sampleRate);
-    this.release(); this.state = 'idle'; return result;
+    try { return encodeWav(this.chunks, this.session.context.sampleRate); }
+    finally { this.cancel(); }
   }
-  cancel() { this.state = 'idle'; this.release(); }
-  release() {
-    this.stream?.getTracks().forEach(track => track.stop());
-    this.source?.disconnect(); this.node?.disconnect(); this.mute?.disconnect();
-    if (this.context && this.context.state !== 'closed') this.context.close();
-    this.stream = null; this.context = null; this.source = null; this.node = null; this.mute = null;
-    this.chunks = []; this.onLevel(0);
+  cancel() {
+    const session = this.session; this.session = null; this.state = 'idle';
+    this.release(session); this.chunks = []; this.onLevel(0);
+  }
+  release(session) {
+    if (!session) return;
+    session.stream?.getTracks().forEach(track => track.stop());
+    session.source?.disconnect(); session.node?.disconnect(); session.mute?.disconnect();
+    if (session.node) session.node.port.onmessage = null;
+    if (session.context && session.context.state !== 'closed') session.context.close().catch(() => {});
   }
 }

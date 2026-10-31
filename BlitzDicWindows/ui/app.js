@@ -35,11 +35,17 @@ document.querySelectorAll('nav button').forEach(button => button.onclick = () =>
   document.querySelectorAll('nav button').forEach(b => b.classList.toggle('selected', b === button));
 });
 $('record').onclick = attempt(async () => {
-  if (busy) return;
+  if (busy || recorder.state === 'starting') return;
   if (['recording', 'limit'].includes(recorder.state)) {
     const wav = recorder.stop(); recordingUI(false); await result(await api.audio(wav, $('mode').value));
   } else {
-    await recorder.start($('microphone').value); recordingUI(true); status('');
+    $('cancel').hidden = false; status('Mikrofon wird gestartet …');
+    try {
+      if (!await recorder.start($('microphone').value)) return;
+    } catch (error) {
+      await api.cancel(); recordingUI(false); throw error;
+    }
+    recordingUI(true); status('');
     const devices = await navigator.mediaDevices.enumerateDevices();
     const selected = $('microphone').value;
     $('microphone').replaceChildren(new Option('Standardmikrofon', ''));

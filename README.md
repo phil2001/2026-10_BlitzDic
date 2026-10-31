@@ -81,7 +81,7 @@ sie aus den lokalen Modellordnern. Sprachtests mit echten Gewichten werden über
 
 ## Noch offen
 
-Automatisches Einfügen wurde in klassischen Windows-Textfeldern und Chromium-Webfeldern geprüft. Details und Grenzen: [Windows-Einfügen](BlitzDicWindows/speech/WINDOWS_INSERTION.md). Office-Unterstützung, der vollständige Tastenkürzelablauf,
+Automatisches Einfügen wurde in klassischen Windows-Textfeldern und Chromium-Webfeldern geprüft. Details und Grenzen: [Windows-Einfügen](BlitzDicWindows/speech/WINDOWS_INSERTION.md). Office-Unterstützung,
 Meeting-Funktionen, physische Mikrofontests, abschließender Designabgleich,
 vollständige Lizenzpaketierung und ein sauberer Installationstest bleiben offen.
 Der verfügbare Installer ist daher kein Nachweis der Fertigstellung.

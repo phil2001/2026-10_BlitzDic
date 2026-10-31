@@ -36,8 +36,7 @@ Schreibschutz und unveränderte Zwischenablage. Chromium: textarea und
 contenteditable, Unicode, Markierungen sowie Text-, Cursor- und Fokusänderungen,
 Passwortschutz und Schreibschutz. Erfolgreich geprüft am 31.10.2026.
 
-Nicht dadurch belegt: Word/Office, RichEdit, alle Browser-Versionen, erhöhte
-Anwendungen oder der vollständige globale Tastenkürzel-/Mikrofonablauf.
+Nicht dadurch belegt: Word/Office, RichEdit, alle Browser-Versionen oder erhöhte Anwendungen.
 Die Sprachlaufzeit muss mit dem neuen UI-Automation-Hilfsskript neu gebaut werden.
 
 ## Microsoft-Dokumentation
@@ -45,3 +44,17 @@ Die Sprachlaufzeit muss mit dem neuen UI-Automation-Hilfsskript neu gebaut werde
 - [TextPattern.GetSelection und Cursorbereiche](https://learn.microsoft.com/en-us/dotnet/api/system.windows.automation.textpattern.getselection)
 - [Texteingabe mit UI Automation](https://learn.microsoft.com/en-us/dotnet/framework/ui-automation/add-content-to-a-text-box-using-ui-automation)
 - [SendInput](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-sendinput)
+
+## Vollständiger Diktatablauf
+
+`node scripts/verify-hotkey.mjs` startet BlitzDic und ein separates Chromium-
+Testfenster. Es sendet das echte globale Strg+Umschalt+1, verarbeitet eine
+synthetische Mikrofonaufnahme durch das lokale Sprachmodell und prüft den
+Text im ursprünglichen Eingabefeld. Die WAV-Fixture `.runtime/test-speech.wav`
+muss vorhanden sein. Standard ist Whisper; `BLITZDIC_TEST_PRESET=parakeet-ultra`
+wählt Parakeet. `BLITZDIC_TEST_MOVE_CURSOR=1` prüft den Abbruch beim Cursorwechsel.
+
+Beide Sprachmodelle haben den positiven Gesamtablauf bestanden. Das belegt
+keine physische Mikrofonhardware. Der Tastatur-Hilfsprozess wird vor Aktivierung
+des Zielfensters gestartet, damit sein Prozessstart den Fokus nicht beeinflusst.
+Die App meldet eine fehlgeschlagene Zielerfassung ausdrücklich und erhält den Text.

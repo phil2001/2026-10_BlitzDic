@@ -26,6 +26,7 @@ def message(hwnd, msg, wp=0, lp=0):
     return result.value
 
 def capture():
+    capture.reason = 'Kein fokussiertes Windows-Eingabefeld.'
     info = GUI(); info.cbSize = c.sizeof(GUI)
     if not user32.GetGUIThreadInfo(0, c.byref(info)) or not info.hwndFocus:
         return None
@@ -34,7 +35,9 @@ def capture():
     class_name = name.value.lower()
     if class_name != 'edit' and not class_name.startswith('richedit'):
         from uia_target import capture as uia_capture
-        return uia_capture()
+        target = uia_capture()
+        capture.reason = uia_capture.reason
+        return target
     style = user32.GetWindowLongW(info.hwndFocus, -16)
     if style & (0x20 | 0x800):  # ES_PASSWORD or ES_READONLY
         return None

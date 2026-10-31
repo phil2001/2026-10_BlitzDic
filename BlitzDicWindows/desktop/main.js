@@ -17,14 +17,23 @@ else app.whenReady().then(async () => {
   const pythonPath = app.isPackaged ? join(process.resourcesPath, 'speech-runtime/blitzdic-speech.exe') : join(root, '.runtime/venv/Scripts/python.exe');
   const modelRoot = app.isPackaged ? join(process.resourcesPath, 'models') : join(root, 'models');
   flow = new Dictation({ store, modelRoot, pythonPath });
-  let insertionTarget = null, recording = false, capturePending = false;
+  let insertionTarget = null, recording = false, capturePending = false, captureEpoch = 0;
+  let insertionRequested = false, insertionProblem = '';
   async function triggerShortcut(mode) {
     if (flow.active || capturePending) return;
     if (!recording) {
       capturePending = true;
-      try { insertionTarget = (await runSpeech({ action: 'capture-target' }, { pythonPath, timeoutMs: 5000 })).target; }
-      catch { insertionTarget = null; }
+      insertionRequested = true; insertionProblem = '';
+      const epoch = captureEpoch;
+      try {
+        const {target: captured, reason} = await runSpeech({ action: 'capture-target' }, { pythonPath, timeoutMs: 5000 });
+        if (epoch !== captureEpoch) return;
+        insertionTarget = captured;
+        if (!captured) insertionProblem = `Kein unterstütztes Eingabefeld erkannt (${reason || 'unbekannter Feldtyp'}); Text bleibt in BlitzDic.`;
+      }
+      catch (error) { insertionTarget = null; insertionProblem = `Eingabefeld konnte nicht erfasst werden: ${error.message}`; }
       finally { capturePending = false; }
+      if (epoch !== captureEpoch) return;
     }
     window.webContents.send('shortcut', mode);
   }
@@ -91,7 +100,10 @@ else app.whenReady().then(async () => {
   handle('audio', async (bytes, mode) => {
     if (!(bytes instanceof ArrayBuffer) || bytes.byteLength > 350 * 1024 * 1024) throw new Error('Ungültige Aufnahme.');
     const target = insertionTarget; insertionTarget = null;
+    const requested = insertionRequested, problem = insertionProblem;
+    insertionRequested = false; insertionProblem = '';
     const entry = await flow.process(Buffer.from(bytes), mode);
+    if (requested && !target) entry.warning = [entry.warning, problem].filter(Boolean).join('\n');
     if (target && entry.text.trim()) {
       try {
         const insertion = await runSpeech({ action: 'insert-text', target, text: entry.text }, { pythonPath, timeoutMs: 5000 });
@@ -100,7 +112,7 @@ else app.whenReady().then(async () => {
     }
     return entry;
   });
-  handle('cancel', () => { insertionTarget = null; flow.cancel(); });
+  handle('cancel', () => { captureEpoch++; insertionTarget = null; insertionRequested = false; insertionProblem = ''; flow.cancel(); });
   handle('recording-state', active => { recording = !!active; tray.setToolTip(active ? 'BlitzDic · Aufnahme läuft' : 'BlitzDic · Bereit'); });
   handle('copy', text => { if (typeof text !== 'string') throw new Error('Ungültiger Text.'); clipboard.writeText(text); });
   handle('history-clear', () => store.clearHistory());

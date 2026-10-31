@@ -21,7 +21,10 @@ PRESETS = {
 def run(request):
     if request['action'] in ('capture-target', 'insert-text'):
         from windows_target import capture, insert
-        return {'target': capture()} if request['action'] == 'capture-target' else insert(request.get('target'), request.get('text'))
+        if request['action'] == 'capture-target':
+            target = capture()
+            return {'target': target, 'reason': capture.reason if not target else ''}
+        return insert(request.get('target'), request.get('text'))
     root = Path(request["modelDirectory"]).resolve()
     preset = PRESETS.get(request.get("preset"))
     engine = preset["engine"] if preset else request.get("engine")
