@@ -7,6 +7,7 @@ import assert from 'node:assert/strict';
 const root = resolve(import.meta.dirname, '..');
 const env = {...process.env}; delete env.ELECTRON_RUN_AS_NODE;
 const preset = process.env.BLITZDIC_TEST_PRESET || 'whisper';
+const executablePath = process.env.BLITZDIC_TEST_EXECUTABLE;
 assert.ok(['whisper', 'parakeet-ultra'].includes(preset));
 // Start the keyboard helper before focusing the target. Launching a console
 // process at the instant of the shortcut can itself disturb foreground focus.
@@ -17,7 +18,7 @@ const shortcut = async () => {
 };
 let dictation, target, page, editor;
 try {
-  dictation = await electron.launch({args: [root, `--user-data-dir=${root}/.runtime/hotkey-test-profile`,
+  dictation = await electron.launch({executablePath, args: [...(executablePath ? [] : [root]), `--user-data-dir=${root}/.runtime/hotkey-test-profile`,
     '--use-fake-device-for-media-stream', '--use-fake-ui-for-media-stream',
     `--use-file-for-fake-audio-capture=${root}/.runtime/test-speech.wav`], env});
   page = await dictation.firstWindow();

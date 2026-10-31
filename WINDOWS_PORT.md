@@ -98,3 +98,23 @@ setup. Missing target capture is now explained in the app instead of silently
 leaving insertion unattempted. Recorder sessions now isolate asynchronous startup
 resources, preventing cancelled permission/resume requests from damaging a newer
 recording. A regression test covers both delayed microphone permission and resume.
+
+## Updated Windows package, 2026-10-31
+
+`BlitzDicWindows/dist/windows-2026-10-31T16-22-46-818Z-038b2c/BlitzDic Setup 0.1.0.exe`
+was built successfully (1,095,896,052 bytes, SHA-256
+`5309AA4CAB9F6F9F36607628ACE9C0AEA21706B219E9AD54AF0F65F77D5A8AEB`).
+Its unpacked executable passed the full global-hotkey -> synthetic microphone ->
+bundled inference -> external Chromium insertion flow with both Whisper and
+Parakeet Ultra. It includes the current recording cancellation fix, native and
+UI Automation adapters, and the packaged PowerShell helper. It does not require
+a separate speech Python installation or model download.
+
+The new build command creates fresh timestamped directories, builds its own
+speech runtime and collects Python package, Python and Electron/Chromium notices.
+The installer above was produced before three supplemental package notices were
+added. Those notices are now present in source at pinned upstream versions, and
+the revised collector reports no missing package notices. They will be included
+in the next installer. Native-library source/license obligations still require
+review. This remains an unsigned development build, not a finished release;
+installer execution on a clean Windows installation is still unverified.

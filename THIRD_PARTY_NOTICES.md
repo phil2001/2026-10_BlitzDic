@@ -26,5 +26,8 @@ Unterstützung oder Empfehlung durch diese Herausgeber.
 Electron, faster-whisper, CTranslate2, onnx-asr, ONNX Runtime, PyAV/FFmpeg,
 SoundFile/libsndfile und deren Abhängigkeiten haben eigene Lizenzbedingungen.
 Die Versionen stehen in package-lock.json und speech/requirements.lock.txt.
-Vollständige Lizenztexte aller ausgelieferten Binärabhängigkeiten müssen vor
-der fertigen Veröffentlichung zusätzlich zusammengetragen und geprüft werden.
+scripts/collect-licenses.py sammelt die mitgelieferten Paket-Lizenztexte, Python-
+und Chromium-Hinweise sowie die versionsgebundenen Ergänzungen unter
+BlitzDicWindows/licenses/upstream. Das Build-Inventar dokumentiert Herkunft und
+Prüfsummen. Eingebettete native Bibliotheken und deren Quellcodepflichten müssen
+vor der fertigen Veröffentlichung zusätzlich geprüft werden.
