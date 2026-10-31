@@ -318,3 +318,14 @@ claiming a 30-minute stress test or German accuracy. Only an en-US Windows synth
 voice is installed here; German speech evaluation and physical microphone quality
 still need separate evidence. The fixture remains ignored under .runtime; no audio
 or model weights were added to Git. No application code changed in this step.
+
+## Speaker diarization prototype, 2026-10-31
+
+A local sherpa-onnx speaker-range action was implemented in the JSON speech worker.
+The official four-speaker sample passed with a known speaker count (10 time ranges).
+Automatic counting returned seven clusters, so quality remains unresolved. The
+prototype is not yet wired into meeting recordings, ASR alignment or the installer.
+See BlitzDicWindows/speech/DIARIZATION.md for source/license references, model
+fingerprints, test coverage and remaining integration work. No voice profiles or
+real-world speaker identities are inferred or persisted. Core dependency versions
+are pinned, but the next frozen worker still needs its packaging hook updated.

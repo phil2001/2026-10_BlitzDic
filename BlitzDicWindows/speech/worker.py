@@ -19,6 +19,9 @@ PRESETS = {
 
 
 def run(request):
+    if request['action'] == 'diarize':
+        from diarization import run as diarize
+        return diarize(request)
     if request['action'] in ('capture-target', 'insert-text'):
         from windows_target import capture, insert, foreground_app
         if request['action'] == 'capture-target':
