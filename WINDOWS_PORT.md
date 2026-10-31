@@ -471,3 +471,27 @@ also clears the previous visible summary when starting a new generation, avoidin
 an old summary being displayed as the result of a newly edited transcript.
 These changes postdate installer 0.3.1 and require inclusion in a later package.
 Actual model semantic quality remains an independent open acceptance issue.
+
+## Real local summary quality and UI validation, 2026-10-31
+
+The preinstalled google/gemma-4-e4b model (6.33 GB on disk, 5.89 GiB reported by
+LM Studio on load) passed verify-real-meeting-model.mjs using the current summary
+instructions. The synthetic German source's selected offer B, 2500-euro budget,
+Ben's explicit document-review task with no invented deadline, and the open Berlin
+shipping question were correctly preserved and categorized. The generated summary
+was manually inspected in addition to the scripted fact/section assertions.
+
+The new opt-in verify-real-meeting-ui.mjs then passed the actual Electron UI ->
+real local LM Studio server -> fact checks -> DPAPI store -> exact reload workflow
+with the same synthetic source. This is real model inference, not a mock provider.
+The initial state was no loaded models and server stopped; the temporary test alias
+was unloaded and the server stopped after the test. No new model was downloaded.
+Gemma is not bundled in BlitzDic and is not added as an ASR preset. Whisper and
+Parakeet remain the two preferred bundled speech models.
+
+This provides short-fixture local LLM quality evidence for that model. It does not
+reverse the earlier Qwen 2.5 Coder 3B failures or prove factuality for other models,
+long meetings or arbitrary prompts. The test is intentionally opt-in, outside
+normal unit CI, and requires a running local server with the requested model alias.
+The current installer still predates hierarchical summary reduction; no application
+code changed in this step, so deterministic tests were not needlessly repeated.

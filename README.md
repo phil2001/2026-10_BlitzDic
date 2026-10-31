@@ -130,3 +130,9 @@ Der aktuelle Installer 0.3.1 verwendet die bereinigte DLL-Aufloesung des Builds.
 Die enthaltenen nativen Herkunftsinventare wurden gegen die paketierten Dateien
 geprueft. Die gepackte App bestand beide Sprachmodelle sowie Meeting-Aufnahme,
 Sprechertrennung und verschluesseltes Speichern mit frischem Profil.
+
+Ein kurzer synthetischer deutscher Meeting-Test wurde mit einem bereits lokal
+installierten Gemma-4-E4B-Modell erfolgreich durch die gesamte Oberfläche bis zum
+verschlüsselten Speichern und Neuladen geprüft. Das Modell ist nicht im Installer
+enthalten. Dieser einzelne Qualitätsnachweis ersetzt keine Prüfung der Ergebnisse
+bei eigenen Meetings oder anderen Modellen.
