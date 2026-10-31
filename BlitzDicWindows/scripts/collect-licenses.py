@@ -16,7 +16,7 @@ if not output.is_relative_to(root / 'build'):
     raise SystemExit('License output must be within the project build directory')
 output.mkdir(parents=True, exist_ok=False)
 manifest = {'packages': [], 'missingPackageNotices': [],
-    'reviewPending': ['Embedded native-library source/license obligations, including FFmpeg, libsndfile and CPU libraries']}
+    'reviewPending': ['Remaining native CPU/numerical and platform-runtime redistribution obligations, including static components']}
 supplemental_root = root / 'licenses/upstream'
 supplemental = json.loads((supplemental_root / 'sources.json').read_text(encoding='utf-8'))
 for dist in sorted(metadata.distributions(), key=lambda item: item.metadata['Name'].lower()):

@@ -1,5 +1,21 @@
 # Native dependency review
 
+## CPU package changes in 0.3.6
+
+Internal speaker-turn WAV encoding now uses the Python standard library.
+SoundFile, libsndfile, CFFI and pycparser are not runtime dependencies. All public
+audio imports still use PyAV. The CPU-only CTranslate2 build hook also omits the
+unused cuDNN loader. The packaged native-file verifier checks their absence.
+
+intel-openmp/ records a full-byte match between CTranslate2's OpenMP DLL and
+Intel's official 2025.3.0 supplier wheel, and includes its original EULA. Collection
+does not resolve all redistribution requirements; that review remains open.
+onednn-3.1.1/ supplies the notices declared by the pinned CTranslate2 build recipe,
+without claiming that all static components have been independently verified.
+numpy-openblas/ records a full-byte match to the declared scipy-openblas64 supplier
+and its notice. NumPy's own copied notice also covers OpenBLAS/LAPACK. Microsoft
+runtime and remaining component obligations are still under review.
+
 ## Current clean FFmpeg build
 
 Windows 0.3.5 uses the private av 16.0.1+blitzdic.1 wheel with unmodified,

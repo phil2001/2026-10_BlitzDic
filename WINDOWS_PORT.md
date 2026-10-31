@@ -670,3 +670,53 @@ redistribution obligations remains open; this is not a blanket compliance verdic
 Installer: 1,149,418,566 bytes; SHA-256
 458C86CF9A840EA829A323AF86291484ADBD88BB4A7CDBF957A7CDAAB6F433A8.
 Unsigned, local development artifact; no clean-VM installation was performed.
+
+## Remove redundant audio dependencies and audit numeric DLLs, 2026-10-31
+
+Actual usage and package metadata showed SoundFile was needed only to write
+internal speaker-turn WAVs, not by onnx-asr/faster-whisper or the public imports.
+wav_encode.py now creates mono PCM16 WAV using the Python standard library and
+NumPy, validates finite/mono samples and rate, and clips/rounds into the signed
+16-bit range. SoundFile, libsndfile, CFFI and pycparser were removed from runtime
+requirements. The previous environment was moved to a project-local backup and
+a fresh environment was created; none of the old package directories were deleted.
+Tests verify PCM boundaries, sample count/rate, empty audio and invalid samples.
+The actual four-speaker and 105-second speaker-transcription regressions passed.
+
+A custom CTranslate2 hook omits cudnn64_9.dll, which has no static import from
+the CPU engine and is copied by upstream even with WITH_CUDNN=OFF. BlitzDic
+explicitly uses CPU. The packaged artifact verifier checks the absence of that
+loader, libsndfile and CFFI. Both frozen ASR engines and diarization passed with
+PATH limited to Windows, proving the CPU path does not need the omitted loader.
+
+OpenMP's libiomp5md.dll matched Intel's official intel-openmp 2025.3.0 wheel
+byte-for-byte, SHA-256 982233366b0afcda1e0f55a0b134097e35b779613f54ddb69e685e6cd06b755f.
+The wheel hash was checked against PyPI and its original August-2024 Intel EULA
+was collected. That file is preserved as binary Git data because its original
+encoding is Windows-1252. Exact redistribution conditions and the statically
+linked oneMKL component remain under review. The CTranslate2 recipe declares
+oneDNN 3.1.1; its pinned notices were added without overstating static-binary proof.
+
+NumPy's OpenBLAS DLL also matched the declared scipy-openblas64 0.3.34.106.0
+supplier wheel byte-for-byte. The provenance and supplier notice are in
+licenses/native/numpy-openblas. NumPy's existing distribution notice includes
+OpenBLAS and LAPACK. Its reported X86_V2 SIMD baseline was added to the hardware
+guide; this is evidence for that component, not every inference backend/CPU pair.
+The installer-download/offline wording was clarified. Those documentation edits
+and the OpenBLAS provenance report postdate the 0.3.6 license snapshot.
+
+Installer 0.3.6 was built in
+BlitzDicWindows/dist/windows-2026-10-31T21-58-11-448Z-bf0b4d. It has 111 mapped
+native files, zero unresolved/external build origins, 33 collected package notices
+and no missing notices. The enhanced artifact check verified every collected
+package-notice hash, matched the actual OpenMP DLL to its notice provenance and
+verified the contained FFmpeg source. Fresh-profile UI and both bundled speech
+models passed. The synthetic-microphone meeting test passed speaker transcription
+for both engines and encrypted speaker-labeled save/reload without libsndfile.
+Windows CI now also runs the PCM encoder unit checks with Python 3.12.12 and the
+pinned NumPy version; official setup-node/setup-python v7 examples were verified.
+
+Installer: 1,148,440,253 bytes; SHA-256
+02D0B5316A6B3F268CAB7D926D365351DA4842DBFE83848618061B82C89B9F41.
+Unsigned local development artifact. Component-wide redistribution review,
+clean-PC validation and other overall release gates remain open.

@@ -19,7 +19,7 @@ def group_overlaps(ranges):
 
 
 def run(request, transcribe):
-    import soundfile as sf
+    from wav_encode import encode_wav
     from audio_decode import decode_audio
     from diarization import run as diarize
     audio = (io.BytesIO(base64.b64decode(request['audioBase64'], validate=True))
@@ -33,10 +33,8 @@ def run(request, transcribe):
         # to the detected range; the margin is only ASR context, not extra turns.
         start = max(0, int((group['start'] - 0.15) * rate))
         end = min(len(waveform), int((group['end'] + 0.15) * rate))
-        buffer = io.BytesIO()
-        sf.write(buffer, waveform[start:end], rate, format='WAV', subtype='PCM_16')
         result = transcribe({**request, 'action': 'transcribe',
-                             'audioBase64': base64.b64encode(buffer.getvalue()).decode('ascii')})
+                             'audioBase64': base64.b64encode(encode_wav(waveform[start:end], rate)).decode('ascii')})
         text = result['text'].strip()
         if text:
             entries.append({**group, 'text': text})

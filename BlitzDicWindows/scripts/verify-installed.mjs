@@ -1,5 +1,5 @@
 import { _electron as electron } from 'playwright';
-import { resolve, dirname } from 'node:path';
+import { resolve, dirname, sep } from 'node:path';
 import { access, readFile } from 'node:fs/promises';
 import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
@@ -25,6 +25,17 @@ assert.ok(nativeInventory.ffmpegReports.every(report => report.license === 'LGPL
 const nativeMap = JSON.parse(await readFile(resolve(resources, 'licenses/dependencies/native-package-map.json'), 'utf8'));
 assert.deepEqual(nativeMap.unresolvedBuildOrigins, []);
 assert.deepEqual(nativeMap.externalBuildOrigins, []);
+assert.ok(nativeMap.files.every(item => !/libsndfile|_cffi_backend|cudnn64/i.test(item.path)),
+  'CPU package unexpectedly includes removed audio/GPU libraries');
+const licenseRoot = resolve(resources, 'licenses/dependencies');
+for (const item of inventory.packages.flatMap(pkg => pkg.files)) {
+  const path = resolve(licenseRoot, item.path);
+  assert.ok(path.startsWith(licenseRoot + sep));
+  assert.equal(createHash('sha256').update(await readFile(path)).digest('hex'), item.sha256);
+}
+const openmp = JSON.parse(await readFile(resolve(licenseRoot, 'native/intel-openmp/provenance.json'), 'utf8'));
+assert.equal(createHash('sha256').update(await readFile(resolve(licenseRoot, 'native/intel-openmp', openmp.notice.file))).digest('hex'), openmp.notice.sha256);
+assert.equal(nativeMap.files.find(item => item.path.toLowerCase().endsWith('/ctranslate2/libiomp5md.dll')).sha256, openmp.dllSha256);
 console.log('Verified native origins:', nativeMap.files.length);
 const env = {...process.env}; delete env.ELECTRON_RUN_AS_NODE;
 const app = await electron.launch({executablePath,

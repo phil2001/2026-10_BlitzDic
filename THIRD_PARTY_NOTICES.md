@@ -23,8 +23,10 @@ Unterstützung oder Empfehlung durch diese Herausgeber.
 
 ## Windows-Laufzeiten
 
-Electron, faster-whisper, CTranslate2, onnx-asr, ONNX Runtime, PyAV/FFmpeg,
-SoundFile/libsndfile und deren Abhängigkeiten haben eigene Lizenzbedingungen.
+Electron, faster-whisper, CTranslate2, onnx-asr, ONNX Runtime, PyAV/FFmpeg
+und deren Abhängigkeiten haben eigene Lizenzbedingungen. SoundFile/libsndfile
+wurde bis 0.3.5 verwendet und entfällt ab 0.3.6; interne WAV-Dateien benötigen
+diese Bibliothek nicht mehr.
 Die Versionen stehen in package-lock.json und speech/requirements.lock.txt.
 scripts/collect-licenses.py sammelt die mitgelieferten Paket-Lizenztexte, Python-
 und Chromium-Hinweise sowie die versionsgebundenen Ergänzungen unter
@@ -41,6 +43,14 @@ und Hash-Manifest sind im Paket unter den Python-Paket-Lizenzen enthalten.
 GCC-/CRT-/winpthread-Laufzeittexte liegen dort ebenfalls. Über Einstellungen
 lassen sich Lizenzen und Quellcode öffnen. Andere native Abhängigkeiten bleiben
 Gegenstand der laufenden Prüfung.
+
+Für CTranslate2s Intel-OpenMP-DLL wurde Bytegleichheit mit intel-openmp 2025.3.0
+nachgewiesen. Dessen originaler Intel-EULA-Text und der Herkunftsnachweis werden
+unter `licenses/native/intel-openmp` gesammelt. Das ist kein Abschluss der
+Prüfung aller Weitergabebedingungen. Hinweise zu der im Build genannten oneDNN-
+Version 3.1.1 liegen daneben. NumPys OpenBLAS-Lieferdatei wurde ebenfalls
+bytegleich mit scipy-openblas64 0.3.34.106.0 abgeglichen. Die NumPy-Pakethinweise
+enthalten die OpenBLAS-/LAPACK-Lizenztexte.
 
 ## Speaker auxiliary models in Windows 0.3
 

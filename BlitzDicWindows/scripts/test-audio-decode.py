@@ -4,7 +4,7 @@ import sys
 import unittest
 import av
 import numpy as np
-import soundfile as sf
+import wave
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'speech'))
 from audio_decode import decode_audio
 
@@ -13,7 +13,11 @@ class AudioDecode(unittest.TestCase):
     def test_stereo_resampling_preserves_duration_and_frequency(self):
         rate = 48000
         tone = (.2 * np.sin(2 * np.pi * 440 * np.arange(14400) / rate)).astype('float32')
-        wav = io.BytesIO(); sf.write(wav, np.stack([tone, tone], axis=1), rate, format='WAV'); wav.seek(0)
+        wav = io.BytesIO()
+        with wave.open(wav, 'wb') as output:
+            output.setnchannels(2); output.setsampwidth(2); output.setframerate(rate)
+            output.writeframes((np.stack([tone, tone], axis=1) * 32767).astype('<i2').tobytes())
+        wav.seek(0)
         samples, decoded_rate = decode_audio(wav)
         self.assertEqual(decoded_rate, 16000)
         self.assertEqual(samples.dtype, np.float32)

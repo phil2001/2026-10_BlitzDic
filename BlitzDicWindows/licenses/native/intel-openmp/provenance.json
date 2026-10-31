@@ -1,0 +1,20 @@
+{
+  "component": "libiomp5md.dll",
+  "supplierPackage": "intel-openmp==2025.3.0",
+  "supplierUrl": "https://files.pythonhosted.org/packages/79/69/05addedd727061b61a85b4fd989754edb628b5be1cd5d161727f98cf4d86/intel_openmp-2025.3.0-py2.py3-none-win_amd64.whl",
+  "supplierSha256": "8ff899d01a41b92ffe0e618b221ea633127d16df726086082d381c431c31339d",
+  "dllSha256": "982233366b0afcda1e0f55a0b134097e35b779613f54ddb69e685e6cd06b755f",
+  "installedPackage": "ctranslate2==4.8.4",
+  "identicalBytes": true,
+  "notice": {
+    "file": "Intel-EULA-August-2024.txt",
+    "sha256": "febfb69a5b058f55892dc7f341108a9ca29d50e9fe85723a57eebbb826436958",
+    "encoding": "Windows-1252"
+  },
+  "licenseTitle": "Intel End User License Agreement for Developer Tools (Version August 2024)",
+  "scope": "OpenMP DLL only; not all statically linked CTranslate2 components",
+  "reviewPending": [
+    "Verify the exact redistribution conditions and designation of redistributables.",
+    "Review statically linked oneMKL and oneDNN components separately."
+  ]
+}

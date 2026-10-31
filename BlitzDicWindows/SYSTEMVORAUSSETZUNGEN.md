@@ -14,12 +14,12 @@ und Laufzeiten. Externe LLM-Anbieter für Schreibmodi werden separat eingerichte
 |---|---|---|
 | Vorkonfiguriertes Modell | Whisper Small, mehrsprachig, faster-whisper | Parakeet Ultra 0.6B, ONNX INT8 |
 | Betriebssystem dieser Ausgabe | Windows 11, x64 | Windows 11, x64 |
-| Prozessor | Intel-/AMD-x64-Prozessor; moderner Mehrkernprozessor empfohlen | Intel-/AMD-x64-Prozessor; moderner Mehrkernprozessor empfohlen |
+| Prozessor | Intel-/AMD-x64-Prozessor mit x86-64-v2; moderner Mehrkernprozessor empfohlen | Intel-/AMD-x64-Prozessor mit x86-64-v2; moderner Mehrkernprozessor empfohlen |
 | RAM-Empfehlung für den gesamten PC | 16 GB | 16 GB |
 | Verbindliche RAM-Mindestgrenze | Noch nicht auf kleinen PCs ermittelt | Noch nicht auf kleinen PCs ermittelt |
 | NVIDIA-Grafikkarte / CUDA | Nicht erforderlich im aktuellen CPU-Betrieb | Nicht erforderlich im aktuellen CPU-Betrieb |
 | Reine installierte Modelldateien, lokal gemessen | 486.212.372 Byte, etwa 486 MB | 670.479.254 Byte, etwa 670 MB |
-| Internet | Für Installation und Modelldownload; anschließend lokale Transkription offline | Für Installation und Modelldownload; anschließend lokale Transkription offline |
+| Internet | Einmalig für den Installerdownload; danach lokale Transkription ohne Modelldownload offline | Einmalig für den Installerdownload; danach lokale Transkription ohne Modelldownload offline |
 | Audio | Mikrofon mit Windows-Zugriffserlaubnis oder Audiodatei | Mikrofon mit Windows-Zugriffserlaubnis oder Audiodatei |
 
 **Planungsempfehlung:** Für App, Laufzeiten, beide Modelle und Downloadreserve
@@ -28,6 +28,12 @@ Reserve, keine gemessene finale Installergröße. Aufnahmen, weitere Modelle und
 der Verlauf benötigen zusätzlichen Platz. Die RAM-Empfehlung ist eine
 Projekt-Empfehlung, keine offizielle Mindestanforderung von NVIDIA oder OpenAI.
 8-GB-PCs wurden bisher nicht verifiziert; 32 GB sind nicht als Pflicht anzusehen.
+
+Die enthaltene NumPy-Version 2.5.4 meldet `X86_V2` als CPU-Basis, unter anderem
+SSE4.2 und POPCNT. Der dazugehörige OpenBLAS-Build wurde bytegleich mit dem
+offiziellen Lieferpaket abgeglichen; Nachweis unter
+`licenses/native/numpy-openblas/provenance.json`. Diese Angabe beschreibt die
+Numerikkomponente und ersetzt keine Tests sämtlicher CPU-/Treiberkombinationen.
 
 ## Was bereits getestet wurde
 

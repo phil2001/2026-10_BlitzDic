@@ -1,0 +1,36 @@
+{
+  "installedPackage": "numpy==2.5.4",
+  "supplierPackage": "scipy-openblas64==0.3.34.106.0",
+  "supplierUrl": "https://files.pythonhosted.org/packages/0c/17/ffc91653b566011d7c790116759266ec0a588fdd0e2f839d0343f3f79e0e/scipy_openblas64-0.3.34.106.0-py3-none-win_amd64.whl",
+  "supplierSha256": "ea34bf76b8427ac2eca7a99334cbd8937a040303fa8364f9ed8e667d7c8e2c7d",
+  "dll": "libscipy_openblas64_-ed4f167a5330424524f45258e7ca2c8d.dll",
+  "dllSha256": "ed4f167a5330424524f45258e7ca2c8d7f03c0cba1f30ee4985553ac1f88ecf8",
+  "identicalBytes": true,
+  "supplierNotice": {
+    "file": "SUPPLIER-LICENSE.txt",
+    "sha256": "7317b3a9eb806cc83a0cc6b1c7c2fbe6018eed556daa9996e6e3a727a2a5bfbe"
+  },
+  "blas": {
+    "name": "scipy-openblas",
+    "found": true,
+    "version": "0.3.34.106.0",
+    "detection method": "pkgconfig",
+    "include directory": "C:/Users/runneradmin/AppData/Local/Temp/cibw-run-j3umgqti/cp312-win_amd64/build/venv/Lib/site-packages/scipy_openblas64/include",
+    "lib directory": "C:/Users/runneradmin/AppData/Local/Temp/cibw-run-j3umgqti/cp312-win_amd64/build/venv/Lib/site-packages/scipy_openblas64/lib",
+    "openblas configuration": "OpenBLAS 0.3.34.106.0  USE64BITINT DYNAMIC_ARCH NO_AFFINITY Haswell MAX_THREADS=24",
+    "pc file directory": "D:/a/numpy-release/numpy-release/.openblas"
+  },
+  "simd": {
+    "baseline": [
+      "X86_V2"
+    ],
+    "found": [
+      "X86_V3"
+    ]
+  },
+  "numpyNoticeIncludesOpenblasAndLapack": true,
+  "scope": "OpenBLAS DLL identity and supplier notices; not every NumPy runtime component",
+  "reviewPending": [
+    "Complete Microsoft-runtime and application-wide redistribution review."
+  ]
+}

@@ -6,13 +6,11 @@ assertion that all installed native files are shipped by PyInstaller.
 import ctypes
 import argparse
 import hashlib
-import importlib.metadata as metadata
 import json
 from pathlib import Path
 import sys
 
 import av  # Initializes bundled DLL dependencies before querying exports.
-import soundfile
 
 root = Path(__file__).resolve().parents[1]
 parser = argparse.ArgumentParser(description=__doc__)
@@ -52,8 +50,7 @@ if args.require_clean_ffmpeg:
     if any('libx264' in item['path'].lower() or 'libx265' in item['path'].lower() for item in records):
         raise SystemExit('Unexpected GPL video-codec DLL in the speech environment')
 inventory = {'scope': 'Installed project environment, before frozen-package filtering',
-    'pyavVersion': av.__version__, 'soundfileVersion': metadata.version('soundfile'),
-    'libsndfileVersion': soundfile.__libsndfile_version__, 'ffmpegReports': reports,
+    'pyavVersion': av.__version__, 'ffmpegReports': reports,
     'cleanFfmpegGatePassed': args.require_clean_ffmpeg,
     'nativeBinaries': records,
     'reviewPending': ['Map actual packaged binary hashes to this inventory',

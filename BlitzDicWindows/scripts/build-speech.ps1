@@ -1,4 +1,4 @@
-param([string]$OutputDirectory = 'dist/speech', [string]$WorkDirectory = 'build/speech')
+﻿param([string]$OutputDirectory = 'dist/speech', [string]$WorkDirectory = 'build/speech')
 $ErrorActionPreference = 'Stop'
 $originalBuildPath = $env:PATH
 Push-Location (Split-Path $PSScriptRoot -Parent)
@@ -17,6 +17,6 @@ try {
         if (Test-Path -LiteralPath $full) { throw "Ausgabe existiert bereits: $full. Bitte einen neuen Build-Ordner wählen." }
     }
     New-Item -ItemType Directory -Path $WorkDirectory | Out-Null
-    & .runtime/venv/Scripts/python.exe -m PyInstaller --name blitzdic-speech --onedir --distpath $OutputDirectory --workpath (Join-Path $WorkDirectory 'work') --specpath $WorkDirectory --add-data ((Join-Path $projectRoot 'speech/uia_target.ps1') + ';.') --collect-all sherpa_onnx --collect-all onnx_asr --collect-all faster_whisper --collect-all ctranslate2 --collect-all onnxruntime --collect-all tokenizers --collect-all av --collect-all soundfile --copy-metadata huggingface-hub speech/worker.py
+    & .runtime/venv/Scripts/python.exe -m PyInstaller --name blitzdic-speech --onedir --distpath $OutputDirectory --workpath (Join-Path $WorkDirectory 'work') --specpath $WorkDirectory --add-data ((Join-Path $projectRoot 'speech/uia_target.ps1') + ';.') --collect-all sherpa_onnx --collect-all onnx_asr --collect-all faster_whisper --additional-hooks-dir speech/build-hooks --collect-all onnxruntime --collect-all tokenizers --collect-all av --copy-metadata huggingface-hub speech/worker.py
     if ($LASTEXITCODE -ne 0) { throw 'Sprach-Laufzeit konnte nicht gebaut werden.' }
 } finally { $env:PATH = $originalBuildPath; Pop-Location }

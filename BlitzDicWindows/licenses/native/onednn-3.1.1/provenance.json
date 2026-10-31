@@ -1,0 +1,12 @@
+{
+  "component": "oneDNN",
+  "version": "3.1.1",
+  "sourceCommit": "64f6bcbcbab628e96f33a62c3e975f8535a7bde4",
+  "declaredBy": "https://github.com/OpenNMT/CTranslate2/blob/v4.8.4/python/tools/prepare_build_environment_windows.sh",
+  "sources": [
+    {"file": "LICENSE.txt", "url": "https://github.com/uxlfoundation/oneDNN/blob/64f6bcbcbab628e96f33a62c3e975f8535a7bde4/LICENSE"},
+    {"file": "THIRD-PARTY-PROGRAMS.txt", "url": "https://github.com/uxlfoundation/oneDNN/blob/64f6bcbcbab628e96f33a62c3e975f8535a7bde4/THIRD-PARTY-PROGRAMS"}
+  ],
+  "scope": "Notices from the oneDNN version declared by the pinned CTranslate2 Windows build recipe.",
+  "reviewPending": ["Independently verify the exact statically linked composition of the installed CTranslate2 DLL, including oneMKL."]
+}

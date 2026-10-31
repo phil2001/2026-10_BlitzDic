@@ -34,14 +34,17 @@ Ein zusätzliches lokales LLM hat eigene RAM-/VRAM-Anforderungen.
 
 ## Installation und Bedienung
 
-Der aktuelle lokal gebaute Entwicklungsinstaller ist **0.3.5** unter
-`BlitzDicWindows/dist/windows-2026-10-31T21-40-57-389Z-96185a/BlitzDic Setup 0.3.5.exe`
-(etwa 1,14 GB). Er ist nicht signiert. Eine fertige Release-Datei ist noch nicht
+Der aktuelle lokal gebaute Entwicklungsinstaller ist **0.3.6** unter
+`BlitzDicWindows/dist/windows-2026-10-31T21-58-11-448Z-bf0b4d/BlitzDic Setup 0.3.6.exe`
+(etwa 1,15 GB). Er ist nicht signiert. Eine fertige Release-Datei ist noch nicht
 veröffentlicht. Ältere Testbuilds bitte durch diesen Stand ersetzen: 0.3.4 behebt
 die UTF-8-Verarbeitung von Umlauten und Emoji in der gebündelten Sprachlaufzeit.
 0.3.5 enthält den eigenen FFmpeg-Build mit zugehörigem Quellcode und einen
 Lizenzordner-Zugriff unter **Einstellungen**. Die Prüfung anderer nativer
 Bibliotheken ist noch nicht abgeschlossen.
+0.3.6 benötigt kein libsndfile/SoundFile mehr und lässt die ungenutzte
+cuDNN-Bibliothek im CPU-Paket weg. Unterstützte Audioimporte und beide Sprachmodelle
+bleiben verfügbar; die gepackte Meeting-Sprechertranskription wurde geprüft.
 
 1. Nach Installation BlitzDic öffnen und unter **Modelle** Whisper oder Parakeet wählen.
 2. Unter **Diktat** Mikrofon und Schreibmodus wählen, Aufnahme starten und beenden.
