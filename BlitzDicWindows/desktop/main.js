@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, dialog, clipboard, session } from 'electron';
+import { app, BrowserWindow, ipcMain, dialog, clipboard, session, globalShortcut } from 'electron';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
 import { mkdir, writeFile } from 'node:fs/promises';
@@ -16,8 +16,8 @@ app.setName('BlitzDic');
 if (!app.requestSingleInstanceLock()) app.quit();
 else app.whenReady().then(async () => {
   store = new PrivateStore(join(app.getPath('userData'), 'private'), await windowsCrypto());
-  const pythonPath = join(root, '.runtime/venv/Scripts/python.exe');
-  const modelRoot = join(root, 'models');
+  const pythonPath = app.isPackaged ? join(process.resourcesPath, 'speech-runtime/blitzdic-speech.exe') : join(root, '.runtime/venv/Scripts/python.exe');
+  const modelRoot = app.isPackaged ? join(process.resourcesPath, 'models') : join(root, 'models');
   flow = new Dictation({ store, modelRoot, pythonPath });
   window = new BrowserWindow({ width: 1200, height: 820, minWidth: 760, minHeight: 620, title: 'BlitzDic',
     webPreferences: { preload: join(root, 'desktop/preload.cjs'), contextIsolation: true, nodeIntegration: false, sandbox: true } });
@@ -30,12 +30,32 @@ else app.whenReady().then(async () => {
     if (event.sender !== window.webContents || event.senderFrame !== window.webContents.mainFrame || event.senderFrame.url !== uiURL) throw new Error('Unzulässiger Aufruf.');
     return fn(...args);
   });
-  handle('load', async () => ({ settings: await store.settings(), history: await store.history(), providers, speechPresets }));
-  handle('settings', settings => store.saveSettings(settings));
+  handle('load', async () => ({ settings: await store.settings(), history: await store.history(), providers, speechPresets, modelsBundled: app.isPackaged }));
+  function registerShortcuts(settings) {
+    globalShortcut.unregisterAll();
+    const failed = [];
+    for (const [mode, shortcut] of Object.entries(settings.shortcuts || {})) {
+      try {
+        if (!globalShortcut.register(shortcut, () => window.webContents.send('shortcut', mode))) failed.push(shortcut);
+      } catch { failed.push(shortcut); }
+    }
+    return failed;
+  }
+  handle('settings', async settings => {
+    await store.saveSettings(settings);
+    const failed = registerShortcuts(settings);
+    if (failed.length) throw new Error(`Einstellungen gespeichert, aber Tastenkürzel nicht verfügbar: ${failed.join(', ')}`);
+    return settings;
+  });
   handle('models', config => listModels(config));
+  handle('model-directory', async () => {
+    const choice = await dialog.showOpenDialog(window, { properties: ['openDirectory'], title: 'Lokalen Sprachmodell-Ordner auswählen' });
+    return choice.canceled ? null : choice.filePaths[0];
+  });
   handle('connection', config => testConnection(config));
   handle('download', async preset => {
     if (!speechPresets.some(p => p.id === preset)) throw new Error('Unbekanntes Modell.');
+    if (app.isPackaged) return { installed: true, bundled: true };
     return runSpeech({ action: 'download', preset, modelDirectory: join(modelRoot, preset) }, { pythonPath, timeoutMs: 3600000 });
   });
   handle('import', async mode => {
@@ -53,6 +73,9 @@ else app.whenReady().then(async () => {
   handle('history-clear', () => store.clearHistory());
   flow.on('state', state => { if (!window.isDestroyed()) window.webContents.send('state', state); });
   await window.loadURL(uiURL);
+  const failed = registerShortcuts(await store.settings());
+  if (failed.length) window.webContents.send('shortcut-error', failed.join(', '));
 }).catch(error => { dialog.showErrorBox('BlitzDic konnte nicht starten', error.message); app.quit(); });
 app.on('second-instance', () => { window?.show(); window?.focus(); });
 app.on('window-all-closed', () => { flow?.cancel(); app.quit(); });
+app.on('will-quit', () => globalShortcut.unregisterAll());

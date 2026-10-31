@@ -43,6 +43,26 @@ has been produced yet. This checklist defines the remaining deliverable.
 
 ## Porting evidence
 
+### Windows progress, 2026-10-31
+
+The first development installer with both speech models has been built:
+`BlitzDicWindows/dist/windows-bundled/BlitzDic Setup 0.1.0.exe` (1,095,378,134
+bytes). It is not the finished release. Its unpacked packaged app was tested
+through Electron/Playwright with both bundled models: file selection -> local
+recognition -> visible transcript, without separately installing model files
+in the user profile. Both tests passed with no observed JavaScript errors.
+Installer execution on a clean Windows installation is still unverified.
+
+The current source additionally provides manual selection of compatible local
+Whisper/CTranslate2 or Parakeet TDT ONNX INT8 folders. That addition postdates
+the above installer and needs inclusion in the next build.
+
+Outstanding release gates include real microphone capture, safe insertion into
+other apps, tray workflow, configurable shortcut UI, meeting features, complete
+third-party license distribution, visual polish, real LLM server tests and
+publication to the target repository. Do not mark this goal complete from the
+existence of the installer alone.
+
 Upstream uses SwiftUI/AppKit, Core ML, WhisperKit, Apple Intelligence, Keychain,
 Accessibility and Sparkle. These require Windows replacements. Shared mode
 prompts and provider behavior are available in `BlitztextShared/AI` and should

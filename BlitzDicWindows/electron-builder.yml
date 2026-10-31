@@ -1,0 +1,33 @@
+appId: de.phil2001.blitzdic
+productName: BlitzDic
+directories:
+  output: dist/windows
+files:
+  - desktop/**/*
+  - src/**/*
+  - ui/**/*
+  - package.json
+  - SYSTEMVORAUSSETZUNGEN.md
+extraResources:
+  - from: models/whisper
+    to: models/whisper
+    filter: ["**/*", "!.cache/**/*"]
+  - from: models/parakeet-ultra
+    to: models/parakeet-ultra
+    filter: ["**/*", "!.cache/**/*"]
+  - from: dist/speech/blitzdic-speech
+    to: speech-runtime
+  - from: ../LICENSE
+    to: licenses/BlitzDic-LICENSE.txt
+  - from: speech/README.md
+    to: licenses/Speech-model-attribution.md
+win:
+  target:
+    - target: nsis
+      arch: [x64]
+  signAndEditExecutable: false
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  deleteAppDataOnUninstall: false

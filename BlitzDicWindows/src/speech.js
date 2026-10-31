@@ -1,5 +1,6 @@
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import { basename } from 'node:path';
 
 export const speechPresets = Object.freeze([
   { id: 'whisper', label: 'OpenAI Whisper', engine: 'whisper', repository: 'Systran/faster-whisper-small' },
@@ -10,7 +11,8 @@ export function runSpeech(request, { pythonPath, signal, timeoutMs = 600000, onP
   if (!pythonPath) throw new Error('Die lokale Spracherkennungs-Laufzeit fehlt.');
   signal?.throwIfAborted();
   return new Promise((resolve, reject) => {
-    const child = spawn(pythonPath, [fileURLToPath(new URL('../speech/worker.py', import.meta.url))], {
+    const args = basename(pythonPath).toLowerCase() === 'blitzdic-speech.exe' ? [] : [fileURLToPath(new URL('../speech/worker.py', import.meta.url))];
+    const child = spawn(pythonPath, args, {
       windowsHide: true, shell: false, stdio: ['pipe', 'pipe', 'pipe'],
       env: { ...process.env, PYTHONIOENCODING: 'utf-8', HF_HUB_DISABLE_TELEMETRY: '1' },
     });
