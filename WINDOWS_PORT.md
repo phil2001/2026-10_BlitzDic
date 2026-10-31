@@ -283,3 +283,19 @@ visually inspected. This is not a repeat of installer execution or a clean-VM te
 the earlier 0.1.0 actual-installation evidence remains separate. Final visual parity,
 meeting summary quality, diarization/live notes, native licenses and other remaining
 acceptance items still prevent marking the full goal complete.
+
+## Offline transcript persistence, 2026-10-31
+
+The Meeting page now provides an explicit local transcript-save action that does
+not read provider settings or call a model. It stores the exact original text and
+an empty summary in the encrypted meeting collection. The summary-and-save action
+remains independent. Saving raw text clears the visible previous summary to avoid
+presenting it as a summary of a different edited transcript.
+
+31 automated tests passed (two optional ASR tests skipped). The service test fails
+if model generation is invoked or provider settings are requested by the offline
+path. The extended Electron meeting UI test verified zero HTTP requests on raw
+save, persisted exact text and empty summary, then separately generated a mock
+summary and reloaded the stored entry. The 0.2.0 installer predates this addition;
+a future package must include it. This closes an offline usability gap without
+claiming summary-quality, diarization or live-streaming completion.

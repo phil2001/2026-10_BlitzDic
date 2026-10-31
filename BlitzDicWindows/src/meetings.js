@@ -17,11 +17,22 @@ Wenn eine Kategorie nicht belegt ist, schreibe „Nicht genannt“. Keine Begrü
 export class Meetings {
   constructor({store, generate = complete}) { this.store = store; this.generate = generate; this.active = null; }
   cancel() { this.active?.abort(); }
-  async summarize(transcript, title = '') {
-    if (this.active) throw new Error('Eine Meeting-Zusammenfassung läuft bereits.');
+  validate(transcript, title) {
     if (typeof transcript !== 'string' || !transcript.trim() || transcript.length > 500000)
       throw new Error('Bitte ein Transkript mit höchstens 500.000 Zeichen eingeben.');
     if (typeof title !== 'string' || title.length > 200) throw new Error('Meeting-Titel ist zu lang.');
+  }
+  async saveTranscript(transcript, title = '') {
+    if (this.active) throw new Error('Eine Meeting-Zusammenfassung läuft bereits.');
+    this.validate(transcript, title);
+    const entry = {id: randomUUID(), createdAt: new Date().toISOString(), title: title.trim() || 'Meeting',
+      transcript, summary: ''};
+    await this.store.appendMeeting(entry);
+    return entry;
+  }
+  async summarize(transcript, title = '') {
+    if (this.active) throw new Error('Eine Meeting-Zusammenfassung läuft bereits.');
+    this.validate(transcript, title);
     const controller = new AbortController(); this.active = controller;
     const {signal} = controller;
     try {

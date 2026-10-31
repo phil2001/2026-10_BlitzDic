@@ -66,6 +66,15 @@ async function refreshMeetings() {
   }
 }
 $('meeting-from-dictation').onclick = () => { $('meeting-transcript').value = lastOriginal || $('result').value; };
+$('meeting-save').onclick = attempt(async () => {
+  if (meetingBusy || busy || meetingRecorder.state !== 'idle') return;
+  meetingBusy = true; $('meeting-save').disabled = true;
+  try {
+    await api['meeting-save']($('meeting-transcript').value, $('meeting-title').value);
+    $('meeting-result').value = '';
+    await refreshMeetings(); status('Transkript lokal verschlüsselt gespeichert.');
+  } finally {meetingBusy = false; $('meeting-save').disabled = false;}
+});
 $('meeting-summarize').onclick = attempt(async () => {
   if (meetingBusy || busy || recorder.state !== 'idle' || meetingRecorder.state !== 'idle') return;
   meetingBusy = true;

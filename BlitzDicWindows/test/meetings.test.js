@@ -2,6 +2,20 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Meetings } from '../src/meetings.js';
 
+test('transcripts save offline without loading provider settings or invoking a model', async () => {
+  const saved = [];
+  const service = new Meetings({store: {appendMeeting: async entry => saved.push(entry)},
+    generate: async () => {throw new Error('Must not invoke a model');}});
+  const original = 'Unverändertes Transkript mit 2500 Euro.\nZweite Zeile.';
+  const entry = await service.saveTranscript(original, ' Offline ');
+  assert.equal(saved.length, 1); assert.equal(entry.transcript, original);
+  assert.equal(entry.title, 'Offline'); assert.equal(entry.summary, '');
+  assert.equal(entry.provider, undefined);
+  await assert.rejects(service.saveTranscript(' '), /Transkript/);
+  await assert.rejects(service.saveTranscript('Text', 'A'.repeat(201)), /Titel/);
+  assert.equal(saved.length, 1);
+});
+
 test('meeting summaries preserve original source, snapshot provider and merge all chunks', async () => {
   const saved = [], requests = [], config = {provider: 'ollama', model: 'local'};
   const service = new Meetings({store: {settings: async () => ({provider: config}), appendMeeting: async entry => saved.push(entry)},

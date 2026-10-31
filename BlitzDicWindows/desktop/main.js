@@ -130,6 +130,7 @@ else app.whenReady().then(async () => {
   });
   handle('cancel', () => { captureEpoch++; insertionTarget = null; insertionRequested = false; insertionProblem = ''; flow.cancel(); meetings.cancel(); });
   handle('meetings', () => store.meetings());
+  handle('meeting-save', (transcript, title) => meetings.saveTranscript(transcript, title));
   handle('meeting-audio', async bytes => {
     if (meetings.active) throw new Error('Eine Meeting-Zusammenfassung läuft bereits.');
     if (!(bytes instanceof ArrayBuffer) || bytes.byteLength > 350 * 1024 * 1024) throw new Error('Ungültige Aufnahme.');

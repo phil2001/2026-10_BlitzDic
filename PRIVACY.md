@@ -35,3 +35,7 @@ FÃ¼r Online-Meetings ist unter **Audioquelle** auch **Systemaudio** oder
 Audioausgabe. Die Streams werden lokal verarbeitet. Die technische Bildschirm-
 Freigabe liefert zusÃ¤tzlich einen Videostream, der weder gespeichert noch an
 Anbieter gesendet wird. Bei Abbruch werden alle Aufnahmespuren beendet.
+
+Meeting-Transkripte lassen sich auch ohne Zusammenfassung ausdrücklich lokal
+speichern. Dieser Schritt ruft keinen Modellanbieter auf. Die Speicherung erfolgt
+in derselben verschlüsselten Meeting-Sammlung, unabhängig vom Diktatverlauf.
