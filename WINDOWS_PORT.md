@@ -408,3 +408,20 @@ Python dependencies and no missing package notices. Native source/build revision
 corresponding-source and remaining binary notice work are still open. Existing
 0.3.0 installer predates these inventory files; a later build will include them.
 No application behavior was changed or re-tested unnecessarily in this step.
+
+## DLL search-path build correction, 2026-10-31
+
+PyInstaller build-origin matching was extended to all 182 native files using its
+actual Analysis-00.toc input paths and source hashes. This exposed 48 files sourced
+from an unrelated external tool-runtime PATH directory in the existing 0.3.0 build.
+The speech build now isolates PATH to project Python and Windows, restoring it on
+exit. A strict build gate rejects unmatched hashes or external-tool origins.
+
+A fresh isolated speech worker built successfully with 138 native files, zero
+unresolved hash matches and zero external origins. Both ASR models and the speaker
+pipeline passed using the frozen executable; the final repeat also stripped the
+test worker's runtime PATH to Windows-only paths. The strict gate rejected the old
+0.3.0 package as expected. This corrects build reproducibility/provenance and reduces
+unnecessary runtime files. The existing full installer still needs rebuilding with
+this worker; it has not been silently replaced. Native license/source review remains
+open independently. No user directories or existing builds were deleted.

@@ -33,3 +33,22 @@ origins/notices remain part of review. Electron is excluded from this speech map
 Future builds include both inventories and these license texts. A complete
 corresponding-source/notice bundle and remaining binary origins are still open;
 this work must not be described as completed redistribution compliance.
+
+## Build-origin verification and isolated DLL resolution
+
+The map now reads PyInstaller Analysis-00.toc using literal parsing and verifies
+actual source hashes for every shipped DLL/PYD. The 0.3.0 package's 182 files all
+had traceable origins, but 48 came from an unrelated external developer-tool
+runtime directory inherited through PATH. They were not Windows-directory origins.
+This revealed a reproducibility/provenance defect rather than establishing any
+malicious modification; all compared source/binary hashes matched.
+
+build-speech.ps1 now temporarily limits PATH to the project Python installation
+and Windows directories, restoring the caller's PATH afterwards. Build packaging
+requires no unresolved hashes and no external-tool origins. The old package is
+correctly rejected by this strict check. A new isolated worker contains 138 native
+files: 111 package files and 27 Python/Windows runtime files, all source hashes
+matched, zero external origins. verify-frozen-speech.mjs passed actual Whisper,
+Parakeet and speaker diarization with its own PATH also limited to Windows.
+The full installer must be rebuilt to replace the older worker. Complete native
+license/source attribution remains a separate outstanding task.

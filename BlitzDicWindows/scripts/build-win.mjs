@@ -26,7 +26,8 @@ await run(`${process.env.SystemRoot}/System32/WindowsPowerShell/v1.0/powershell.
   ['-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-File', 'scripts/build-speech.ps1',
     '-OutputDirectory', speechOutput, '-WorkDirectory', `${buildRoot}/speech`]);
 await run(python, ['scripts/map-native-package.py', `${buildRoot}/licenses/native-binaries.json`,
-  `${speechOutput}/blitzdic-speech`, `${buildRoot}/licenses/native-package-map.json`]);
+  `${speechOutput}/blitzdic-speech`, `${buildRoot}/licenses/native-package-map.json`,
+  `${buildRoot}/speech/work/blitzdic-speech/Analysis-00.toc`, '--require-trusted-origins']);
 let config = await readFile(resolve(root, 'electron-builder.yml'), 'utf8');
 config = config.replace('output: dist/windows', `output: ${output}`)
   .replace('from: dist/speech/blitzdic-speech', `from: ${speechOutput}/blitzdic-speech`)

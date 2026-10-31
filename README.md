@@ -125,3 +125,8 @@ Zusatzmodellen. Sprecherkennungen gelten je Aufnahmeabschnitt und werden als Tei
 des Transkripts gespeichert. Die automatische Sprecherzahl ist noch unzuverlaessig;
 eine bekannte Zahl kann von 1 bis 20 vorgegeben werden. Auf dem Ziel-PC sind keine
 separaten Modell- oder Python-Installationen erforderlich.
+
+Der verlinkte Entwicklungsinstaller 0.3.0 entstand vor der inzwischen korrigierten
+DLL-Suchpfad-Isolation des Builds. Die bereinigte Sprachlaufzeit wurde separat mit
+beiden Modellen und Sprecherzuordnung geprüft; der vollständige Installer muss
+mit dieser Build-Korrektur neu erstellt werden.
