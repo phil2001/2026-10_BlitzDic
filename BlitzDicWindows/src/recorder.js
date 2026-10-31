@@ -47,6 +47,10 @@ export class Recorder {
       };
       session.node.connect(session.mute); session.mute.connect(session.context.destination);
       await session.context.resume();
+      // WASAPI loopback can report live before its first usable audio arrives.
+      // Keep the UI in "starting" during this device warm-up so the first words
+      // are not spoken against a prematurely displayed recording indicator.
+      if (source !== 'microphone') await new Promise(resolve => setTimeout(resolve, 1500));
       if (!current()) { this.release(session); return false; }
       this.state = 'recording'; return true;
     } catch (error) {

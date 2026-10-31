@@ -224,3 +224,20 @@ The test now checks processing completion before checking the expected sentence,
 and diagnostics report transcript length rather than logging captured contents.
 No meeting/history entries were intentionally saved by these tests. This evidence
 does not establish Parakeet system-audio quality; it remains a release gate.
+
+## Loopback startup correction, 2026-10-31
+
+scripts/compare-system-audio.mjs captures one in-memory loopback WAV and passes
+identical bytes to both actual engines, logging only expected-phrase indicators.
+Without startup delay, Whisper recovered only the second expected phrase and
+Parakeet neither. With a 1.5-second loopback warm-up, both recovered both phrases.
+A separate synthetic-fixture check passed Parakeet at 22,050 and 48,000 Hz and at
+full, 0.1 and 0.01 amplitude, so those factors alone did not reproduce the failure.
+
+Recorder now retains its starting state for 1.5 seconds after AudioContext resume
+when system audio is involved. The final comparison removed the test-only delay
+and passed with both engines using this production warm-up. All 30 regression tests
+passed (two optional ASR tests skipped). This resolves the observed short-fixture
+failure on this workstation; it does not establish behavior on every audio device,
+long-form accuracy or combined-source quality. The installer needs rebuilding.
+No captured waveform or transcript was saved by the comparison script.
