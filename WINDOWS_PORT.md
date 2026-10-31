@@ -260,3 +260,26 @@ The script is an opt-in real-model quality gate, not part of deterministic unit 
 The temporarily loaded test model was unloaded and its server stopped afterwards,
 restoring their original unloaded/stopped state. No new model was downloaded.
 Further model-quality work is required before claiming reliable meeting summaries.
+
+## Current development package 0.2.0, 2026-10-31
+
+The updated unsigned NSIS installer was built successfully:
+BlitzDicWindows/dist/windows-2026-10-31T16-51-34-965Z-b5d89f/BlitzDic Setup 0.2.0.exe
+Size: 1,095,874,997 bytes. SHA-256:
+DB3A4C9E35A8A7EF9095617CA4A4146B3C4587DF8653FEC6EAAA91414F39A20B
+
+It includes the current meeting recording/system-audio/warm-up logic, summary page,
+program rules, both pinned models, frozen speech worker, UI Automation helper and
+all 34 collected package notices, including the three upstream supplements.
+Native-library source/license review remains open. A new original multi-resolution
+waveform icon and Windows product/version metadata are embedded; the executable
+reports BlitzDic 0.2.0.0. It remains unsigned.
+
+verify-installed.mjs was run against this build's unpacked packaged executable
+with a fresh profile. Both actual model import/transcription paths passed; the
+Meeting page's three input sources and program-rule UI were present, and the
+license inventory had no missing package notices. The rendered Meeting page was
+visually inspected. This is not a repeat of installer execution or a clean-VM test;
+the earlier 0.1.0 actual-installation evidence remains separate. Final visual parity,
+meeting summary quality, diarization/live notes, native licenses and other remaining
+acceptance items still prevent marking the full goal complete.

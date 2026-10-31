@@ -32,7 +32,7 @@ Ein zusätzliches lokales LLM hat eigene RAM-/VRAM-Anforderungen.
 ## Installation und Bedienung
 
 Der bisher lokal gebaute Entwicklungsinstaller liegt unter
-`BlitzDicWindows/dist/windows-2026-10-31T16-22-46-818Z-038b2c/BlitzDic Setup 0.1.0.exe` und ist etwa
+`BlitzDicWindows/dist/windows-2026-10-31T16-51-34-965Z-b5d89f/BlitzDic Setup 0.2.0.exe` und ist etwa
 1,10 GB groß. Er ist nicht signiert und enthält die aktuelle Diktat- und Einfügelaufzeit. Eine fertige Release-Datei ist noch nicht veröffentlicht.
 
 1. Nach Installation BlitzDic öffnen und unter **Modelle** Whisper oder Parakeet wählen.
@@ -96,27 +96,25 @@ Namen und eigene Oberfläche. Dieses Repository entwickelt ausschließlich Windo
 MIT-Lizenz: [LICENSE](LICENSE). Modelle und Abhängigkeiten haben eigene
 [Lizenzhinweise](THIRD_PARTY_NOTICES.md).
 
-Programmregeln lassen sich unter Einstellungen hinterlegen, zum Beispiel
-`winword.exe => clean` oder `chrome.exe => calm`. Erlaubte Modi sind `verbatim`,
-`clean`, `calm` und `emoji`. Sie gelten beim Start über Strg+Umschalt+1 (bzw.
-das konfigurierte Wortgenau-Kürzel). Die anderen Modus-Kürzel bleiben ausdrücklich
-wählbar. Regeln werden zusammen mit den Einstellungen verschlüsselt gespeichert.
+## Programmregeln und Meetings
 
-Unter **Meetings** kannst du ein Transkript eingeben oder das letzte ursprüngliche
-Diktat übernehmen. Die Zusammenfassung verwendet den unter **Verbindungen**
-gewählten LLM-Anbieter. Original und Ergebnis werden verschlüsselt gespeichert.
-KI-Zusammenfassungen vor Verwendung prüfen. Live-Meetingaufnahme, Systemaudio und
-Sprecherzuordnung sind noch offen; der bisherige Installer enthält diese neue Seite
-noch nicht.
+Unter Einstellungen lassen sich Regeln wie `winword.exe => clean` und
+`chrome.exe => calm` speichern. Erlaubte Modi: `verbatim`, `clean`, `calm`,
+`emoji`. Regeln gelten für das Wortgenau-Kürzel; andere Modus-Kürzel behalten
+ihre ausdrückliche Auswahl.
 
-Im Meeting-Bereich lassen sich Mikrofonabschnitte bis zu 30 Minuten aufnehmen.
-Nach dem Beenden transkribiert das ausgewählte lokale Sprachmodell den Abschnitt
-und hängt ihn an das Transkript an. Die Mikrofonwahl erfolgt unter Diktat.
-Die Zusammenfassung wird separat gestartet; zuvor ist das Meeting-Transkript nur
-im geöffneten Fenster vorhanden. Systemaudio und Sprecherzuordnung fehlen noch.
+Unter Meetings kannst du vorhandene Transkripte eingeben, das letzte Diktat
+übernehmen oder Audio aufnehmen. Quellen: Mikrofon, gesamte Windows-Audioausgabe
+oder beides. Die Mikrofonwahl erfolgt unter Diktat. Nach dem Beenden wird jeder
+Abschnitt lokal erkannt und ans Transkript angehängt. Maximal 30 Minuten pro
+Abschnitt. Systemaudio benötigt eine kurze Anlaufzeit, bevor die Aufnahme als
+bereit angezeigt wird.
 
-Meeting-Aufnahmen unterstützen inzwischen auch Systemaudio und die Kombination
-mit dem Mikrofon. Windows-Systemaudio umfasst die gesamte Audioausgabe.
-Ein echter Loopback-Test mit Testton war erfolgreich; gemischte Sprachqualität
-und lange Aufnahmen müssen noch geprüft werden. Der aktuelle Installer enthält
-diese jüngsten Änderungen noch nicht.
+„Zusammenfassen und speichern“ sendet das Transkript an den unter Verbindungen
+gewählten LLM-Endpunkt und speichert Original und Zusammenfassung verschlüsselt.
+Zuvor bleibt das Meeting-Transkript nur im geöffneten Fenster. Kleine Modelle
+können Aufgaben und offene Fragen falsch zuordnen; Ergebnisse müssen geprüft
+werden. Ein tatsächlicher Test mit Qwen 2.5 Coder 3B hat solche Fehler gezeigt.
+
+Version 0.2.0 enthält diese Funktionen. Sprecherzuordnung, Live-Notizen und
+Langaufnahmequalität sind noch nicht abschließend umgesetzt beziehungsweise geprüft.

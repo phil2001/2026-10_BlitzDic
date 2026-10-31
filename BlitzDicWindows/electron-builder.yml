@@ -25,7 +25,8 @@ win:
   target:
     - target: nsis
       arch: [x64]
-  signAndEditExecutable: false
+  icon: assets/blitzdic.ico
+  signExecutable: false
 nsis:
   oneClick: false
   perMachine: false
