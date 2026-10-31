@@ -209,3 +209,18 @@ same test then passed. 30 regression tests also passed before that permission fi
 API reference: https://www.electronjs.org/docs/latest/api/desktop-capturer
 The current installer predates this change and must be rebuilt. Long recordings,
 combined microphone/loopback speech quality and diarization remain open.
+
+## System-audio speech validation, 2026-10-31
+
+The meeting-audio test now supports microphone, system or combined capture using
+BLITZDIC_TEST_AUDIO_SOURCE, and an optional BLITZDIC_TEST_PRESET to isolate an
+engine. In system mode it does not enable fake media devices: the known speech
+fixture plays through Windows output and must return via actual loopback.
+Whisper passed this full path. Parakeet completed local transcription but returned
+a different sentence; a second isolated Parakeet attempt reproduced the mismatch.
+The cause is not yet established (capture timing, concurrent output, or recognition
+behavior need investigation). Mixed-source speech validation remains unperformed.
+The test now checks processing completion before checking the expected sentence,
+and diagnostics report transcript length rather than logging captured contents.
+No meeting/history entries were intentionally saved by these tests. This evidence
+does not establish Parakeet system-audio quality; it remains a release gate.

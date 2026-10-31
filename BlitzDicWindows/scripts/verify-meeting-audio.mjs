@@ -1,27 +1,57 @@
 import { _electron as electron } from 'playwright';
 import { resolve } from 'node:path';
 import assert from 'node:assert/strict';
+import {readFile} from 'node:fs/promises';
 const root = resolve(import.meta.dirname, '..');
 const env = {...process.env}; delete env.ELECTRON_RUN_AS_NODE;
+const source = process.env.BLITZDIC_TEST_AUDIO_SOURCE || 'microphone';
+assert.ok(['microphone', 'system', 'both'].includes(source));
+const fixture = source === 'microphone' ? null : (await readFile(`${root}/.runtime/test-speech.wav`)).toString('base64');
 const app = await electron.launch({args: [root, `--user-data-dir=${root}/.runtime/meeting-audio-${Date.now()}`,
-  '--use-fake-device-for-media-stream', '--use-fake-ui-for-media-stream',
-  `--use-file-for-fake-audio-capture=${root}/.runtime/test-speech.wav`], env});
+  ...(source === 'system' ? [] : ['--use-fake-device-for-media-stream', '--use-fake-ui-for-media-stream',
+  `--use-file-for-fake-audio-capture=${root}/.runtime/test-speech.wav`])], env});
 try {
   const page = await app.firstWindow(); await page.waitForSelector('#provider option', {state: 'attached'});
   await page.locator('nav button[data-page="meetings"]').click();
-  for (const preset of ['whisper', 'parakeet-ultra']) {
+  await page.locator('#meeting-source').selectOption(source);
+  const presets = process.env.BLITZDIC_TEST_PRESET ? [process.env.BLITZDIC_TEST_PRESET] : ['whisper', 'parakeet-ultra'];
+  for (const preset of presets) {
+    assert.ok(['whisper', 'parakeet-ultra'].includes(preset));
     await page.evaluate(async preset => {
       const {settings} = await window.blitz.load(); settings.speech.preset = preset;
       await window.blitz.settings(settings); document.querySelector('#meeting-transcript').value = '';
     }, preset);
     await page.locator('#meeting-record').click();
     await page.waitForFunction(() => document.querySelector('#meeting-record').textContent.startsWith('Aufnahme beenden'));
-    await new Promise(resolve => setTimeout(resolve, 6200));
+    if (fixture) {
+      // Play the known sentence through the real Windows output, not directly
+      // into the recorder. The capture must obtain it through loopback.
+      await page.evaluate(async base64 => {
+        const context = new AudioContext();
+        try {
+          const data = Uint8Array.from(atob(base64), char => char.charCodeAt(0));
+          const buffer = await context.decodeAudioData(data.buffer);
+          const player = context.createBufferSource(); player.buffer = buffer;
+          const gain = context.createGain(); gain.gain.value = 0.5;
+          player.connect(gain); gain.connect(context.destination);
+          await context.resume();
+          await new Promise(resolve => {player.onended = resolve; player.start();});
+          await new Promise(resolve => setTimeout(resolve, 500));
+        } finally {await context.close();}
+      }, fixture);
+    } else await new Promise(resolve => setTimeout(resolve, 6200));
     await page.locator('#meeting-record').click();
-    await page.waitForFunction(() => document.querySelector('#meeting-transcript').value.includes('local speech recognition test'), {}, {timeout: 60000});
+    await page.waitForFunction(() => document.querySelector('#status').textContent.startsWith('Meeting lokal transkribiert.'), {}, {timeout: 60000});
+    assert.ok(/local speech recognition test/.test(await page.locator('#meeting-transcript').inputValue()),
+      'Der erwartete Testsatz wurde nicht erkannt. Audioquelle und Umgebungswiedergabe prüfen.');
     assert.equal((await page.evaluate(() => window.blitz.load())).history.length, 0);
     assert.equal((await page.evaluate(() => window.blitz.meetings())).length, 0);
     assert.equal(await page.locator('#meeting-result').inputValue(), '');
-    console.log(`PASS: meeting microphone -> ${preset} -> transcript, no automatic summary or persistent history`);
+    console.log(`PASS: meeting ${source} -> ${preset} -> transcript, no automatic summary or persistent history`);
   }
+} catch (error) {
+  const page = await app.firstWindow();
+  console.error('Meeting status:', await page.locator('#status').textContent());
+  console.error('Meeting transcript length:', (await page.locator('#meeting-transcript').inputValue()).length);
+  throw error;
 } finally { await app.close(); }
