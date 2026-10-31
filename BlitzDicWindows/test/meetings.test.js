@@ -44,3 +44,30 @@ test('cancelled or failed meeting generation cannot persist partial summaries', 
   await assert.rejects(service.summarize('Source'), /offline/);
   assert.equal(saved.length, 0); assert.equal(service.active, null);
 });
+
+test('large meetings merge within bounded requests and retain every source chunk', async () => {
+  const source = Array.from({length: 7}, (_, index) => `TOPIC_${index} ` + 'A'.repeat(11991) + '🌍\n').join('') + 'FINAL_DECISION';
+  const chunks = [], inputs = [], saved = [];
+  const service = new Meetings({store: {settings: async () => ({provider: {}}), appendMeeting: async entry => saved.push(entry)},
+    generate: async (_config, prompt, text) => {
+      inputs.push(text);
+      if (!prompt.includes('Teilprotokollen')) chunks.push(text);
+      const facts = [...new Set(text.match(/TOPIC_\d|FINAL_DECISION/g) || [])];
+      return ('Summary: ' + facts.join(' ')).padEnd(5000, ' ');
+    }});
+  const entry = await service.summarize(source);
+  assert.equal(chunks.join(''), source);
+  assert.ok(chunks.every(chunk => !/[\uD800-\uDBFF]$/.test(chunk) && !/^[\uDC00-\uDFFF]/.test(chunk)));
+  assert.ok(inputs.every(text => text.length <= 12000));
+  assert.equal(entry.transcript, source); assert.equal(saved.length, 1);
+  for (let index = 0; index < 7; index++) assert.ok(entry.summary.includes(`TOPIC_${index}`));
+  assert.ok(entry.summary.includes('FINAL_DECISION'));
+});
+
+test('oversized model output is rejected without truncation, merge calls or saving', async () => {
+  let calls = 0, saves = 0;
+  const service = new Meetings({store: {settings: async () => ({provider: {}}), appendMeeting: async () => saves++},
+    generate: async () => {calls++; return 'X'.repeat(5501);}});
+  await assert.rejects(service.summarize('Source'.repeat(4000)), /5500/);
+  assert.equal(calls, 1); assert.equal(saves, 0); assert.equal(service.active, null);
+});

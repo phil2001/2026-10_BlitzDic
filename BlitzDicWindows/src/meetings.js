@@ -12,7 +12,22 @@ Füge keine Alternativangebote, Bewertungsfragen oder sonstigen Diskussionspunkt
 „Offen bleibt, ob ...“ gehört ausschließlich unter Offene Fragen. Daraus entsteht keine Aufgabe für den Sprecher.
 Aufgaben erfordern eine ausdrückliche Zusage oder Zuweisung. Das bloße Nennen eines Themas reicht nicht.
 Gliedere in: Themen, Entscheidungen, Aufgaben (mit Zuständigkeit und Termin nur falls genannt), Offene Fragen.
-Wenn eine Kategorie nicht belegt ist, schreibe „Nicht genannt“. Keine Begrüßung oder Signatur.`;
+Wenn eine Kategorie nicht belegt ist, schreibe „Nicht genannt“. Keine Begrüßung oder Signatur.
+Antworte kompakt mit höchstens 5500 Zeichen. Bewahre die belegten Aufgaben, Entscheidungen und offenen Fragen.`;
+
+function* sourceChunks(text) {
+  for (let start = 0; start < text.length;) {
+    let end = Math.min(start + 12000, text.length);
+    if (end < text.length) {
+      const boundary = Math.max(text.lastIndexOf('\n', end - 1), text.lastIndexOf(' ', end - 1));
+      if (boundary >= end - 1000) end = boundary + 1;
+      // Keep UTF-16 surrogate pairs intact when no natural boundary is available.
+      const code = text.charCodeAt(end - 1);
+      if (code >= 0xD800 && code <= 0xDBFF) end--;
+    }
+    yield text.slice(start, end); start = end;
+  }
+}
 
 export class Meetings {
   constructor({store, generate = complete}) { this.store = store; this.generate = generate; this.active = null; }
@@ -38,17 +53,31 @@ export class Meetings {
     try {
       const config = structuredClone((await this.store.settings()).provider);
       signal.throwIfAborted();
-      const parts = [];
+      let parts = [];
+      const generate = async (prompt, text) => {
+        signal.throwIfAborted();
+        const value = await this.generate(config, prompt, text, {signal});
+        signal.throwIfAborted();
+        if (typeof value !== 'string' || !value.trim()) throw new Error('Das Modell hat keine Zusammenfassung geliefert.');
+        if (value.length > 5500)
+          throw new Error('Das Modell liefert eine zu lange Zusammenfassung (mehr als 5500 Zeichen). Ein anderes Modell oder kürzeres Transkript verwenden. Das Original bleibt erhalten.');
+        return value;
+      };
       // Bound each provider request; retain every source character, including
       // long individual paragraphs. Intermediate summaries are never saved as final.
-      for (let start = 0; start < transcript.length; start += 12000) {
-        signal.throwIfAborted();
-        const text = transcript.slice(start, start + 12000);
-        parts.push(await this.generate(config, instruction, text, {signal}));
+      for (const text of sourceChunks(transcript)) {
+        parts.push(await generate(instruction, text));
       }
-      const summary = parts.length === 1 ? parts[0] : await this.generate(config,
-        `${instruction}\nDie Quelle besteht aus Teilprotokollen desselben Meetings. Führe sie zusammen, entferne Wiederholungen und erhalte widersprüchliche Angaben als ungeklärt.`,
-        parts.map((part, index) => `Teil ${index + 1}:\n${part}`).join('\n\n'), {signal});
+      const mergeInstruction = `${instruction}\nDie Quelle besteht aus Teilprotokollen desselben Meetings. Führe sie zusammen, entferne Wiederholungen und erhalte widersprüchliche Angaben als ungeklärt.`;
+      while (parts.length > 1) {
+        const next = [];
+        for (let index = 0; index < parts.length; index += 2) {
+          next.push(index + 1 === parts.length ? parts[index] : await generate(mergeInstruction,
+            `Teil 1:\n${parts[index]}\n\nTeil 2:\n${parts[index + 1]}`));
+        }
+        parts = next;
+      }
+      const summary = parts[0];
       signal.throwIfAborted();
       if (typeof summary !== 'string' || !summary.trim()) throw new Error('Das Modell hat keine Zusammenfassung geliefert.');
       const entry = {id: randomUUID(), createdAt: new Date().toISOString(), title: title.trim() || 'Meeting',

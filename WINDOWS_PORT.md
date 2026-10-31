@@ -450,3 +450,24 @@ and the synthetic input fixture remain development-only tools.
 This supersedes the 0.3.0 build-origin issue. It is not actual 0.3.1 NSIS execution,
 a clean Windows VM, a physical microphone test, automatic speaker-count quality,
 or proof of every remaining upstream feature. The overall goal remains active.
+
+## Bounded hierarchical meeting summaries, 2026-10-31
+
+Meeting summaries now merge in pairs through a reducing hierarchy instead of
+concatenating every intermediate result into one potentially oversized request.
+Source requests are capped at 12,000 UTF-16 code units, preferring whitespace and
+preserving surrogate pairs. Intermediate output is limited to 5,500 code units,
+so paired merge inputs stay below 12,000; oversize or empty output is rejected
+without truncation or partial persistence. Each await rechecks cancellation.
+The original complete transcript remains unchanged. Character bounds do not prove
+fit within every provider's token context window or guarantee model factuality.
+
+34 Node tests passed (two optional ASR tests skipped), plus the Electron summary
+UI/local-mock/persistence workflow. The focused large-source test carries unique
+fact markers through all reduction levels, checks per-request limits and exact
+source reconstruction including Unicode, and confirms all markers reach the end.
+The oversized-output test verifies no further model calls or saves occur. The UI
+also clears the previous visible summary when starting a new generation, avoiding
+an old summary being displayed as the result of a newly edited transcript.
+These changes postdate installer 0.3.1 and require inclusion in a later package.
+Actual model semantic quality remains an independent open acceptance issue.

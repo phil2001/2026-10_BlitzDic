@@ -85,6 +85,7 @@ $('meeting-summarize').onclick = attempt(async () => {
   if (meetingBusy || busy || recorder.state !== 'idle' || meetingRecorder.state !== 'idle') return;
   meetingBusy = true;
   $('meeting-summarize').disabled = true; $('meeting-cancel').hidden = false;
+  $('meeting-result').value = '';
   status('Meeting wird zusammengefasst …');
   try {
     const entry = await api['meeting-summary']($('meeting-transcript').value, $('meeting-title').value);
