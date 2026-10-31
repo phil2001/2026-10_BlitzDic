@@ -6,6 +6,8 @@ The desktop process owns cancellation by terminating this worker.
 import json
 import os
 import sys
+import base64
+import io
 from pathlib import Path
 
 PRESETS = {
@@ -17,6 +19,9 @@ PRESETS = {
 
 
 def run(request):
+    if request['action'] in ('capture-target', 'insert-text'):
+        from windows_target import capture, insert
+        return {'target': capture()} if request['action'] == 'capture-target' else insert(request.get('target'), request.get('text'))
     root = Path(request["modelDirectory"]).resolve()
     preset = PRESETS.get(request.get("preset"))
     engine = preset["engine"] if preset else request.get("engine")
@@ -37,20 +42,21 @@ def run(request):
         raise ValueError("Unbekannte Aktion.")
     if not root.is_dir():
         raise ValueError("Bitte zuerst das Sprachmodell herunterladen.")
-    audio = Path(request["audioPath"]).resolve(strict=True)
+    audio = (io.BytesIO(base64.b64decode(request['audioBase64'], validate=True))
+             if request.get('audioBase64') else str(Path(request['audioPath']).resolve(strict=True)))
     # Never download models or transmit audio during recognition.
     os.environ["HF_HUB_OFFLINE"] = "1"
     if engine == "whisper":
         from faster_whisper import WhisperModel
         model = WhisperModel(str(root), device="cpu", compute_type="int8", local_files_only=True)
-        segments, info = model.transcribe(str(audio), language=request.get("language") or None,
+        segments, info = model.transcribe(audio, language=request.get("language") or None,
                                           vad_filter=True, condition_on_previous_text=False)
         items = [{"start": s.start, "end": s.end, "text": s.text.strip()} for s in segments]
         return {"text": " ".join(s["text"] for s in items), "segments": items, "language": info.language}
     import onnx_asr
     import soundfile as sf
     import numpy as np
-    waveform, rate = sf.read(str(audio), dtype="float32", always_2d=True)
+    waveform, rate = sf.read(audio, dtype="float32", always_2d=True)
     waveform = waveform.mean(axis=1)
     model = onnx_asr.load_model("nemo-parakeet-tdt-0.6b-v3", str(root),
                                 quantization="int8", providers=["CPUExecutionProvider"])

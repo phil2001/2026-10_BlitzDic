@@ -74,6 +74,17 @@ bundled installer. Electron reports the default shortcut registered; closing the
 window leaves it hidden and alive. A full physical-keypress and external-app
 insertion test remains outstanding.
 
+Microphone audio now travels as an in-memory WAV buffer to the speech worker;
+the current source no longer creates a recording file. Both Whisper (synthetic
+microphone UI flow) and Parakeet (in-memory worker call) were verified. Existing
+recordings from earlier development tests have not been removed. The previously
+built installer predates this change and must be rebuilt before delivery.
+
+Native Edit/RichEdit target capture and guarded insertion are implemented, but
+the attempted native-window test could not acquire foreground focus. Successful
+insertion is therefore not yet verified. Browser/Office UI Automation remains
+outstanding; unknown controls are rejected rather than guessed.
+
 Upstream uses SwiftUI/AppKit, Core ML, WhisperKit, Apple Intelligence, Keychain,
 Accessibility and Sparkle. These require Windows replacements. Shared mode
 prompts and provider behavior are available in `BlitztextShared/AI` and should

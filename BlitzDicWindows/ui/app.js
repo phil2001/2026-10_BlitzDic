@@ -1,7 +1,7 @@
 import { Recorder } from '../src/recorder.js';
 const $ = id => document.getElementById(id);
 const api = window.blitz;
-let settings, catalog, busy = false;
+let settings, catalog, busy = false, lastOriginal = '';
 const status = text => { $('status').textContent = text; };
 const attempt = fn => async () => { try { await fn(); } catch (error) { status(error.message); } };
 const recorder = new Recorder({ onLevel: level => { $('level').value = level; }, onLimit: () => $('record').click() });
@@ -14,6 +14,7 @@ function recordingUI(active) {
 async function save() { await api.settings(settings); }
 async function result(entry) {
   if (!entry) return;
+  lastOriginal = entry.original;
   $('result').value = entry.text; status(entry.warning || 'Transkription abgeschlossen.');
   await refreshHistory();
 }
@@ -82,6 +83,24 @@ api.onShortcutError(text => status(`Tastenkürzel nicht verfügbar: ${text}`));
 api.onCancelRecording(() => $('cancel').click());
 try {
   const data = await api.load(); settings = data.settings; catalog = data.providers;
+  const originalButton = document.createElement('button'); originalButton.textContent = 'Wortgenaues Transkript';
+  originalButton.onclick = () => { if (lastOriginal) { $('result').value = lastOriginal; status('Ursprüngliches Transkript wiederhergestellt.'); } };
+  $('copy').before(originalButton);
+  const replacementHeading = document.createElement('h3'); replacementHeading.textContent = 'Feste Ersetzungen';
+  const replacementLabel = document.createElement('label'); replacementLabel.textContent = 'Eine Regel pro Zeile: gesprochen => geschrieben';
+  const replacements = document.createElement('textarea');
+  replacements.value = (settings.modeSettings.replacements || []).map(r => `${r.spoken} => ${r.written}`).join('\n');
+  replacementLabel.append(replacements);
+  const replacementSave = document.createElement('button'); replacementSave.textContent = 'Ersetzungen speichern';
+  replacementSave.onclick = attempt(async () => {
+    const rules = replacements.value.split('\n').filter(line => line.trim()).map(line => {
+      const split = line.indexOf('=>');
+      if (split < 1 || !line.slice(0, split).trim()) throw new Error('Jede Ersetzung braucht das Format: gesprochen => geschrieben');
+      return { spoken: line.slice(0, split).trim(), written: line.slice(split + 2).trim() };
+    });
+    settings.modeSettings.replacements = rules; await save(); status('Ersetzungen gespeichert.');
+  });
+  $('settings').append(replacementHeading, replacementLabel, replacementSave);
   const shortcutsTitle = document.createElement('h3'); shortcutsTitle.textContent = 'Globale Tastenkürzel';
   const shortcutsNote = document.createElement('p'); shortcutsNote.textContent = 'Einmal drücken startet, erneut drücken beendet die Aufnahme. Beim Schließen bleibt BlitzDic im Infobereich aktiv.';
   $('settings').append(shortcutsTitle, shortcutsNote);

@@ -27,7 +27,8 @@ export class Dictation extends EventEmitter {
       if (!modelDirectory) throw new Error('Bitte einen lokalen Modellordner auswählen.');
       this.transition('transcribing');
       const recognized = await this.transcribe({ action: 'transcribe', preset: preset?.id,
-        engine: preset?.engine ?? settings.speech.engine, modelDirectory, audioPath,
+        engine: preset?.engine ?? settings.speech.engine, modelDirectory,
+        ...(Buffer.isBuffer(audioPath) ? { audioBase64: audioPath.toString('base64') } : { audioPath }),
         language: settings.speech.language,
       }, { pythonPath: this.pythonPath, signal });
       signal.throwIfAborted();

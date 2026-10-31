@@ -1,8 +1,6 @@
 import { app, BrowserWindow, ipcMain, dialog, clipboard, session, globalShortcut, Tray, Menu, nativeImage } from 'electron';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
-import { mkdir, writeFile } from 'node:fs/promises';
-import { randomUUID } from 'node:crypto';
 import { PrivateStore } from '../src/store.js';
 import { windowsCrypto } from '../src/windows-storage.js';
 import { Dictation } from '../src/dictation.js';
@@ -19,6 +17,17 @@ else app.whenReady().then(async () => {
   const pythonPath = app.isPackaged ? join(process.resourcesPath, 'speech-runtime/blitzdic-speech.exe') : join(root, '.runtime/venv/Scripts/python.exe');
   const modelRoot = app.isPackaged ? join(process.resourcesPath, 'models') : join(root, 'models');
   flow = new Dictation({ store, modelRoot, pythonPath });
+  let insertionTarget = null, recording = false, capturePending = false;
+  async function triggerShortcut(mode) {
+    if (flow.active || capturePending) return;
+    if (!recording) {
+      capturePending = true;
+      try { insertionTarget = (await runSpeech({ action: 'capture-target' }, { pythonPath, timeoutMs: 5000 })).target; }
+      catch { insertionTarget = null; }
+      finally { capturePending = false; }
+    }
+    window.webContents.send('shortcut', mode);
+  }
   window = new BrowserWindow({ width: 1200, height: 820, minWidth: 760, minHeight: 620, title: 'BlitzDic',
     webPreferences: { preload: join(root, 'desktop/preload.cjs'), contextIsolation: true, nodeIntegration: false, sandbox: true } });
   window.setMenuBarVisibility(false);
@@ -53,7 +62,7 @@ else app.whenReady().then(async () => {
     const failed = [];
     for (const [mode, shortcut] of Object.entries(settings.shortcuts || {})) {
       try {
-        if (!globalShortcut.register(shortcut, () => window.webContents.send('shortcut', mode))) failed.push(shortcut);
+        if (!globalShortcut.register(shortcut, () => triggerShortcut(mode))) failed.push(shortcut);
       } catch { failed.push(shortcut); }
     }
     return failed;
@@ -81,12 +90,18 @@ else app.whenReady().then(async () => {
   });
   handle('audio', async (bytes, mode) => {
     if (!(bytes instanceof ArrayBuffer) || bytes.byteLength > 350 * 1024 * 1024) throw new Error('Ungültige Aufnahme.');
-    const directory = join(app.getPath('userData'), 'recordings'); await mkdir(directory, { recursive: true });
-    const path = join(directory, `${randomUUID()}.wav`); await writeFile(path, Buffer.from(bytes));
-    return flow.process(path, mode);
+    const target = insertionTarget; insertionTarget = null;
+    const entry = await flow.process(Buffer.from(bytes), mode);
+    if (target && entry.text.trim()) {
+      try {
+        const insertion = await runSpeech({ action: 'insert-text', target, text: entry.text }, { pythonPath, timeoutMs: 5000 });
+        if (!insertion.inserted) entry.warning = [entry.warning, insertion.reason].filter(Boolean).join('\n');
+      } catch (error) { entry.warning = [entry.warning, `Automatisches Einfügen fehlgeschlagen: ${error.message}`].filter(Boolean).join('\n'); }
+    }
+    return entry;
   });
-  handle('cancel', () => flow.cancel());
-  handle('recording-state', active => { tray.setToolTip(active ? 'BlitzDic · Aufnahme läuft' : 'BlitzDic · Bereit'); });
+  handle('cancel', () => { insertionTarget = null; flow.cancel(); });
+  handle('recording-state', active => { recording = !!active; tray.setToolTip(active ? 'BlitzDic · Aufnahme läuft' : 'BlitzDic · Bereit'); });
   handle('copy', text => { if (typeof text !== 'string') throw new Error('Ungültiger Text.'); clipboard.writeText(text); });
   handle('history-clear', () => store.clearHistory());
   flow.on('state', state => { if (!window.isDestroyed()) window.webContents.send('state', state); });

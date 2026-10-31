@@ -46,3 +46,11 @@ test('disk failures do not lose the completed dictation', async () => {
   const result = await f.flow.process('audio.wav');
   assert.equal(result.text, 'Hallo Welt'); assert.match(result.warning, /disk full/);
 });
+test('microphone buffers are passed in memory without a recording file path', async () => {
+  let request;
+  const { flow } = fixture({ transcribe: async input => { request = input; return { text: 'audio' }; } });
+  const audio = Buffer.from('test-wave-data');
+  await flow.process(audio);
+  assert.equal(request.audioPath, undefined);
+  assert.deepEqual(Buffer.from(request.audioBase64, 'base64'), audio);
+});
