@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, dialog, clipboard, session, globalShortcut, Tray, Menu, nativeImage, desktopCapturer } from 'electron';
+import { app, BrowserWindow, ipcMain, dialog, clipboard, session, globalShortcut, Tray, Menu, nativeImage, desktopCapturer, shell } from 'electron';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
 import { access } from 'node:fs/promises';
@@ -82,7 +82,7 @@ else app.whenReady().then(async () => {
     if (event.sender !== window.webContents || event.senderFrame !== window.webContents.mainFrame || event.senderFrame.url !== uiURL) throw new Error('Unzulässiger Aufruf.');
     return fn(...args);
   });
-  handle('load', async () => ({ settings: await store.settings(), history: await store.history(), providers, speechPresets, modelsBundled: app.isPackaged,
+  handle('load', async () => ({ version: app.getVersion(), settings: await store.settings(), history: await store.history(), providers, speechPresets, modelsBundled: app.isPackaged,
     speakerModelsAvailable: await speakerModelsAvailable() }));
   function registerShortcuts(settings) {
     globalShortcut.unregisterAll();
@@ -154,6 +154,12 @@ else app.whenReady().then(async () => {
   handle('recording-state', active => { recording = !!active; tray.setToolTip(active ? 'BlitzDic · Aufnahme läuft' : 'BlitzDic · Bereit'); });
   handle('copy', text => { if (typeof text !== 'string') throw new Error('Ungültiger Text.'); clipboard.writeText(text); });
   handle('history-clear', () => store.clearHistory());
+  handle('licenses-open', async () => {
+    const directory = app.isPackaged ? join(process.resourcesPath, 'licenses') : join(root, 'licenses');
+    await access(directory);
+    if (await shell.openPath(directory)) throw new Error('Der Lizenzordner konnte nicht geöffnet werden.');
+    return true;
+  });
   flow.on('state', state => { if (!window.isDestroyed()) window.webContents.send('state', state); });
   await window.loadURL(uiURL);
   const failed = registerShortcuts(await store.settings());

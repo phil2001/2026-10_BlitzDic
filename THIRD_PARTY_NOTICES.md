@@ -32,6 +32,16 @@ BlitzDicWindows/licenses/upstream. Das Build-Inventar dokumentiert Herkunft und
 Prüfsummen. Eingebettete native Bibliotheken und deren Quellcodepflichten müssen
 vor der fertigen Veröffentlichung zusätzlich geprüft werden.
 
+Ab Windows 0.3.5 verwendet die Paketierung das private PyAV-Wheel
+16.0.1+blitzdic.1 mit FFmpeg 8.0.3, dynamisch unter LGPL v2.1 oder später,
+ohne aktivierte GPL-/Nonfree-Komponenten. Die ausführbaren PyAV-Codeabschnitte
+bleiben unverändert; DLL-Importnamen und Paketmetadaten sind angepasst.
+Der korrespondierende FFmpeg-Quellcode, Build-Skript, Konfiguration, Lizenztexte
+und Hash-Manifest sind im Paket unter den Python-Paket-Lizenzen enthalten.
+GCC-/CRT-/winpthread-Laufzeittexte liegen dort ebenfalls. Über Einstellungen
+lassen sich Lizenzen und Quellcode öffnen. Andere native Abhängigkeiten bleiben
+Gegenstand der laufenden Prüfung.
+
 ## Speaker auxiliary models in Windows 0.3
 
 The package now also includes pyannote segmentation-3.0 (CNRS, MIT) and

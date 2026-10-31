@@ -2,6 +2,7 @@ import { _electron as electron } from 'playwright';
 import { resolve, dirname } from 'node:path';
 import { access, readFile } from 'node:fs/promises';
 import assert from 'node:assert/strict';
+import {createHash} from 'node:crypto';
 const root = resolve(import.meta.dirname, '..');
 const executablePath = process.env.BLITZDIC_TEST_EXECUTABLE;
 if (!executablePath) throw new Error('BLITZDIC_TEST_EXECUTABLE muss auf die installierte BlitzDic.exe zeigen.');
@@ -12,6 +13,15 @@ for (const relative of ['models/whisper/model.bin', 'models/parakeet-ultra/encod
   await access(resolve(resources, relative));
 const inventory = JSON.parse(await readFile(resolve(resources, 'licenses/dependencies/inventory.json'), 'utf8'));
 assert.deepEqual(inventory.missingPackageNotices, []);
+const avPackage = inventory.packages.find(item => item.name === 'av');
+assert.equal(avPackage.version, '16.0.1+blitzdic.1');
+const ffmpegSource = resolve(resources, 'licenses/dependencies/python-packages', `av-${avPackage.version}`,
+  `av-${avPackage.version}.dist-info/licenses/blitzdic-ffmpeg/ffmpeg-8.0.3.tar.xz`);
+assert.equal(createHash('sha256').update(await readFile(ffmpegSource)).digest('hex'),
+  '6136812ea6d4e68bdba27e33c2a94382711cdf4f8602ffef056ff792bd6f9818');
+const nativeInventory = JSON.parse(await readFile(resolve(resources, 'licenses/dependencies/native-binaries.json'), 'utf8'));
+assert.equal(nativeInventory.cleanFfmpegGatePassed, true);
+assert.ok(nativeInventory.ffmpegReports.every(report => report.license === 'LGPL version 2.1 or later'));
 const nativeMap = JSON.parse(await readFile(resolve(resources, 'licenses/dependencies/native-package-map.json'), 'utf8'));
 assert.deepEqual(nativeMap.unresolvedBuildOrigins, []);
 assert.deepEqual(nativeMap.externalBuildOrigins, []);
@@ -31,6 +41,12 @@ try {
   await page.screenshot({path: `${root}/.runtime/packaged-meetings.png`});
   await page.locator('nav button[data-page="settings"]').click();
   await page.locator('#app-mode-rules').waitFor({state: 'visible'});
+  await app.evaluate(({shell}) => { shell.openPath = async path => { globalThis.blitzLicenseTestPath = path; return ''; }; });
+  assert.match(await page.locator('#app-version').textContent(), /LGPL v2.1/);
+  await page.locator('#licenses-open').click();
+  await page.waitForTimeout(100);
+  assert.equal(await app.evaluate(() => globalThis.blitzLicenseTestPath), resolve(resources, 'licenses'));
+  console.log('PASS: bundled corresponding FFmpeg source, clean runtime inventory and scoped license-folder button');
   await page.locator('nav button[data-page="dictation"]').click();
   await app.evaluate(({dialog}, file) => {
     dialog.showOpenDialog = async () => ({canceled: false, filePaths: [file]});

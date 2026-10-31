@@ -5,7 +5,7 @@ const root = resolve(import.meta.dirname, '..');
 const pythonPath = process.env.BLITZDIC_TEST_SPEECH_EXECUTABLE || `${root}/.runtime/venv/Scripts/python.exe`;
 const modelRoot = process.env.BLITZDIC_TEST_MODEL_ROOT || `${root}/models`;
 for (const extension of ['m4a', 'webm']) {
-  const audioPath = `${root}/.runtime/audio-format-fixtures/speech.${extension}`;
+  const audioPath = `${process.env.BLITZDIC_TEST_AUDIO_FORMAT_DIRECTORY || `${root}/.runtime/audio-format-fixtures`}/speech.${extension}`;
   for (const preset of ['whisper', 'parakeet-ultra']) {
     const result = await runSpeech({action: 'transcribe', preset, modelDirectory: `${modelRoot}/${preset}`, audioPath}, {pythonPath});
     assert.match(result.text, /local speech recognition test/i);

@@ -1,5 +1,29 @@
 # Native dependency review
 
+## Current clean FFmpeg build
+
+Windows 0.3.5 uses the private av 16.0.1+blitzdic.1 wheel with unmodified,
+signature-verified FFmpeg 8.0.3 source. GPL, nonfree, version3 and automatic
+external-library detection are disabled. Its seven FFmpeg DLLs report LGPL 2.1
+or later. The eighth DLL is the compiler's MIT-licensed winpthread TLS runtime.
+Corresponding FFmpeg source, build commands/configuration, compiler package
+versions, notices and binary/extension hashes are included with the wheel and
+copied into the installed license directory. See [BUILD_FFMPEG.md](BUILD_FFMPEG.md).
+
+The original PyAV extension machine code is unchanged; only DLL import names,
+PE checksums and package metadata are updated. New Windows builds reject the
+older vendor configuration. Other native libraries remain under review; this
+component replacement is not an application-wide compliance verdict.
+
+## Historical upstream wheel investigation
+
+The following reports describe the original upstream wheel and older packages.
+Its configure patch moves x264/x265 from the GPL list to the version3 list, so
+the DLL-reported LGPL string was not accepted as sufficient release evidence.
+The pinned vendor comparison in provenance/ establishes 32 identical executable
+section sets and 15 whole-file matches; repaired imports account for filename/
+binary differences. See its pinned source links and explicit review status.
+
 The scripts/native-inventory.py report records the installed Python environment's
 DLL/PYD SHA-256 fingerprints and queries seven actual FFmpeg DLL exports for their
 license/configuration reports. It also records PyAV, FFmpeg and libsndfile versions.

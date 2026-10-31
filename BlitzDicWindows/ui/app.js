@@ -165,6 +165,13 @@ api.onShortcutError(text => status(`Tastenkürzel nicht verfügbar: ${text}`));
 api.onCancelRecording(() => $('cancel').click());
 try {
   const data = await api.load(); settings = data.settings; catalog = data.providers;
+  const aboutTitle = document.createElement('h2'); aboutTitle.textContent = 'Über BlitzDic';
+  const aboutText = document.createElement('p'); aboutText.id = 'app-version';
+  aboutText.textContent = `Version ${data.version} · Windows 11. Diese App verwendet FFmpeg-Bibliotheken unter LGPL v2.1 oder später. Lizenztexte und der zugehörige FFmpeg-Quellcode sind im Windows-Paket enthalten.`;
+  const licensesButton = document.createElement('button'); licensesButton.id = 'licenses-open';
+  licensesButton.textContent = 'Lizenzen und Quellcode öffnen';
+  licensesButton.onclick = attempt(() => api['licenses-open']());
+  $('settings').append(aboutTitle, aboutText, licensesButton);
   speakerModelsAvailable = data.speakerModelsAvailable;
   $('meeting-speaker-count').replaceChildren(new Option('Automatisch (experimentell)', '-1'),
     ...Array.from({length: 20}, (_, index) => new Option(String(index + 1), String(index + 1))));

@@ -34,11 +34,14 @@ Ein zusätzliches lokales LLM hat eigene RAM-/VRAM-Anforderungen.
 
 ## Installation und Bedienung
 
-Der aktuelle lokal gebaute Entwicklungsinstaller ist **0.3.4** unter
-`BlitzDicWindows/dist/windows-2026-10-31T21-12-11-505Z-1fdc73/BlitzDic Setup 0.3.4.exe`
+Der aktuelle lokal gebaute Entwicklungsinstaller ist **0.3.5** unter
+`BlitzDicWindows/dist/windows-2026-10-31T21-40-57-389Z-96185a/BlitzDic Setup 0.3.5.exe`
 (etwa 1,14 GB). Er ist nicht signiert. Eine fertige Release-Datei ist noch nicht
 veröffentlicht. Ältere Testbuilds bitte durch diesen Stand ersetzen: 0.3.4 behebt
 die UTF-8-Verarbeitung von Umlauten und Emoji in der gebündelten Sprachlaufzeit.
+0.3.5 enthält den eigenen FFmpeg-Build mit zugehörigem Quellcode und einen
+Lizenzordner-Zugriff unter **Einstellungen**. Die Prüfung anderer nativer
+Bibliotheken ist noch nicht abgeschlossen.
 
 1. Nach Installation BlitzDic öffnen und unter **Modelle** Whisper oder Parakeet wählen.
 2. Unter **Diktat** Mikrofon und Schreibmodus wählen, Aufnahme starten und beenden.
@@ -91,6 +94,11 @@ npm.cmd ci
 node node_modules/electron/install.js
 ./scripts/setup-speech.ps1
 ```
+
+Die Entwicklungslaufzeit verwendet ein eigenes PyAV-Wheel mit sauberem FFmpeg-Build.
+Dieses muss vor `setup-speech.ps1` bereitstehen; Vorbereitung, Quellcode und
+Prüfsummen stehen unter [FFmpeg bauen](BlitzDicWindows/licenses/native/BUILD_FFMPEG.md).
+Das betrifft die Entwicklung. Der vollständige Windows-Installer enthält die Laufzeit.
 
 Modelle für Entwicklung und Paketierung bereitstellen:
 

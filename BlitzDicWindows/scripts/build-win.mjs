@@ -21,7 +21,7 @@ await mkdir(resolve(root, buildRoot), {recursive: true});
 console.log(`Build: ${id}\nInstaller output: ${output}`);
 await run(python, ['scripts/setup-diarization.py', '--verify-only']);
 await run(python, ['scripts/collect-licenses.py', `${buildRoot}/licenses`]);
-await run(python, ['scripts/native-inventory.py', `${buildRoot}/licenses/native-binaries.json`]);
+await run(python, ['scripts/native-inventory.py', `${buildRoot}/licenses/native-binaries.json`, '--require-clean-ffmpeg']);
 await run(`${process.env.SystemRoot}/System32/WindowsPowerShell/v1.0/powershell.exe`,
   ['-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-File', 'scripts/build-speech.ps1',
     '-OutputDirectory', speechOutput, '-WorkDirectory', `${buildRoot}/speech`]);

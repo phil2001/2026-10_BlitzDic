@@ -1,0 +1,344 @@
+{
+  "scope": "Installed av.libs from official av 16.0.1 Windows wheel, not the entire application",
+  "pyavVersion": "16.0.1",
+  "pyavCommit": "7687256d87f22f78cb75bb4aba94dc6e504c9983",
+  "pyavVendorConfig": "https://github.com/PyAV-Org/PyAV/blob/7687256d87f22f78cb75bb4aba94dc6e504c9983/scripts/ffmpeg-latest.json",
+  "vendorRelease": "8.0-2",
+  "vendorBuildCommit": "fab22bcb12748a05f86683ac632fdb96994d970e",
+  "vendorArchive": {
+    "url": "https://github.com/PyAV-Org/pyav-ffmpeg/releases/download/8.0-2/ffmpeg-win_amd64.tar.gz",
+    "sha256": "5c7bfb8c375fd8e908c06c57cab41666fd5d84af2f47b648760534bf49dc8df2"
+  },
+  "upstreamConfigurePatch": "https://github.com/PyAV-Org/pyav-ffmpeg/blob/fab22bcb12748a05f86683ac632fdb96994d970e/patches/ffmpeg.patch",
+  "interpretation": "All executable sections match. This does not assert whole-file equality after wheel repair.",
+  "releaseApproved": false,
+  "reviewRequired": [
+    "The upstream configure patch moves libx264/libx265 from the GPL list to the version3 list.",
+    "The LGPL string returned by the patched DLLs is not sufficient license evidence.",
+    "Replace with an unmodified-source build without GPL/nonfree dependencies and supply matching source/notices."
+  ],
+  "binaries": [
+    {
+      "file": "avcodec-62-0e5d10f45b1f7779d52f41b1cb11c018.dll",
+      "vendorFile": "avcodec-62.dll",
+      "vendorSha256": "8868384df686bbec17cef68310ed6b5f774384c25f5e2b06e2ae10ec78d80239",
+      "installedSha256": "273eb25aa4f81c9b60be7bab35cb83341c3acb2eb57e4c7973e3ed80a6039181",
+      "identicalBytes": false,
+      "executableSections": {
+        ".text": "ff6e622054a34074c14d8832a5fdf08bc8c65103c901790b9fd3f0c90570011c"
+      }
+    },
+    {
+      "file": "avdevice-62-6a083fbc7c2774f0ed607443d44f35ba.dll",
+      "vendorFile": "avdevice-62.dll",
+      "vendorSha256": "20bb09ed9f15874b1d2ea80e2376546a5e8e246210d80d3bed1804065898a436",
+      "installedSha256": "f6b1d2272d5e63dc98ac36047ecb07d2d333180a3c3968a6d74bd3bd23491e19",
+      "identicalBytes": false,
+      "executableSections": {
+        ".text": "f553ef3960fc9e691362bff48bec4dd3e8b77251a2aafc74d14aa8a1c74ddf7d"
+      }
+    },
+    {
+      "file": "avfilter-11-3c27319333c80da03690c986db8adec1.dll",
+      "vendorFile": "avfilter-11.dll",
+      "vendorSha256": "1938033ea4d8e37e2fe42eea5ac70cff1dddd9a5a108894d1593bf46f9450fd2",
+      "installedSha256": "445bd671c5a8c82cec89f30c3ca2649117ac7c202940e3a7023837465ed96d91",
+      "identicalBytes": false,
+      "executableSections": {
+        ".text": "5966d4a8bf61260326d8b7f0edc88ff5f524e6649180574d49d2f3608cbc4e24"
+      }
+    },
+    {
+      "file": "avformat-62-407dba287210475ea61d13af276e616a.dll",
+      "vendorFile": "avformat-62.dll",
+      "vendorSha256": "28cd1ccb152f6aa373498c808a5ec407a0bcc1ef4ba99bc8304e43e14c2f4e68",
+      "installedSha256": "bf9a63889b89903576a3e03aab0d5f4a529269ef8b22510e4f8e1635546cd744",
+      "identicalBytes": false,
+      "executableSections": {
+        ".text": "ef9e9086ba5a557575c231899e2afe5e357031f615f759527bfb8d22546acf46"
+      }
+    },
+    {
+      "file": "avutil-60-4a46c55818495f36528dd037c395c733.dll",
+      "vendorFile": "avutil-60.dll",
+      "vendorSha256": "60bcea51f4a52198596fa136b3889a6864ecaf845754875c1466efa8deebcac8",
+      "installedSha256": "b45db5bc7efd21840fc60023dfda7faf025beb0d0d566201b33b83d5e16a9d2b",
+      "identicalBytes": false,
+      "executableSections": {
+        ".text": "2e82dca5637832e2cb0f6bb54cc09205f89c68cfbf00bc2c1a3558b5f18c594e"
+      }
+    },
+    {
+      "file": "libaom-ff6891b94cecc5968480531b3dccc8d5.dll",
+      "vendorFile": "libaom.dll",
+      "vendorSha256": "3787051124d0a5e0e23ad24e200ffd762ae66b02a82b00807f2a26e60e2b0f70",
+      "installedSha256": "093d2e8f61db0785a5082d6acb081be01690f3f914101b9b2134c3c961c5ee51",
+      "identicalBytes": false,
+      "executableSections": {
+        ".text": "8ad78fda0e2d3cee6718b0a5ae398211f21855646a625041f0004c81f45b0836"
+      }
+    },
+    {
+      "file": "libdav1d-51b9f1556841dcb5a57beacf6dcd1595.dll",
+      "vendorFile": "libdav1d.dll",
+      "vendorSha256": "51b9f1556841dcb5a57beacf6dcd1595a383a442f977adea603aa32a2d18cc78",
+      "installedSha256": "51b9f1556841dcb5a57beacf6dcd1595a383a442f977adea603aa32a2d18cc78",
+      "identicalBytes": true,
+      "executableSections": {
+        ".text": "f368ff1a43bdec6dca8bfce9fb68d082e423e491cbece449011286702003e300"
+      }
+    },
+    {
+      "file": "libgcc_s_seh-1-2a627f0e950d831468ca56f6918ee6b2.dll",
+      "vendorFile": "libgcc_s_seh-1.dll",
+      "vendorSha256": "0362944d0c7344e4952e09b0f67f5e7523b5bf5de785741eef9fc01a518375bc",
+      "installedSha256": "e0132d4e8ed12ba651a92312c0d54413c80dffa4477950a4b18b9023dbd8d34f",
+      "identicalBytes": false,
+      "executableSections": {
+        ".text": "c49f777f0bd88ebaa7f8a9aa9adbe28075cf36ddd0de48b8e627efa776d98f54"
+      }
+    },
+    {
+      "file": "libgmp-10-131edc8db6e092035cfdddafefe84ca7.dll",
+      "vendorFile": "libgmp-10.dll",
+      "vendorSha256": "131edc8db6e092035cfdddafefe84ca7d7ce63db31d1d5e60f2ebee98e3c43b6",
+      "installedSha256": "131edc8db6e092035cfdddafefe84ca7d7ce63db31d1d5e60f2ebee98e3c43b6",
+      "identicalBytes": true,
+      "executableSections": {
+        ".text": "031ea3d43ace546fdd574b9be2553b0f08af0c74b77e45ffc526d5a8e51c1171"
+      }
+    },
+    {
+      "file": "libiconv-2-60c678f49f8bf5c96e4522845408d795.dll",
+      "vendorFile": "libiconv-2.dll",
+      "vendorSha256": "60c678f49f8bf5c96e4522845408d795eff4fc79b30c3fb2e03c433cbed20405",
+      "installedSha256": "60c678f49f8bf5c96e4522845408d795eff4fc79b30c3fb2e03c433cbed20405",
+      "identicalBytes": true,
+      "executableSections": {
+        ".text": "152bf8104d2c853ced12e023433fdad9cad31398697d8a87d5a101d650ca3c8a"
+      }
+    },
+    {
+      "file": "libmp3lame-0-7b58a586180b0da69d581418c03934ab.dll",
+      "vendorFile": "libmp3lame-0.dll",
+      "vendorSha256": "7b58a586180b0da69d581418c03934ab7801d64feb40311ad57cdedbdc54efee",
+      "installedSha256": "7b58a586180b0da69d581418c03934ab7801d64feb40311ad57cdedbdc54efee",
+      "identicalBytes": true,
+      "executableSections": {
+        ".text": "af7b2f5c44b7dc8cd5bb9ec46b6a737277f064650cc70112ecaa560ad481bdad"
+      }
+    },
+    {
+      "file": "libogg-0-fe7e666b50bb2ca359edd022765d4d82.dll",
+      "vendorFile": "libogg-0.dll",
+      "vendorSha256": "fe7e666b50bb2ca359edd022765d4d828afd2ab8fde89f029701b063f017561c",
+      "installedSha256": "fe7e666b50bb2ca359edd022765d4d828afd2ab8fde89f029701b063f017561c",
+      "identicalBytes": true,
+      "executableSections": {
+        ".text": "8982e732eced90c6dfeab7526596cb5d1b68e28a906fbfc9a2e9677fab2fce3e"
+      }
+    },
+    {
+      "file": "libopencore-amrnb-0-affa633fc615dfc51dcdbda6f66c9f7f.dll",
+      "vendorFile": "libopencore-amrnb-0.dll",
+      "vendorSha256": "affa633fc615dfc51dcdbda6f66c9f7fb47b80dcd3fc3c1d3934ff40be6e6782",
+      "installedSha256": "affa633fc615dfc51dcdbda6f66c9f7fb47b80dcd3fc3c1d3934ff40be6e6782",
+      "identicalBytes": true,
+      "executableSections": {
+        ".text": "e63d37aeb4d0bab13bb4aa9305f6131c530760033dd935c3bf1d4dbc5ed40105"
+      }
+    },
+    {
+      "file": "libopencore-amrwb-0-45aabdc5d64384f6953da9b5e43a5203.dll",
+      "vendorFile": "libopencore-amrwb-0.dll",
+      "vendorSha256": "45aabdc5d64384f6953da9b5e43a5203ee3952bdcdb7a4a23b22ddf55957ef64",
+      "installedSha256": "45aabdc5d64384f6953da9b5e43a5203ee3952bdcdb7a4a23b22ddf55957ef64",
+      "identicalBytes": true,
+      "executableSections": {
+        ".text": "ec9099f882f6c1d34bc2cc9a388163a56678098d7c0fd2a44bcd1ddbbeb64b4e"
+      }
+    },
+    {
+      "file": "libopenh264-7-a28855b065d509c784905ccac2f8795e.dll",
+      "vendorFile": "libopenh264-7.dll",
+      "vendorSha256": "ce8f13b7ffafcac70efad16f8e3b71badf2137df540d7293a8ab3e441ec14474",
+      "installedSha256": "26df4ec6fbbcc54d1376c368818c91283446cfbcdef08c712175c4e81930e232",
+      "identicalBytes": false,
+      "executableSections": {
+        ".text": "95c29a8d1f3531cdf4073194e69520cf46192bf496f9a2959eaee8cbe9174d39",
+        ".rodata": "6db7a6f12abc15e6db683ffc34a9e5ea5802c6d964cb038853d8852c5dcd431d"
+      }
+    },
+    {
+      "file": "libopus-0-7b214f1ef05bbddd97a06d50c4c475c4.dll",
+      "vendorFile": "libopus-0.dll",
+      "vendorSha256": "7b214f1ef05bbddd97a06d50c4c475c44fe5130e8164567a07a97705bfc03816",
+      "installedSha256": "7b214f1ef05bbddd97a06d50c4c475c44fe5130e8164567a07a97705bfc03816",
+      "identicalBytes": true,
+      "executableSections": {
+        ".text": "16a3704b0fc5eae58fd1a60672e53793462ba4b0c9f00d748e5ca9376ec124b7"
+      }
+    },
+    {
+      "file": "libsharpyuv-617cdf58d1e7a3f6166b0522905c9c91.dll",
+      "vendorFile": "libsharpyuv.dll",
+      "vendorSha256": "617cdf58d1e7a3f6166b0522905c9c913c3f8a14dd55121e6fe44e4ef28b2ac5",
+      "installedSha256": "617cdf58d1e7a3f6166b0522905c9c913c3f8a14dd55121e6fe44e4ef28b2ac5",
+      "identicalBytes": true,
+      "executableSections": {
+        ".text": "38a421b5685126c07a38b947d7493d05eb83ac0a61d277ccbd837a80bd5085d6"
+      }
+    },
+    {
+      "file": "libspeex-1-eb1452e6457b86d368a396e6a22e97e0.dll",
+      "vendorFile": "libspeex-1.dll",
+      "vendorSha256": "eb1452e6457b86d368a396e6a22e97e0995ebed757e308f0cdcfe618bb71064c",
+      "installedSha256": "eb1452e6457b86d368a396e6a22e97e0995ebed757e308f0cdcfe618bb71064c",
+      "identicalBytes": true,
+      "executableSections": {
+        ".text": "e4f33e6357bb1d79a56b0d70b499237b49122cd63732695930caa22063a66cb6"
+      }
+    },
+    {
+      "file": "libstdc++-6-327705944359b51c39090f5437337383.dll",
+      "vendorFile": "libstdc++-6.dll",
+      "vendorSha256": "d0cb35d07cb90702200b660cae251f96d09de1c3304666454cc1f2366b7f6d6f",
+      "installedSha256": "b45b49167bbb81b741828d9e5fd94172571eced40ee08a5ac152003b07dfad92",
+      "identicalBytes": false,
+      "executableSections": {
+        ".text": "70a8d7c207216cfecef28665ffede51abe135223bb8b085f272417593d6ff2c6"
+      }
+    },
+    {
+      "file": "libSvtAv1Enc-b3321ebbb409cdba6f80e04879fa02ce.dll",
+      "vendorFile": "libsvtav1enc.dll",
+      "vendorSha256": "b3321ebbb409cdba6f80e04879fa02ce0575f59905470c0b1ddefc75e1f83d8d",
+      "installedSha256": "b3321ebbb409cdba6f80e04879fa02ce0575f59905470c0b1ddefc75e1f83d8d",
+      "identicalBytes": true,
+      "executableSections": {
+        ".text": "406ccbab06ea16230b066072d50cede437e9b625fc207a92fbf47426bb168ad6",
+        ".rodata": "4ed8bed9c585429f3cfed9c1507e1644131c41fe3b601d8564227a70c01e1897"
+      }
+    },
+    {
+      "file": "libtwolame-0-94e54544e90421ca877542fdde20071a.dll",
+      "vendorFile": "libtwolame-0.dll",
+      "vendorSha256": "94e54544e90421ca877542fdde20071a35745f150192237098a7fbf28431547c",
+      "installedSha256": "94e54544e90421ca877542fdde20071a35745f150192237098a7fbf28431547c",
+      "identicalBytes": true,
+      "executableSections": {
+        ".text": "d708a1f2e6cf3bfd3f072729b111e93872ff617a46ea361c21f08d5d7f91a9fd"
+      }
+    },
+    {
+      "file": "libvorbis-0-9f8e53f2007c797f8da9c211955cfc71.dll",
+      "vendorFile": "libvorbis-0.dll",
+      "vendorSha256": "fd11f6f53747619957b93a8c7d0c491993fab47b36d5c64597ad12612d048741",
+      "installedSha256": "b7f2de614dff4ea45283fdebda724827decb38e28ecf98459707666d40991d10",
+      "identicalBytes": false,
+      "executableSections": {
+        ".text": "60a0dfdda7d780d22662bfdae846acad9db0b4eeeace574715eb7251eb9851c2"
+      }
+    },
+    {
+      "file": "libvorbisenc-2-ffa4b4c659a31d546be381656f040a78.dll",
+      "vendorFile": "libvorbisenc-2.dll",
+      "vendorSha256": "a71e87e809fdaee1c1d19309f584d38651893fc360c8722684e8d81f63625597",
+      "installedSha256": "dc7be007279c0e3f776d64b36ae751b9549cf51f5ac9fd2b716321a3aacff9e4",
+      "identicalBytes": false,
+      "executableSections": {
+        ".text": "b2774c9847036d1238447e8e4259028c67673c2ae63ca6f1326d001d9714c36b"
+      }
+    },
+    {
+      "file": "libvpx-1-da6fca51fbce21159980b1dadcd86dfb.dll",
+      "vendorFile": "libvpx-1.dll",
+      "vendorSha256": "ee81d4cac748c1be9f67e29321c77947b69336a90599f84d435c9192ae257b20",
+      "installedSha256": "3d2473345f35e84949f5bf2116de75f9e5b04fb44c9055fbb57be39293be2fbb",
+      "identicalBytes": false,
+      "executableSections": {
+        ".text": "22bca9f56eda12656faf3587d35827ea6a5ba5c8d1488ea8261f0c8e9b444b98"
+      }
+    },
+    {
+      "file": "libwebp-ef9945e008bb2b4713ea1e50d9500b42.dll",
+      "vendorFile": "libwebp.dll",
+      "vendorSha256": "a062f812fabe57dbc04479ac7cde5e3e4dece9e8c0c9e439838120acafe4f8ac",
+      "installedSha256": "d6da56f880ff7014ad3065c90c30a6c38a3aa97b1862abc729212fec503ae780",
+      "identicalBytes": false,
+      "executableSections": {
+        ".text": "ece64ec4ab1a8024404d16179c6d4b7a25cd1105f3e2d9c905359cbb1d9ee61e"
+      }
+    },
+    {
+      "file": "libwebpmux-af63085d15621f8a1d30c7060cdde1ce.dll",
+      "vendorFile": "libwebpmux.dll",
+      "vendorSha256": "1592a3b81f73a4fdf6a6eb430b3bfbcbd9b98da76a6fae8d350c4aa1422478fe",
+      "installedSha256": "7102411c45d6049812abdbb143da9517c00c778394680c8f26646ca7697801c4",
+      "identicalBytes": false,
+      "executableSections": {
+        ".text": "9cc69d9a17943b37d149a46008832b0a78ee892dbdf48e5fe47bccebfdf6ae3f"
+      }
+    },
+    {
+      "file": "libwinpthread-1-7f19735fedb461389ef94ff4057cef96.dll",
+      "vendorFile": "libwinpthread-1.dll",
+      "vendorSha256": "7f19735fedb461389ef94ff4057cef96ee838638feeab2bf330e1bd09d935b87",
+      "installedSha256": "7f19735fedb461389ef94ff4057cef96ee838638feeab2bf330e1bd09d935b87",
+      "identicalBytes": true,
+      "executableSections": {
+        ".text": "f9154a82499341f7eb12a520ccab55613fbffca7b3a4341cea4094836541434c"
+      }
+    },
+    {
+      "file": "libx264-165-11ed6a233462fe268a51e595a3873920.dll",
+      "vendorFile": "libx264-165.dll",
+      "vendorSha256": "11ed6a233462fe268a51e595a3873920dc5251796374d58795e8e5d1510a4c64",
+      "installedSha256": "11ed6a233462fe268a51e595a3873920dc5251796374d58795e8e5d1510a4c64",
+      "identicalBytes": true,
+      "executableSections": {
+        ".text": "a46d43545d64c95f237a34ee5a520be5e8b657db563fc88e10bf1672fc08c5b3"
+      }
+    },
+    {
+      "file": "libx265-eee5149aa3046c760a0c36ff7d4dbca9.dll",
+      "vendorFile": "libx265.dll",
+      "vendorSha256": "1627e10d577e08fac572cdd33462d54e0d873e5700f7b3e38f89772a14cf96b8",
+      "installedSha256": "9e88cffd16e7ee556486bb6526b648edffed3540c50e931c6ad1dc6f24d60486",
+      "identicalBytes": false,
+      "executableSections": {
+        ".text": "0714f95bfca53e6dbe515b7c51141c895cc85928b1f2bfd9b33061521d9f783f"
+      }
+    },
+    {
+      "file": "swresample-6-95685c119c5e1fde7518042944eb4285.dll",
+      "vendorFile": "swresample-6.dll",
+      "vendorSha256": "39a8ecd64a34d2c196e819fbf391ff377995be652ef5ad706c9c57c1828a69a2",
+      "installedSha256": "37345974c27965667d25b860d98746658247013bfd06a174f6453fb6ee19a14e",
+      "identicalBytes": false,
+      "executableSections": {
+        ".text": "62cc656d6a875a3eecc8040b5334b3c3657aa1571a86030eb1a2831b3c67dfa1"
+      }
+    },
+    {
+      "file": "swscale-9-76399095ca2629e278fc77396bd50d84.dll",
+      "vendorFile": "swscale-9.dll",
+      "vendorSha256": "9722bf113f65ef7b3c7b336951c96f121a641cf53a9d63eda75247c28b7d50de",
+      "installedSha256": "6c3eea9d3e2a82be43522de48310ebabb4ef80c430c2fcb781344a3068be062e",
+      "identicalBytes": false,
+      "executableSections": {
+        ".text": "5ed71fd1887418f0aa1a6ff9f1436db5b3a4c4b0ae9f666ecdcdbc89e9e7239e"
+      }
+    },
+    {
+      "file": "zlib1-93beefd91b990aa9e40396de359419b6.dll",
+      "vendorFile": "zlib1.dll",
+      "vendorSha256": "93beefd91b990aa9e40396de359419b66f0038c47b0a846edc4dd5226e5ead55",
+      "installedSha256": "93beefd91b990aa9e40396de359419b66f0038c47b0a846edc4dd5226e5ead55",
+      "identicalBytes": true,
+      "executableSections": {
+        ".text": "d23f0ed6e4e3bfbd9e60834005098ace577e2ca16f0a52fe499e1c0cf406c4e0"
+      }
+    }
+  ]
+}

@@ -4,6 +4,7 @@ This is evidence for dependency review, not a legal-compliance verdict or an
 assertion that all installed native files are shipped by PyInstaller.
 """
 import ctypes
+import argparse
 import hashlib
 import importlib.metadata as metadata
 import json
@@ -14,7 +15,11 @@ import av  # Initializes bundled DLL dependencies before querying exports.
 import soundfile
 
 root = Path(__file__).resolve().parents[1]
-target = Path(sys.argv[1]).resolve()
+parser = argparse.ArgumentParser(description=__doc__)
+parser.add_argument('output', type=Path)
+parser.add_argument('--require-clean-ffmpeg', action='store_true')
+args = parser.parse_args()
+target = args.output.resolve()
 if not target.is_relative_to(root / 'build'):
     raise SystemExit('Inventory output must stay in the project build directory')
 if target.exists(): raise SystemExit('Inventory output exists; choose a new path')
@@ -37,9 +42,19 @@ for prefix in ['avcodec', 'avformat', 'avutil', 'avdevice', 'avfilter', 'swresam
         library.av_version_info.restype = ctypes.c_char_p
         report['ffmpegVersion'] = library.av_version_info().decode('utf-8')
     reports.append(report)
+if args.require_clean_ffmpeg:
+    for report in reports:
+        flags = report['configuration'].split()
+        if (report['license'] != 'LGPL version 2.1 or later' or
+                not all(flag in flags for flag in ('--disable-gpl', '--disable-nonfree', '--disable-version3', '--disable-autodetect')) or
+                any(flag in flags for flag in ('--enable-gpl', '--enable-nonfree', '--enable-libx264', '--enable-libx265'))):
+            raise SystemExit('Unreviewed FFmpeg vendor build. Prepare the clean wheel using licenses/native/BUILD_FFMPEG.md before packaging.')
+    if any('libx264' in item['path'].lower() or 'libx265' in item['path'].lower() for item in records):
+        raise SystemExit('Unexpected GPL video-codec DLL in the speech environment')
 inventory = {'scope': 'Installed project environment, before frozen-package filtering',
     'pyavVersion': av.__version__, 'soundfileVersion': metadata.version('soundfile'),
     'libsndfileVersion': soundfile.__libsndfile_version__, 'ffmpegReports': reports,
+    'cleanFfmpegGatePassed': args.require_clean_ffmpeg,
     'nativeBinaries': records,
     'reviewPending': ['Map actual packaged binary hashes to this inventory',
         'Establish exact upstream build/source revision for each native component',

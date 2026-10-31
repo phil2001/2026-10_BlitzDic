@@ -623,3 +623,50 @@ Installer: BlitzDicWindows/dist/windows-2026-10-31T21-12-11-505Z-1fdc73/BlitzDic
 1,140,229,047 bytes; SHA-256
 1A8440669E4E1471293FAC60091B455C979A7C7F81130DFB1D506D3810D013D5.
 It remains unsigned and was not installed on a clean Windows VM.
+
+## Clean FFmpeg replacement and corresponding source, 2026-10-31
+
+The official PyAV 16.0.1 vendor configuration was traced through its pinned source
+commit to pyav-ffmpeg 8.0-2, commit fab22bcb12748a05f86683ac632fdb96994d970e.
+The downloaded Windows vendor archive matched GitHub's published SHA-256. All 32
+installed av.libs DLLs matched its executable sections; fifteen matched whole
+files. The upstream configure patch moves x264/x265 from the GPL list into the
+version3 list. This contradicts treating the DLL-reported LGPL string alone as
+sufficient licensing evidence. The checked provenance report retains this fact.
+
+A project-local portable MSYS2/UCRT64 toolchain was prepared from the verified
+20260927 archive. FFmpeg 8.0.3 was downloaded with its official signature; GPG
+validated fingerprint FCF986EA15E6E293A5644F10B4322F04D67658D8. Unmodified source
+was built with GPL/nonfree/version3/autodetection disabled, dynamic DLL linkage,
+no network/desktop capture devices and Windows threads. Compiler/package versions
+and commands were recorded. No local directories were deleted; the previous
+Python environment was retained as .runtime/venv-upstream-20261031.
+
+relink-pyav-lgpl.py creates av 16.0.1+blitzdic.1 from the SHA-pinned original
+wheel. It changes DLL import names/PE checksums and package metadata, requiring
+unchanged executable sections in all 48 extension modules. Seven clean FFmpeg
+DLLs plus the compiler's MIT winpthread TLS DLL replace the original 32 DLLs.
+FFmpeg source, configuration/build instructions and runtime notices are included
+in wheel license data and in the packaged application's license directory.
+The new setup script accepts the clean wheel; the Windows build refuses the old
+configuration. A negative test against the retained original environment confirmed
+that refusal. PowerShell 5 quoting/encoding in setup was corrected and tested.
+
+Isolated and active-runtime checks passed M4A/AAC, WebM/Opus, both ASR models,
+speaker-labeled transcription, German speech, Unicode filenames, a four-speaker
+sample and the 105-second sample. The fixture generator can use FFmpeg's native
+Opus encoder when libopus is unavailable. All 35 Node tests passed; two optional
+ASR tests skipped, separately covered by the real inference checks.
+
+Windows 0.3.5 was built in
+BlitzDicWindows/dist/windows-2026-10-31T21-40-57-389Z-96185a. It contains 114 mapped
+native binaries, all with trusted build origins. The packaged app passed both
+bundled models, clean-inventory checks, the included FFmpeg-source SHA-256 and the
+scoped license-folder button under Settings. Both frozen engines and diarization
+also passed with PATH limited to Windows. The About text identifies FFmpeg LGPL
+v2.1-or-later. Full review of libsndfile, numerical/runtime libraries and overall
+redistribution obligations remains open; this is not a blanket compliance verdict.
+
+Installer: 1,149,418,566 bytes; SHA-256
+458C86CF9A840EA829A323AF86291484ADBD88BB4A7CDBF957A7CDAAB6F433A8.
+Unsigned, local development artifact; no clean-VM installation was performed.
