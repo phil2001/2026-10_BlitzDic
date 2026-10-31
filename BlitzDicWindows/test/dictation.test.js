@@ -17,6 +17,11 @@ test('verbatim transcript reaches history without configured LLM', async () => {
   assert.equal(result.text, 'Hallo Welt'); assert.equal(history.length, 1);
   assert.deepEqual(states, ['transcribing', 'saving', 'idle']);
 });
+test('meeting capture can transcribe without adding a dictation history entry', async () => {
+  const {flow, history} = fixture();
+  const entry = await flow.process(Buffer.from('test audio'), 'verbatim', {saveHistory: false});
+  assert.equal(entry.original, 'Hallo Welt'); assert.equal(history.length, 0);
+});
 test('rewrite failure preserves transcription with explicit warning', async () => {
   const { flow, settings } = fixture({ rewriteText: async () => { throw new Error('offline'); } });
   settings.mode = 'clean';

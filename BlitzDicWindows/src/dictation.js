@@ -12,7 +12,7 @@ export class Dictation extends EventEmitter {
   }
   transition(state) { this.state = state; this.emit('state', state); }
   cancel() { this.active?.abort(); }
-  async process(audioPath, modeOverride) {
+  async process(audioPath, modeOverride, { saveHistory = true } = {}) {
     if (this.active) throw new Error('Eine Aufnahme wird bereits verarbeitet.');
     const controller = new AbortController(); this.active = controller;
     const { signal } = controller;
@@ -46,7 +46,7 @@ export class Dictation extends EventEmitter {
         entry.mode = 'verbatim';
       }
       signal.throwIfAborted();
-      if (entry.text.trim() && settings.historyEnabled) {
+      if (entry.text.trim() && settings.historyEnabled && saveHistory) {
         this.transition('saving');
         try { await this.store.appendHistory(entry, settings.historyLimit); }
         catch (error) { entry.warning = [entry.warning, `Verlauf nicht gespeichert: ${error.message}`].filter(Boolean).join('\n'); }

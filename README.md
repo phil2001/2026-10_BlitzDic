@@ -108,3 +108,9 @@ gewählten LLM-Anbieter. Original und Ergebnis werden verschlüsselt gespeichert
 KI-Zusammenfassungen vor Verwendung prüfen. Live-Meetingaufnahme, Systemaudio und
 Sprecherzuordnung sind noch offen; der bisherige Installer enthält diese neue Seite
 noch nicht.
+
+Im Meeting-Bereich lassen sich Mikrofonabschnitte bis zu 30 Minuten aufnehmen.
+Nach dem Beenden transkribiert das ausgewählte lokale Sprachmodell den Abschnitt
+und hängt ihn an das Transkript an. Die Mikrofonwahl erfolgt unter Diktat.
+Die Zusammenfassung wird separat gestartet; zuvor ist das Meeting-Transkript nur
+im geöffneten Fenster vorhanden. Systemaudio und Sprecherzuordnung fehlen noch.

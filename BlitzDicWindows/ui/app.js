@@ -3,9 +3,34 @@ import { parseAppModes } from '../src/app-modes.js';
 const $ = id => document.getElementById(id);
 const api = window.blitz;
 let settings, catalog, busy = false, lastOriginal = '';
+let meetingBusy = false;
 const status = text => { $('status').textContent = text; };
 const attempt = fn => async () => { try { await fn(); } catch (error) { status(error.message); } };
 const recorder = new Recorder({ onLevel: level => { $('level').value = level; }, onLimit: () => $('record').click() });
+const meetingRecorder = new Recorder({onLevel: level => { $('meeting-level').value = level; }, onLimit: () => $('meeting-record').click()});
+function meetingRecordingUI(active) {
+  api['recording-state'](active).catch(error => status(error.message));
+  $('meeting-record').textContent = active ? 'Aufnahme beenden und transkribieren' : 'Meeting aufnehmen';
+  $('meeting-level').hidden = !active;
+  $('meeting-cancel').hidden = !active && !meetingBusy;
+}
+$('meeting-record').onclick = attempt(async () => {
+  if (busy || meetingBusy || recorder.state !== 'idle' || meetingRecorder.state === 'starting') return;
+  if (['recording', 'limit'].includes(meetingRecorder.state)) {
+    const wav = meetingRecorder.stop(); meetingBusy = true; meetingRecordingUI(false);
+    try {
+      const entry = await api['meeting-audio'](wav);
+      const existing = $('meeting-transcript').value.trim();
+      $('meeting-transcript').value = [existing, entry.original].filter(Boolean).join('\n\n');
+      status('Meeting lokal transkribiert. Die Zusammenfassung kann jetzt gestartet werden.');
+    } finally { meetingBusy = false; meetingRecordingUI(false); }
+  } else {
+    $('meeting-cancel').hidden = false; status('Mikrofon wird gestartet …');
+    try { if (!await meetingRecorder.start($('microphone').value)) return; }
+    catch (error) { await api.cancel(); meetingRecordingUI(false); throw error; }
+    meetingRecordingUI(true); status('Meeting-Aufnahme läuft …');
+  }
+});
 function recordingUI(active) {
   api['recording-state'](active).catch(error => status(error.message));
   $('record').textContent = active ? 'Aufnahme beenden' : 'Aufnahme starten';
@@ -42,14 +67,16 @@ async function refreshMeetings() {
 }
 $('meeting-from-dictation').onclick = () => { $('meeting-transcript').value = lastOriginal || $('result').value; };
 $('meeting-summarize').onclick = attempt(async () => {
+  if (meetingBusy || busy || recorder.state !== 'idle' || meetingRecorder.state !== 'idle') return;
+  meetingBusy = true;
   $('meeting-summarize').disabled = true; $('meeting-cancel').hidden = false;
   status('Meeting wird zusammengefasst …');
   try {
     const entry = await api['meeting-summary']($('meeting-transcript').value, $('meeting-title').value);
     $('meeting-result').value = entry.summary; await refreshMeetings(); status('Meeting verschlüsselt gespeichert.');
-  } finally { $('meeting-summarize').disabled = false; $('meeting-cancel').hidden = true; }
+  } finally { meetingBusy = false; $('meeting-summarize').disabled = false; $('meeting-cancel').hidden = true; }
 });
-$('meeting-cancel').onclick = attempt(() => api.cancel());
+$('meeting-cancel').onclick = attempt(async () => { meetingRecorder.cancel(); await api.cancel(); meetingRecordingUI(false); status('Abgebrochen.'); });
 $('meeting-copy').onclick = attempt(async () => { await api.copy($('meeting-result').value); status('Zusammenfassung kopiert.'); });
 $('meetings-clear').onclick = attempt(async () => {
   if (confirm('Alle gespeicherten Meetings leeren?')) { await api['meetings-clear'](); await refreshMeetings(); }
@@ -60,7 +87,7 @@ document.querySelectorAll('nav button').forEach(button => button.onclick = () =>
   document.querySelectorAll('nav button').forEach(b => b.classList.toggle('selected', b === button));
 });
 $('record').onclick = attempt(async () => {
-  if (busy || recorder.state === 'starting') return;
+  if (busy || meetingBusy || meetingRecorder.state !== 'idle' || recorder.state === 'starting') return;
   if (['recording', 'limit'].includes(recorder.state)) {
     const wav = recorder.stop(); recordingUI(false); await result(await api.audio(wav, $('mode').value));
   } else {
@@ -78,8 +105,8 @@ $('record').onclick = attempt(async () => {
     $('microphone').value = selected;
   }
 });
-$('import').onclick = attempt(async () => { if (!busy && recorder.state === 'idle') await result(await api.import($('mode').value)); });
-$('cancel').onclick = attempt(async () => { recorder.cancel(); await api.cancel(); recordingUI(false); status('Abgebrochen.'); });
+$('import').onclick = attempt(async () => { if (!busy && !meetingBusy && meetingRecorder.state === 'idle' && recorder.state === 'idle') await result(await api.import($('mode').value)); });
+$('cancel').onclick = attempt(async () => { recorder.cancel(); meetingRecorder.cancel(); await api.cancel(); recordingUI(false); meetingRecordingUI(false); status('Abgebrochen.'); });
 $('copy').onclick = attempt(async () => { await api.copy($('result').value); status('Text kopiert.'); });
 $('mode').onchange = attempt(async () => { settings.mode = $('mode').value; await save(); });
 $('speech-model').onchange = attempt(async () => { settings.speech.preset = $('speech-model').value; await save(); updateLocation(); });
@@ -106,7 +133,7 @@ api.onState(state => {
   if (busy) status({ transcribing: 'Sprache wird erkannt …', rewriting: 'Text wird überarbeitet …', saving: 'Verlauf wird gespeichert …' }[state]);
 });
 api.onShortcut(mode => {
-  if (busy || !settings || recorder.state === 'starting') return;
+  if (busy || meetingBusy || meetingRecorder.state !== 'idle' || !settings || recorder.state === 'starting') return;
   if (recorder.state === 'idle') $('mode').value = mode;
   $('record').click();
 });

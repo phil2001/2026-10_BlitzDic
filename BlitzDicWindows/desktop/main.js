@@ -120,6 +120,12 @@ else app.whenReady().then(async () => {
   });
   handle('cancel', () => { captureEpoch++; insertionTarget = null; insertionRequested = false; insertionProblem = ''; flow.cancel(); meetings.cancel(); });
   handle('meetings', () => store.meetings());
+  handle('meeting-audio', async bytes => {
+    if (meetings.active) throw new Error('Eine Meeting-Zusammenfassung läuft bereits.');
+    if (!(bytes instanceof ArrayBuffer) || bytes.byteLength > 350 * 1024 * 1024) throw new Error('Ungültige Aufnahme.');
+    insertionTarget = null; insertionRequested = false;
+    return flow.process(Buffer.from(bytes), 'verbatim', {saveHistory: false});
+  });
   handle('meeting-summary', (transcript, title) => {
     if (flow.active || recording || capturePending) throw new Error('Bitte das Diktat zuerst beenden.');
     return meetings.summarize(transcript, title);

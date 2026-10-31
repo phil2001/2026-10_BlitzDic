@@ -170,3 +170,21 @@ This does not yet provide live meeting capture, system audio or speaker diarizat
 scripts/verify-meetings.mjs passed the UI -> local mock HTTP provider -> encrypted
 store -> reload path. This proves orchestration and persistence, not actual LLM
 summary quality. The existing installer predates this feature and must be rebuilt.
+
+## Meeting microphone capture, 2026-10-31
+
+The Meeting page now records microphone audio in memory and transcribes it locally
+on stop using the selected Whisper or Parakeet preset. Recordings are bounded to
+30-minute sections; successive sections append to the editable transcript. This
+path uses verbatim recognition, suppresses dictation-history persistence and never
+automatically invokes the LLM. The transcript remains unsaved in the window until
+the explicit summary-and-save action. Recording/summary/dictation controls prevent
+overlapping UI operations; cancellation releases either recorder.
+
+scripts/verify-meeting-audio.mjs passed the real getUserMedia/AudioWorklet path with
+a synthetic microphone fixture through both actual speech models. It verifies the
+recognized text, empty dictation history, no saved meeting and no automatic summary.
+30 regression tests passed (two optional ASR tests skipped in the unit run).
+This is post-recording transcription, not streaming live notes. System audio,
+speaker diarization, physical microphone and long-recording quality remain open.
+The existing installer still predates the Meeting page and needs rebuilding.
