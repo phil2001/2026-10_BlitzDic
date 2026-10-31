@@ -16,3 +16,9 @@ Die vollständige Windows-Ausgabe enthält die beiden Sprachmodelle. Entwickler
 laden die festgelegten Modellversionen von Hugging Face. Ein zusätzliches LLM
 wird über den gewählten Anbieter eingerichtet. BlitzDic hat kein eigenes Backend
 und enthält keine absichtlich eingebaute Telemetrie.
+
+Beim automatischen Einfügen über UI Automation wird der Inhalt des Zieltextfelds
+vorübergehend lokal gelesen, um Änderungen während der Erkennung zu erkennen.
+Gespeichert wird er nicht; nur ein flüchtiger Fingerabdruck und die Auswahlposition
+werden verglichen. Passwortfelder werden ausgeschlossen. Details:
+[Windows-Einfügen](BlitzDicWindows/speech/WINDOWS_INSERTION.md).

@@ -85,3 +85,5 @@ Native Edit/RichEdit target capture and guarded insertion are implemented. The i
 The application now targets Windows 11 exclusively. Legacy platform sources and documentation have been removed. Ported mode prompts and provider behavior live in BlitzDicWindows/src. The original ancestry and MIT notices remain available in Git history and LICENSE.
 
 A real LM Studio integration test passed with the already installed qwen2.5-coder-3b-instruct model: discovery, connection check and German text rewriting. The test server was stopped and its model unloaded afterwards. LAN and cloud endpoints remain unverified. Whisper and Parakeet run independently of LM Studio through the bundled speech runtime.
+
+UI Automation now supports modern text fields via the bundled helper script and Windows system PowerShell/.NET. The Chromium test verifies textarea/contenteditable insertion and rejects changed document text, selection or focus. See BlitzDicWindows/speech/WINDOWS_INSERTION.md for exact coverage and SendInput limitations. Office and the complete shortcut flow remain unverified. Rebuild the speech runtime before packaging.

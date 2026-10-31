@@ -1,7 +1,7 @@
 """Conservative native Edit/RichEdit insertion without touching the clipboard.
 
-Unknown controls are deliberately rejected until a UI Automation adapter can
-prove their identity and selection. Never read text/password contents.
+Other controls use UI Automation to verify focus, document fingerprint and selection.
+Password contents are never read; document fingerprints are not persisted.
 """
 import ctypes as c
 from ctypes import wintypes as w
@@ -33,7 +33,8 @@ def capture():
     user32.GetClassNameW(info.hwndFocus, name, len(name))
     class_name = name.value.lower()
     if class_name != 'edit' and not class_name.startswith('richedit'):
-        return None
+        from uia_target import capture as uia_capture
+        return uia_capture()
     style = user32.GetWindowLongW(info.hwndFocus, -16)
     if style & (0x20 | 0x800):  # ES_PASSWORD or ES_READONLY
         return None
@@ -47,6 +48,9 @@ def capture():
             'thread': thread, 'class': class_name, 'start': start.value, 'end': end.value}
 
 def insert(target, text):
+    if target and target.get('kind') == 'uia':
+        from uia_target import insert as uia_insert
+        return uia_insert(target, text)
     if not target or capture() != target:
         return {'inserted': False, 'reason': 'Eingabefeld oder Cursorposition geändert; Text bleibt in BlitzDic.'}
     if not isinstance(text, str) or '\x00' in text or len(text) > 100000:
