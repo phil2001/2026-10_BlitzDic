@@ -63,6 +63,17 @@ third-party license distribution, visual polish, real LLM server tests and
 publication to the target repository. Do not mark this goal complete from the
 existence of the installer alone.
 
+Additional source verification: Chromium's file-backed synthetic microphone was
+used through getUserMedia -> AudioWorklet -> PCM WAV -> Electron IPC -> actual
+Whisper inference -> visible transcript. The expected test sentence was recognized
+without observed JavaScript errors. This does not validate physical microphone
+hardware or Windows microphone permissions on another PC.
+
+Tray support and editable global toggle shortcuts were added after the first
+bundled installer. Electron reports the default shortcut registered; closing the
+window leaves it hidden and alive. A full physical-keypress and external-app
+insertion test remains outstanding.
+
 Upstream uses SwiftUI/AppKit, Core ML, WhisperKit, Apple Intelligence, Keychain,
 Accessibility and Sparkle. These require Windows replacements. Shared mode
 prompts and provider behavior are available in `BlitztextShared/AI` and should

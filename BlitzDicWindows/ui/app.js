@@ -6,6 +6,7 @@ const status = text => { $('status').textContent = text; };
 const attempt = fn => async () => { try { await fn(); } catch (error) { status(error.message); } };
 const recorder = new Recorder({ onLevel: level => { $('level').value = level; }, onLimit: () => $('record').click() });
 function recordingUI(active) {
+  api['recording-state'](active).catch(error => status(error.message));
   $('record').textContent = active ? 'Aufnahme beenden' : 'Aufnahme starten';
   $('recording-label').textContent = active ? 'Ich höre zu …' : 'Bereit für dein Diktat.';
   $('level').hidden = !active; $('cancel').hidden = !active && !busy;
@@ -78,8 +79,18 @@ api.onShortcut(mode => {
   $('record').click();
 });
 api.onShortcutError(text => status(`Tastenkürzel nicht verfügbar: ${text}`));
+api.onCancelRecording(() => $('cancel').click());
 try {
   const data = await api.load(); settings = data.settings; catalog = data.providers;
+  const shortcutsTitle = document.createElement('h3'); shortcutsTitle.textContent = 'Globale Tastenkürzel';
+  const shortcutsNote = document.createElement('p'); shortcutsNote.textContent = 'Einmal drücken startet, erneut drücken beendet die Aufnahme. Beim Schließen bleibt BlitzDic im Infobereich aktiv.';
+  $('settings').append(shortcutsTitle, shortcutsNote);
+  for (const [mode, title] of Object.entries({verbatim:'Wortgenau',clean:'Überarbeiten',calm:'Ruhig formulieren',emoji:'Mit Emojis'})) {
+    const label = document.createElement('label'); label.textContent = title;
+    const input = document.createElement('input'); input.value = settings.shortcuts[mode];
+    input.onchange = attempt(async () => { settings.shortcuts[mode] = input.value.trim(); await save(); status('Tastenkürzel gespeichert.'); });
+    label.append(input); $('settings').append(label);
+  }
   $('speech-model').add(new Option('Eigenes kompatibles Modell', 'custom'));
   const customBox = document.createElement('div');
   const engineLabel = document.createElement('label'); engineLabel.textContent = 'Modellformat';

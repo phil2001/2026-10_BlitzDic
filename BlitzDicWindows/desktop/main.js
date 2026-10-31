@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, dialog, clipboard, session, globalShortcut } from 'electron';
+import { app, BrowserWindow, ipcMain, dialog, clipboard, session, globalShortcut, Tray, Menu, nativeImage } from 'electron';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
 import { mkdir, writeFile } from 'node:fs/promises';
@@ -10,7 +10,7 @@ import { runSpeech, speechPresets } from '../src/speech.js';
 import { providers, listModels, testConnection } from '../src/providers.js';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-let window, flow, store;
+let window, flow, store, tray, quitting = false;
 const uiURL = pathToFileURL(join(root, 'ui/index.html')).href;
 app.setName('BlitzDic');
 if (!app.requestSingleInstanceLock()) app.quit();
@@ -22,6 +22,23 @@ else app.whenReady().then(async () => {
   window = new BrowserWindow({ width: 1200, height: 820, minWidth: 760, minHeight: 620, title: 'BlitzDic',
     webPreferences: { preload: join(root, 'desktop/preload.cjs'), contextIsolation: true, nodeIntegration: false, sandbox: true } });
   window.setMenuBarVisibility(false);
+  // A simple original waveform mark, BGRA bitmap, independent of upstream branding.
+  const pixels = Buffer.alloc(32 * 32 * 4);
+  for (let y = 0; y < 32; y++) for (let x = 0; x < 32; x++) {
+    const i = (y * 32 + x) * 4;
+    const bar = ((x >= 6 && x <= 9 && y >= 11 && y <= 21) || (x >= 14 && x <= 17 && y >= 5 && y <= 27) || (x >= 22 && x <= 25 && y >= 9 && y <= 23));
+    pixels[i] = bar ? 255 : 230; pixels[i + 1] = bar ? 255 : 65; pixels[i + 2] = bar ? 255 : 55; pixels[i + 3] = 255;
+  }
+  const trayIcon = nativeImage.createFromBitmap(pixels, { width: 32, height: 32 });
+  window.setIcon(trayIcon); tray = new Tray(trayIcon); tray.setToolTip('BlitzDic · Bereit');
+  tray.setContextMenu(Menu.buildFromTemplate([
+    { label: 'BlitzDic öffnen', click: () => { window.show(); window.focus(); } },
+    { label: 'Wortgenau diktieren / beenden', click: () => window.webContents.send('shortcut', 'verbatim') },
+    { label: 'Abbrechen', click: () => { flow.cancel(); window.webContents.send('cancel-recording'); } },
+    { type: 'separator' }, { label: 'Beenden', click: () => { quitting = true; app.quit(); } },
+  ]));
+  tray.on('double-click', () => { window.show(); window.focus(); });
+  window.on('close', event => { if (!quitting) { event.preventDefault(); window.hide(); } });
   window.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
   window.webContents.on('will-navigate', event => event.preventDefault());
   session.defaultSession.setPermissionRequestHandler((contents, permission, callback, details) =>
@@ -69,6 +86,7 @@ else app.whenReady().then(async () => {
     return flow.process(path, mode);
   });
   handle('cancel', () => flow.cancel());
+  handle('recording-state', active => { tray.setToolTip(active ? 'BlitzDic · Aufnahme läuft' : 'BlitzDic · Bereit'); });
   handle('copy', text => { if (typeof text !== 'string') throw new Error('Ungültiger Text.'); clipboard.writeText(text); });
   handle('history-clear', () => store.clearHistory());
   flow.on('state', state => { if (!window.isDestroyed()) window.webContents.send('state', state); });
@@ -78,4 +96,5 @@ else app.whenReady().then(async () => {
 }).catch(error => { dialog.showErrorBox('BlitzDic konnte nicht starten', error.message); app.quit(); });
 app.on('second-instance', () => { window?.show(); window?.focus(); });
 app.on('window-all-closed', () => { flow?.cancel(); app.quit(); });
-app.on('will-quit', () => globalShortcut.unregisterAll());
+app.on('before-quit', () => { quitting = true; flow?.cancel(); });
+app.on('will-quit', () => { globalShortcut.unregisterAll(); tray?.destroy(); });
