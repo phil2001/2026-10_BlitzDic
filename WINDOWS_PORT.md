@@ -329,3 +329,20 @@ See BlitzDicWindows/speech/DIARIZATION.md for source/license references, model
 fingerprints, test coverage and remaining integration work. No voice profiles or
 real-world speaker identities are inferred or persisted. Core dependency versions
 are pinned, but the next frozen worker still needs its packaging hook updated.
+
+## Speaker-aware ASR composition, 2026-10-31
+
+The worker now exposes `transcribe-speakers`: it runs local diarization, groups
+overlapping ranges, and transcribes each turn with the selected speech engine.
+ASR instances are cached within the worker so repeated turns do not reload the
+model. Overlapping ranges are merged and transcribed once with multiple possible
+speaker labels; they are not falsely assigned to one person. A 150-ms context
+margin is used around each detected turn. Labels remain recording-local IDs.
+
+The real-worker test passed with Whisper on the official four-speaker Chinese
+fixture: ten text turns and four supplied speaker IDs. It also passed with Parakeet
+on the 105-second synthetic English recording: 30 text turns, one supplied speaker
+ID, and the first and final topic markers. These are supplied-count pipeline tests,
+not proofs of automatic counting or diarization error rate. Two isolated range-
+grouping tests passed, together with 31 Node regression tests (two optional ASR
+unit tests skipped). No meeting UI or installer integration is claimed yet.

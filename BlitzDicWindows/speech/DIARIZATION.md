@@ -40,3 +40,19 @@ Remaining work: reproducible verified model acquisition, packaging and attributi
 ASR/speaker-range alignment, meeting UI, recording/saved-data integration, automatic
 count quality and multi-language/overlap evaluation. No persistent voice profiles
 or identity enrollment are implemented.
+
+## Speaker-aware transcription action
+
+`transcribe-speakers` additionally requires `diarizationDirectory` beside the usual
+speech modelDirectory/preset and audio input. It returns labeled text plus time
+ranges with a speakers array. Overlaps are represented by multiple IDs and are
+transcribed once. ASR model loading is cached inside the one-shot worker process.
+
+`node scripts/verify-speaker-transcription.mjs` covers the four-speaker Chinese
+fixture with Whisper and the long synthetic English fixture with Parakeet; known
+counts are supplied. Run `node scripts/verify-long-speech.mjs` first if the long
+fixture is not present. `python scripts/test-speaker-ranges.py` checks overlapping,
+transitive and touching range behavior without model dependencies.
+
+This action remains internal. User controls, optional model-availability checks,
+transcript persistence and fresh packaged-worker validation still need integration.

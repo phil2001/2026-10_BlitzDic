@@ -9,6 +9,20 @@ import sys
 import base64
 import io
 from pathlib import Path
+from functools import lru_cache
+
+
+@lru_cache(maxsize=2)
+def load_whisper(directory):
+    from faster_whisper import WhisperModel
+    return WhisperModel(directory, device='cpu', compute_type='int8', local_files_only=True)
+
+
+@lru_cache(maxsize=2)
+def load_parakeet(directory):
+    import onnx_asr
+    return onnx_asr.load_model('nemo-parakeet-tdt-0.6b-v3', directory,
+                              quantization='int8', providers=['CPUExecutionProvider'])
 
 PRESETS = {
     "whisper": {"repo": "Systran/faster-whisper-small", "engine": "whisper",
@@ -19,6 +33,9 @@ PRESETS = {
 
 
 def run(request):
+    if request['action'] == 'transcribe-speakers':
+        from meeting_asr import run as transcribe_speakers
+        return transcribe_speakers(request, run)
     if request['action'] == 'diarize':
         from diarization import run as diarize
         return diarize(request)
@@ -55,19 +72,16 @@ def run(request):
     # Never download models or transmit audio during recognition.
     os.environ["HF_HUB_OFFLINE"] = "1"
     if engine == "whisper":
-        from faster_whisper import WhisperModel
-        model = WhisperModel(str(root), device="cpu", compute_type="int8", local_files_only=True)
+        model = load_whisper(str(root))
         segments, info = model.transcribe(audio, language=request.get("language") or None,
                                           vad_filter=True, condition_on_previous_text=False)
         items = [{"start": s.start, "end": s.end, "text": s.text.strip()} for s in segments]
         return {"text": " ".join(s["text"] for s in items), "segments": items, "language": info.language}
-    import onnx_asr
     import soundfile as sf
     import numpy as np
     waveform, rate = sf.read(audio, dtype="float32", always_2d=True)
     waveform = waveform.mean(axis=1)
-    model = onnx_asr.load_model("nemo-parakeet-tdt-0.6b-v3", str(root),
-                                quantization="int8", providers=["CPUExecutionProvider"])
+    model = load_parakeet(str(root))
     # Bound encoder memory. Prefer a quiet boundary near 20 seconds.
     items = []
     start = 0
