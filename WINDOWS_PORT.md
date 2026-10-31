@@ -299,3 +299,22 @@ save, persisted exact text and empty summary, then separately generated a mock
 summary and reloaded the stored entry. The 0.2.0 installer predates this addition;
 a future package must include it. This closes an offline usability gap without
 claiming summary-quality, diarization or live-streaming completion.
+
+## Multi-section speech validation, 2026-10-31
+
+scripts/make-long-speech.ps1 creates a 105.2-second English synthetic recording
+using the installed Windows Zira voice. scripts/verify-long-speech.mjs verifies
+six topic sections in order, each marker at both the beginning and end of its
+section, six repeated meeting sentences, monotonic segment starts, and final audio
+coverage. Whisper passed with 30 segments (~12.3 seconds processing), Parakeet Ultra
+with six segments (~17.9 seconds), including model/process startup on this workstation.
+Both engines sometimes wrote the homophone "pairs" for "pears". The completeness
+test explicitly logs and normalizes that spelling difference; it does not treat
+it as exact transcription accuracy. The initial stricter spelling assertion failed
+and was investigated against the synthetic text before changing the check.
+
+This adds evidence across Parakeet's 17–20-second processing boundaries, without
+claiming a 30-minute stress test or German accuracy. Only an en-US Windows synthesis
+voice is installed here; German speech evaluation and physical microphone quality
+still need separate evidence. The fixture remains ignored under .runtime; no audio
+or model weights were added to Git. No application code changed in this step.
