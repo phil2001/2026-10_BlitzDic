@@ -14,6 +14,11 @@ try {
   const page = await app.firstWindow(); await page.waitForSelector('#provider option', {state: 'attached'});
   await page.locator('nav button[data-page="meetings"]').click();
   await page.locator('#meeting-source').selectOption(source);
+  const diarize = process.env.BLITZDIC_TEST_DIARIZE === '1';
+  if (diarize) {
+    await page.locator('#meeting-diarize').check();
+    await page.locator('#meeting-speaker-count').selectOption({label: '1'});
+  }
   const presets = process.env.BLITZDIC_TEST_PRESET ? [process.env.BLITZDIC_TEST_PRESET] : ['whisper', 'parakeet-ultra'];
   for (const preset of presets) {
     assert.ok(['whisper', 'parakeet-ultra'].includes(preset));
@@ -47,7 +52,18 @@ try {
     assert.equal((await page.evaluate(() => window.blitz.load())).history.length, 0);
     assert.equal((await page.evaluate(() => window.blitz.meetings())).length, 0);
     assert.equal(await page.locator('#meeting-result').inputValue(), '');
+    if (diarize) assert.match(await page.locator('#meeting-transcript').inputValue(), /Sprecher 1:/);
     console.log(`PASS: meeting ${source} -> ${preset} -> transcript, no automatic summary or persistent history`);
+  }
+  if (diarize) {
+    const original = await page.locator('#meeting-transcript').inputValue();
+    await page.locator('#meeting-save').click();
+    await page.waitForFunction(() => document.querySelector('#status').textContent === 'Transkript lokal verschlüsselt gespeichert.');
+    await page.reload(); await page.waitForSelector('#provider option', {state: 'attached'});
+    await page.locator('nav button[data-page="meetings"]').click();
+    await page.locator('#meeting-list button').first().click();
+    assert.equal(await page.locator('#meeting-transcript').inputValue(), original);
+    console.log('PASS: speaker-labeled meeting persists through encrypted save and reload');
   }
 } catch (error) {
   const page = await app.firstWindow();

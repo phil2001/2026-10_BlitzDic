@@ -118,3 +118,10 @@ werden. Ein tatsächlicher Test mit Qwen 2.5 Coder 3B hat solche Fehler gezeigt.
 
 Version 0.2.0 enthält diese Funktionen. Sprecherzuordnung, Live-Notizen und
 Langaufnahmequalität sind noch nicht abschließend umgesetzt beziehungsweise geprüft.
+
+Die Entwicklungsoberfläche bietet inzwischen eine optionale experimentelle
+Sprechertrennung für Meeting-Aufnahmen. Sie ist nur bei vorhandenen lokalen
+Zusatzmodellen aktiv; der bisherige Installer 0.2.0 enthält diese noch nicht.
+Sprecherkennungen gelten je Aufnahmeabschnitt und werden als Teil des Transkripts
+gespeichert. Die automatische Sprecherzahl ist noch unzuverlässig; eine bekannte
+Zahl kann vorgegeben werden.

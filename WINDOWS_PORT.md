@@ -346,3 +346,24 @@ ID, and the first and final topic markers. These are supplied-count pipeline tes
 not proofs of automatic counting or diarization error rate. Two isolated range-
 grouping tests passed, together with 31 Node regression tests (two optional ASR
 unit tests skipped). No meeting UI or installer integration is claimed yet.
+
+## Optional speaker UI and persistence, 2026-10-31
+
+The Meeting page now exposes optional experimental speaker separation and a known
+speaker count from 1–20, or automatic estimation. The setting is snapshotted when
+recording starts. The main process validates options, checks auxiliary model files
+and passes the fixed local model directory to the worker. Missing auxiliary files
+disable the controls; ordinary ASR remains available. Speaker numbers are explicitly
+scoped to each recording section in the transcript, avoiding false identities when
+several independently clustered recordings are appended.
+
+32 automated tests passed (two optional ASR tests skipped). The real Electron
+microphone workflow passed with both Whisper and Parakeet using a synthetic
+single-speaker recording, known speaker count one, and actual local diarization.
+Labels survived explicit encrypted transcript save and reload. Four-speaker ASR
+composition remains covered separately by the earlier known-count fixture test.
+The UI test initially found a missing one-speaker option; options are now generated
+consistently for every count from one to twenty. Two non-UTF8 bytes introduced in
+new explanatory text were also corrected. Automatic-count quality, auxiliary model
+provenance/licensing, reproducible acquisition and installer bundling remain open.
+The 0.2.0 installer does not yet include these controls or auxiliary models.

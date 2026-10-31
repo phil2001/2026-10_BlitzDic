@@ -22,6 +22,17 @@ test('meeting capture can transcribe without adding a dictation history entry', 
   const entry = await flow.process(Buffer.from('test audio'), 'verbatim', {saveHistory: false});
   assert.equal(entry.original, 'Hallo Welt'); assert.equal(history.length, 0);
 });
+test('optional speaker transcription uses local auxiliary models and preserves labels', async () => {
+  let request;
+  const {flow, history} = fixture({transcribe: async input => {
+    request = input; return {text: 'Sprecher 1: Hallo.', segments: [{start: 0, end: 1, speakers: [1], text: 'Hallo.'}]};
+  }});
+  const entry = await flow.process(Buffer.from('audio'), 'verbatim', {saveHistory: false, diarize: true, speakerCount: 2});
+  assert.equal(request.action, 'transcribe-speakers'); assert.equal(request.speakerCount, 2);
+  assert.match(request.diarizationDirectory, /models[\\/]diarization$/);
+  assert.equal(entry.original, 'Sprecher 1: Hallo.'); assert.deepEqual(entry.segments[0].speakers, [1]);
+  assert.equal(history.length, 0);
+});
 test('rewrite failure preserves transcription with explicit warning', async () => {
   const { flow, settings } = fixture({ rewriteText: async () => { throw new Error('offline'); } });
   settings.mode = 'clean';

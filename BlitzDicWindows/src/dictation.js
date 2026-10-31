@@ -12,7 +12,7 @@ export class Dictation extends EventEmitter {
   }
   transition(state) { this.state = state; this.emit('state', state); }
   cancel() { this.active?.abort(); }
-  async process(audioPath, modeOverride, { saveHistory = true } = {}) {
+  async process(audioPath, modeOverride, { saveHistory = true, diarize = false, speakerCount = -1 } = {}) {
     if (this.active) throw new Error('Eine Aufnahme wird bereits verarbeitet.');
     const controller = new AbortController(); this.active = controller;
     const { signal } = controller;
@@ -26,7 +26,8 @@ export class Dictation extends EventEmitter {
       const modelDirectory = preset ? join(this.modelRoot, preset.id) : settings.speech.modelDirectory;
       if (!modelDirectory) throw new Error('Bitte einen lokalen Modellordner auswählen.');
       this.transition('transcribing');
-      const recognized = await this.transcribe({ action: 'transcribe', preset: preset?.id,
+      const recognized = await this.transcribe({ action: diarize ? 'transcribe-speakers' : 'transcribe', preset: preset?.id,
+        ...(diarize ? {diarizationDirectory: join(this.modelRoot, 'diarization'), speakerCount} : {}),
         engine: preset?.engine ?? settings.speech.engine, modelDirectory,
         ...(Buffer.isBuffer(audioPath) ? { audioBase64: audioPath.toString('base64') } : { audioPath }),
         language: settings.speech.language,

@@ -1,6 +1,7 @@
 import { app, BrowserWindow, ipcMain, dialog, clipboard, session, globalShortcut, Tray, Menu, nativeImage, desktopCapturer } from 'electron';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
+import { access } from 'node:fs/promises';
 import { PrivateStore } from '../src/store.js';
 import { windowsCrypto } from '../src/windows-storage.js';
 import { Dictation } from '../src/dictation.js';
@@ -18,6 +19,8 @@ else app.whenReady().then(async () => {
   store = new PrivateStore(join(app.getPath('userData'), 'private'), await windowsCrypto());
   const pythonPath = app.isPackaged ? join(process.resourcesPath, 'speech-runtime/blitzdic-speech.exe') : join(root, '.runtime/venv/Scripts/python.exe');
   const modelRoot = app.isPackaged ? join(process.resourcesPath, 'models') : join(root, 'models');
+  const speakerModelsAvailable = () => Promise.all(['model.int8.onnx', 'nemo_en_titanet_small.onnx']
+    .map(file => access(join(modelRoot, 'diarization', file)))).then(() => true, () => false);
   flow = new Dictation({ store, modelRoot, pythonPath });
   meetings = new Meetings({store});
   let insertionTarget = null, recording = false, capturePending = false, captureEpoch = 0;
@@ -79,7 +82,8 @@ else app.whenReady().then(async () => {
     if (event.sender !== window.webContents || event.senderFrame !== window.webContents.mainFrame || event.senderFrame.url !== uiURL) throw new Error('Unzulässiger Aufruf.');
     return fn(...args);
   });
-  handle('load', async () => ({ settings: await store.settings(), history: await store.history(), providers, speechPresets, modelsBundled: app.isPackaged }));
+  handle('load', async () => ({ settings: await store.settings(), history: await store.history(), providers, speechPresets, modelsBundled: app.isPackaged,
+    speakerModelsAvailable: await speakerModelsAvailable() }));
   function registerShortcuts(settings) {
     globalShortcut.unregisterAll();
     const failed = [];
@@ -131,11 +135,16 @@ else app.whenReady().then(async () => {
   handle('cancel', () => { captureEpoch++; insertionTarget = null; insertionRequested = false; insertionProblem = ''; flow.cancel(); meetings.cancel(); });
   handle('meetings', () => store.meetings());
   handle('meeting-save', (transcript, title) => meetings.saveTranscript(transcript, title));
-  handle('meeting-audio', async bytes => {
+  handle('meeting-audio', async (bytes, options = {}) => {
     if (meetings.active) throw new Error('Eine Meeting-Zusammenfassung läuft bereits.');
     if (!(bytes instanceof ArrayBuffer) || bytes.byteLength > 350 * 1024 * 1024) throw new Error('Ungültige Aufnahme.');
+    if (!options || typeof options !== 'object') throw new Error('Ungültige Sprecheroptionen.');
+    const diarize = options.enabled === true, speakerCount = options.speakerCount ?? -1;
+    if (!Number.isInteger(speakerCount) || (speakerCount !== -1 && (speakerCount < 1 || speakerCount > 20)))
+      throw new Error('Sprecherzahl muss automatisch oder zwischen 1 und 20 sein.');
+    if (diarize && !await speakerModelsAvailable()) throw new Error('Dieses Paket enthält keine lokalen Sprecherzuordnungsmodelle.');
     insertionTarget = null; insertionRequested = false;
-    return flow.process(Buffer.from(bytes), 'verbatim', {saveHistory: false});
+    return flow.process(Buffer.from(bytes), 'verbatim', {saveHistory: false, diarize, speakerCount});
   });
   handle('meeting-summary', (transcript, title) => {
     if (flow.active || recording || capturePending) throw new Error('Bitte das Diktat zuerst beenden.');

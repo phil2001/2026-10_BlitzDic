@@ -4,6 +4,8 @@ const $ = id => document.getElementById(id);
 const api = window.blitz;
 let settings, catalog, busy = false, lastOriginal = '';
 let meetingBusy = false;
+let speakerOptions = {enabled: false, speakerCount: -1};
+let speakerModelsAvailable = false;
 const status = text => { $('status').textContent = text; };
 const attempt = fn => async () => { try { await fn(); } catch (error) { status(error.message); } };
 const recorder = new Recorder({ onLevel: level => { $('level').value = level; }, onLimit: () => $('record').click() });
@@ -13,18 +15,22 @@ function meetingRecordingUI(active) {
   $('meeting-record').textContent = active ? 'Aufnahme beenden und transkribieren' : 'Meeting aufnehmen';
   $('meeting-level').hidden = !active;
   $('meeting-cancel').hidden = !active && !meetingBusy;
+  $('meeting-diarize').disabled = active || meetingBusy || !speakerModelsAvailable;
+  $('meeting-speaker-count').disabled = active || meetingBusy || !speakerModelsAvailable;
 }
 $('meeting-record').onclick = attempt(async () => {
   if (busy || meetingBusy || recorder.state !== 'idle' || meetingRecorder.state === 'starting') return;
   if (['recording', 'limit'].includes(meetingRecorder.state)) {
     const wav = meetingRecorder.stop(); meetingBusy = true; meetingRecordingUI(false);
     try {
-      const entry = await api['meeting-audio'](wav);
+      const entry = await api['meeting-audio'](wav, speakerOptions);
       const existing = $('meeting-transcript').value.trim();
-      $('meeting-transcript').value = [existing, entry.original].filter(Boolean).join('\n\n');
+      const text = speakerOptions.enabled ? `Aufnahmeabschnitt (Sprecherkennungen gelten nur hier):\n${entry.original}` : entry.original;
+      $('meeting-transcript').value = [existing, text].filter(Boolean).join('\n\n');
       status('Meeting lokal transkribiert. Die Zusammenfassung kann jetzt gestartet werden.');
     } finally { meetingBusy = false; meetingRecordingUI(false); }
   } else {
+    speakerOptions = {enabled: $('meeting-diarize').checked, speakerCount: Number($('meeting-speaker-count').value)};
     $('meeting-cancel').hidden = false; status('Mikrofon wird gestartet …');
     try { if (!await meetingRecorder.start($('microphone').value, {source: $('meeting-source').value})) return; }
     catch (error) { await api.cancel(); meetingRecordingUI(false); throw error; }
@@ -150,6 +156,12 @@ api.onShortcutError(text => status(`Tastenkürzel nicht verfügbar: ${text}`));
 api.onCancelRecording(() => $('cancel').click());
 try {
   const data = await api.load(); settings = data.settings; catalog = data.providers;
+  speakerModelsAvailable = data.speakerModelsAvailable;
+  $('meeting-speaker-count').replaceChildren(new Option('Automatisch (experimentell)', '-1'),
+    ...Array.from({length: 20}, (_, index) => new Option(String(index + 1), String(index + 1))));
+  $('meeting-diarize').disabled = !speakerModelsAvailable;
+  $('meeting-speaker-count').disabled = !speakerModelsAvailable;
+  $('meeting-speaker-availability').textContent = speakerModelsAvailable ? 'Lokale Sprecherzuordnungsmodelle sind vorhanden.' : 'Dieses Paket enthält noch keine Sprecherzuordnungsmodelle.';
   const originalButton = document.createElement('button'); originalButton.textContent = 'Wortgenaues Transkript';
   originalButton.onclick = () => { if (lastOriginal) { $('result').value = lastOriginal; status('Ursprüngliches Transkript wiederhergestellt.'); } };
   $('copy').before(originalButton);
