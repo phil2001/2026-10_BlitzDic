@@ -4,12 +4,15 @@ const $ = id => document.getElementById(id);
 const api = window.blitz;
 let settings, catalog, busy = false, lastOriginal = '';
 let meetingBusy = false;
+let dictationSourceEnded = false, meetingSourceEnded = false;
 let speakerOptions = {enabled: false, speakerCount: -1};
 let speakerModelsAvailable = false;
 const status = text => { $('status').textContent = text; };
 const attempt = fn => async () => { try { await fn(); } catch (error) { status(error.message); } };
-const recorder = new Recorder({ onLevel: level => { $('level').value = level; }, onLimit: () => $('record').click() });
-const meetingRecorder = new Recorder({onLevel: level => { $('meeting-level').value = level; }, onLimit: () => $('meeting-record').click()});
+const recorder = new Recorder({ onLevel: level => { $('level').value = level; }, onLimit: () => $('record').click(),
+  onEnded: () => {dictationSourceEnded = true; $('record').click();} });
+const meetingRecorder = new Recorder({onLevel: level => { $('meeting-level').value = level; }, onLimit: () => $('meeting-record').click(),
+  onEnded: () => {meetingSourceEnded = true; $('meeting-record').click();}});
 function meetingRecordingUI(active) {
   api['recording-state'](active).catch(error => status(error.message));
   $('meeting-record').textContent = active ? 'Aufnahme beenden und transkribieren' : 'Meeting aufnehmen';
@@ -27,9 +30,10 @@ $('meeting-record').onclick = attempt(async () => {
       const existing = $('meeting-transcript').value.trim();
       const text = speakerOptions.enabled ? `Aufnahmeabschnitt (Sprecherkennungen gelten nur hier):\n${entry.original}` : entry.original;
       $('meeting-transcript').value = [existing, text].filter(Boolean).join('\n\n');
-      status('Meeting lokal transkribiert. Die Zusammenfassung kann jetzt gestartet werden.');
+      status('Meeting lokal transkribiert. ' + (meetingSourceEnded ? 'Die Audioquelle wurde beendet; der vorhandene Abschnitt wurde verarbeitet.' : 'Die Zusammenfassung kann jetzt gestartet werden.'));
     } finally { meetingBusy = false; meetingRecordingUI(false); }
   } else {
+    meetingSourceEnded = false;
     speakerOptions = {enabled: $('meeting-diarize').checked, speakerCount: Number($('meeting-speaker-count').value)};
     $('meeting-cancel').hidden = false; status('Mikrofon wird gestartet …');
     try { if (!await meetingRecorder.start($('microphone').value, {source: $('meeting-source').value})) return; }
@@ -105,8 +109,12 @@ document.querySelectorAll('nav button').forEach(button => button.onclick = () =>
 $('record').onclick = attempt(async () => {
   if (busy || meetingBusy || meetingRecorder.state !== 'idle' || recorder.state === 'starting') return;
   if (['recording', 'limit'].includes(recorder.state)) {
-    const wav = recorder.stop(); recordingUI(false); await result(await api.audio(wav, $('mode').value));
+    const wav = recorder.stop(); recordingUI(false);
+    const entry = await api.audio(wav, $('mode').value);
+    if (dictationSourceEnded) entry.warning = [entry.warning, 'Die Audioquelle wurde beendet; der vorhandene Abschnitt wurde verarbeitet.'].filter(Boolean).join('\n');
+    await result(entry);
   } else {
+    dictationSourceEnded = false;
     $('cancel').hidden = false; status('Mikrofon wird gestartet …');
     try {
       if (!await recorder.start($('microphone').value)) return;

@@ -13,6 +13,13 @@ const app = await electron.launch({executablePath, args: [...(executablePath ? [
   `--use-file-for-fake-audio-capture=${root}/.runtime/test-speech.wav`])], env});
 try {
   const page = await app.firstWindow(); await page.waitForSelector('#provider option', {state: 'attached'});
+  const endSource = process.env.BLITZDIC_TEST_END_SOURCE === '1';
+  if (endSource) await page.evaluate(() => {
+    const original = navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);
+    navigator.mediaDevices.getUserMedia = async options => {
+      const stream = await original(options); window.blitzTestMic = stream; return stream;
+    };
+  });
   await page.locator('nav button[data-page="meetings"]').click();
   await page.locator('#meeting-source').selectOption(source);
   const diarize = process.env.BLITZDIC_TEST_DIARIZE === '1';
@@ -46,8 +53,17 @@ try {
         } finally {await context.close();}
       }, fixture);
     } else await new Promise(resolve => setTimeout(resolve, 6200));
-    await page.locator('#meeting-record').click();
+    if (endSource) await page.evaluate(() => {
+      const track = window.blitzTestMic.getAudioTracks()[0];
+      track.dispatchEvent(new Event('ended'));
+      track.dispatchEvent(new Event('ended'));
+    });
+    else await page.locator('#meeting-record').click();
     await page.waitForFunction(() => document.querySelector('#status').textContent.startsWith('Meeting lokal transkribiert.'), {}, {timeout: 60000});
+    if (endSource) {
+      assert.match(await page.locator('#status').textContent(), /Audioquelle wurde beendet/);
+      assert.equal(await page.locator('#meeting-record').textContent(), 'Meeting aufnehmen');
+    }
     assert.ok(/local speech recognition test/.test(await page.locator('#meeting-transcript').inputValue()),
       'Der erwartete Testsatz wurde nicht erkannt. Audioquelle und Umgebungswiedergabe prüfen.');
     assert.equal((await page.evaluate(() => window.blitz.load())).history.length, 0);

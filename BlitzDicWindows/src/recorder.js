@@ -1,8 +1,8 @@
 import { encodeWav } from './wav.js';
 
 export class Recorder {
-  constructor({ onLevel = () => {}, onLimit = () => {} } = {}) {
-    this.onLevel = onLevel; this.onLimit = onLimit; this.state = 'idle';
+  constructor({ onLevel = () => {}, onLimit = () => {}, onEnded = onLimit } = {}) {
+    this.onLevel = onLevel; this.onLimit = onLimit; this.onEnded = onEnded; this.state = 'idle';
   }
   async start(deviceId = '', { source = 'microphone' } = {}) {
     if (this.state !== 'idle') throw new Error('Aufnahme läuft bereits.');
@@ -10,10 +10,24 @@ export class Recorder {
     this.state = 'starting'; this.chunks = []; this.samples = 0;
     const session = {streams: [], sources: []}; this.session = session;
     const current = () => this.session === session;
+    session.onEnded = () => {
+      session.ended = true;
+      if (current() && this.state === 'recording') { this.state = 'limit'; this.onEnded(); }
+    };
+    const watch = stream => {
+      session.streams.push(stream);
+      stream.getTracks().forEach(track => {
+        if (track.readyState === 'ended') session.ended = true;
+        track.addEventListener?.('ended', session.onEnded);
+      });
+    };
+    const checkSource = () => {
+      if (session.ended) throw new Error('Die Audioquelle wurde während des Starts beendet. Bitte erneut starten.');
+    };
     try {
       if (source !== 'microphone') {
         const display = await navigator.mediaDevices.getDisplayMedia({audio: true, video: {frameRate: 1}});
-        session.streams.push(display);
+        watch(display);
         if (!current()) { this.release(session); return false; }
         if (!display.getAudioTracks().some(track => track.readyState === 'live'))
           throw new Error('Windows hat keinen Systemaudio-Stream geliefert. Audioausgabegerät prüfen.');
@@ -23,12 +37,14 @@ export class Recorder {
         deviceId: deviceId ? { exact: deviceId } : undefined,
         channelCount: 1, echoCancellation: true, noiseSuppression: true,
       } });
-      session.streams.push(session.stream);
+      watch(session.stream);
       }
       if (!current()) { this.release(session); return false; }
+      checkSource();
       session.context = new AudioContext();
       await session.context.audioWorklet.addModule(new URL('./recorder-worklet.js', import.meta.url));
       if (!current()) { this.release(session); return false; }
+      checkSource();
       session.node = new AudioWorkletNode(session.context, 'blitzdic-capture');
       for (const stream of session.streams) {
         const input = session.context.createMediaStreamSource(stream);
@@ -52,6 +68,7 @@ export class Recorder {
       // are not spoken against a prematurely displayed recording indicator.
       if (source !== 'microphone') await new Promise(resolve => setTimeout(resolve, 1500));
       if (!current()) { this.release(session); return false; }
+      checkSource();
       this.state = 'recording'; return true;
     } catch (error) {
       if (!current()) { this.release(session); return false; }
@@ -70,6 +87,7 @@ export class Recorder {
   }
   release(session) {
     if (!session) return;
+    session.streams.forEach(stream => stream.getTracks().forEach(track => track.removeEventListener?.('ended', session.onEnded)));
     session.streams.forEach(stream => stream.getTracks().forEach(track => track.stop()));
     session.sources.forEach(source => source.disconnect()); session.node?.disconnect(); session.mute?.disconnect();
     if (session.node) session.node.port.onmessage = null;

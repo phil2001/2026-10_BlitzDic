@@ -495,3 +495,24 @@ long meetings or arbitrary prompts. The test is intentionally opt-in, outside
 normal unit CI, and requires a running local server with the requested model alias.
 The current installer still predates hierarchical summary reduction; no application
 code changed in this step, so deterministic tests were not needlessly repeated.
+
+## Ended capture sources, 2026-10-31
+
+Recorder now listens for ended events on every acquired microphone/display track.
+An active source ending switches the recorder to a finalizable state and invokes
+the UI's normal stop/transcribe path exactly once, preserving buffered audio.
+If a source ends during startup, startup fails cleanly instead of falsely showing
+an active recording. Event listeners are removed before tracks are stopped during
+normal cleanup, preventing cancellation or stale tracks from triggering later work.
+The dictation/meeting result reports when its source ended unexpectedly.
+
+35 Node tests passed (two optional ASR tests skipped). The recorder regression
+covers exact buffered WAV length, duplicate ended events, source loss during
+AudioContext resume, and stale events after cancellation. The extended Electron
+meeting test injects ended events into a real browser stream backed by the synthetic
+microphone fixture; both actual Whisper and Parakeet produced the expected text,
+the UI returned to its idle button and reported the ended source. This simulates
+the browser event contract; physical USB unplugging and Windows session loss remain
+unverified. No audio/history/meeting entries were persisted by that test.
+Installer 0.3.1 predates this behavior and hierarchical summary changes and must
+be rebuilt before those are represented as delivered in the installer.

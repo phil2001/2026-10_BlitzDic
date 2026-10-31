@@ -2,6 +2,49 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Recorder } from '../src/recorder.js';
 
+test('ended audio sources finalize buffered audio once and fail cleanly during startup', async () => {
+  class Track extends EventTarget {
+    readyState = 'live';
+    stop() {this.readyState = 'ended';}
+    end() {this.readyState = 'ended'; this.dispatchEvent(new Event('ended'));}
+  }
+  const original = Object.getOwnPropertyDescriptor(globalThis, 'navigator');
+  const oldContext = globalThis.AudioContext, oldNode = globalThis.AudioWorkletNode;
+  let track, resume = () => Promise.resolve();
+  Object.defineProperty(globalThis, 'navigator', {configurable: true, value: {mediaDevices: {
+    getUserMedia: async () => {track = new Track(); return {getTracks: () => [track]};},
+  }}});
+  globalThis.AudioContext = class {
+    state = 'running'; sampleRate = 16000; audioWorklet = {addModule: async () => {}};
+    createMediaStreamSource() {return {connect() {}, disconnect() {}};}
+    createGain() {return {gain: {}, connect() {}, disconnect() {}};}
+    resume() {return resume();} close() {this.state = 'closed'; return Promise.resolve();}
+  };
+  globalThis.AudioWorkletNode = class {port = {}; connect() {} disconnect() {}};
+  let callbacks = 0, audio;
+  const recorder = new Recorder({onEnded: () => {callbacks++; audio = recorder.stop();}});
+  try {
+    await recorder.start();
+    recorder.session.node.port.onmessage({data: new Float32Array([0.1, 0.2, 0.3])});
+    track.end(); track.end();
+    assert.equal(callbacks, 1); assert.equal(recorder.state, 'idle');
+    assert.equal(audio.byteLength, 44 + 3 * 2);
+    let finish;
+    resume = () => new Promise(resolve => {finish = resolve;});
+    const pending = recorder.start(); await new Promise(resolve => setImmediate(resolve));
+    track.end(); finish();
+    await assert.rejects(pending, /Audioquelle/);
+    assert.equal(callbacks, 1); assert.equal(recorder.state, 'idle');
+    resume = () => Promise.resolve(); await recorder.start();
+    recorder.cancel(); track.end(); assert.equal(callbacks, 1);
+  } finally {
+    recorder.cancel();
+    if (original) Object.defineProperty(globalThis, 'navigator', original); else delete globalThis.navigator;
+    if (oldContext) globalThis.AudioContext = oldContext; else delete globalThis.AudioContext;
+    if (oldNode) globalThis.AudioWorkletNode = oldNode; else delete globalThis.AudioWorkletNode;
+  }
+});
+
 test('cancelled microphone startup cannot replace or stop a newer recording', async () => {
   const pending = [];
   const original = Object.getOwnPropertyDescriptor(globalThis, 'navigator');
