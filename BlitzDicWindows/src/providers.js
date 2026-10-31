@@ -57,15 +57,22 @@ async function request(config, route, body, options = {}) {
     if (response.status === 429) throw new Error('Anfragelimit oder Guthaben erschöpft.');
     throw new Error(`Modellserver meldet HTTP ${response.status}.`);
   }
-  try { return await response.json(); }
-  catch { throw new Error('Modellserver hat keine gültige JSON-Antwort geliefert.'); }
+  try {
+    const json = await response.json();
+    if (!json || typeof json !== 'object' || Array.isArray(json)) throw new Error('Invalid response');
+    return json;
+  } catch {
+    if (options.signal?.aborted) throw new Error('Abgebrochen.');
+    if (timeout.aborted) throw new Error('Zeitüberschreitung beim Modellserver.');
+    throw new Error('Modellserver hat keine gültige JSON-Antwort geliefert.');
+  }
 }
 
 export async function listModels(input, options) {
   const config = validateConfig(input, { requireModel: false });
   const json = await request(config, 'models', undefined, options);
   if (!Array.isArray(json.data)) throw new Error('Modellliste hat ein unbekanntes Format.');
-  return [...new Set(json.data.map(item => item.id).filter(id => typeof id === 'string' && id))];
+  return [...new Set(json.data.map(item => item?.id).filter(id => typeof id === 'string' && id))];
 }
 
 export async function complete(input, instruction, text, options) {
@@ -78,7 +85,7 @@ export async function complete(input, instruction, text, options) {
   if (json.stop_reason === 'refusal' || json.choices?.[0]?.message?.refusal)
     throw new Error('Modell hat die Anfrage abgelehnt.');
   const result = anthropic
-    ? json.content?.filter(block => block.type === 'text').map(block => block.text).join('')
+    ? (Array.isArray(json.content) ? json.content.filter(block => block?.type === 'text' && typeof block.text === 'string').map(block => block.text).join('') : undefined)
     : json.choices?.[0]?.message?.content;
   if (typeof result !== 'string' || !result.trim()) throw new Error('Keine Textantwort vom Modell erhalten.');
   if (json.stop_reason === 'max_tokens' || json.choices?.[0]?.finish_reason === 'length')

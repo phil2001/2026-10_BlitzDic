@@ -82,7 +82,7 @@ sie aus den lokalen Modellordnern. Sprachtests mit echten Gewichten werden über
 ## Noch offen
 
 Automatisches Einfügen ist nur für klassische Windows-Textfelder vorbereitet
-und noch nicht erfolgreich end-to-end geprüft. Browser-/Office-Anbindung,
+und über den Hintergrundprozess geprüft. Der vollständige Tastenkürzelablauf und die Browser-/Office-Anbindung,
 Meeting-Funktionen, physische Mikrofontests, abschließender Designabgleich,
 vollständige Lizenzpaketierung und ein sauberer Installationstest bleiben offen.
 Der verfügbare Installer ist daher kein Nachweis der Fertigstellung.

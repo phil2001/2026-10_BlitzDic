@@ -54,3 +54,21 @@ test('truncated output is not accepted as a finished rewrite', async t => {
   const config = await server(t, (req, res) => res.end(JSON.stringify({ choices: [{ message: { content: 'Partial' }, finish_reason: 'length' }] })));
   await assert.rejects(complete(config, '', ''), /abgeschnitten/);
 });
+test('Anthropic uses Messages protocol and extracts only text blocks', async t => {
+  const config = await server(t, async (req, res) => {
+    assert.equal(req.url, '/v1/messages');
+    assert.equal(req.headers['x-api-key'], 'test-key');
+    assert.equal(req.headers.authorization, undefined);
+    let raw = ''; for await (const chunk of req) raw += chunk;
+    const body = JSON.parse(raw);
+    assert.equal(body.system, 'instruction');
+    assert.deepEqual(body.messages, [{ role: 'user', content: 'dictation' }]);
+    res.end(JSON.stringify({ content: [{ type: 'thinking', thinking: 'hidden' }, { type: 'text', text: 'Result' }], stop_reason: 'end_turn' }));
+  });
+  config.provider = 'anthropic'; config.apiKey = 'test-key';
+  assert.equal(await complete(config, 'instruction', 'dictation'), 'Result');
+});
+test('malformed top-level response produces a useful error', async t => {
+  const config = await server(t, (req, res) => res.end('null'));
+  await assert.rejects(complete(config, '', ''), /gültige JSON/);
+});

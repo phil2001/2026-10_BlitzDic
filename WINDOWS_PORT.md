@@ -80,10 +80,7 @@ microphone UI flow) and Parakeet (in-memory worker call) were verified. Existing
 recordings from earlier development tests have not been removed. The previously
 built installer predates this change and must be rebuilt before delivery.
 
-Native Edit/RichEdit target capture and guarded insertion are implemented, but
-the attempted native-window test could not acquire foreground focus. Successful
-insertion is therefore not yet verified. Browser/Office UI Automation remains
-outstanding; unknown controls are rejected rather than guessed.
+Native Edit/RichEdit target capture and guarded insertion are implemented. The interactive script BlitzDicWindows/scripts/verify-insertion.py now verifies a real Windows Edit control through separate speech-worker processes: Unicode and emoji insertion, selection replacement, undo, changed-cursor rejection, password/read-only rejection, and unchanged clipboard sequence. This proves the native Edit adapter, not RichEdit, Browser/Office UI Automation, or the complete global-shortcut recording flow. Those remain outstanding; unknown controls are rejected rather than guessed.
 
 The application now targets Windows 11 exclusively. Legacy platform sources and documentation have been removed. Ported mode prompts and provider behavior live in BlitzDicWindows/src. The original ancestry and MIT notices remain available in Git history and LICENSE.
 
