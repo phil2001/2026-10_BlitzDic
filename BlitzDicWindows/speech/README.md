@@ -1,5 +1,7 @@
 # Local speech recognition
 
+German user guide: [Systemvoraussetzungen für Whisper und Parakeet Ultra](../SYSTEMVORAUSSETZUNGEN.md).
+
 Development setup (Windows x64, uv installed):
 
 ```powershell

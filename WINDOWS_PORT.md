@@ -1,5 +1,9 @@
 # BlitzDic for Windows 11
 
+Hardware guidance: [Systemvoraussetzungen für Whisper und Parakeet Ultra](BlitzDicWindows/SYSTEMVORAUSSETZUNGEN.md).
+The model-selection UI must display these requirements before downloading a
+model, including the distinction between CPU support and optional GPU support.
+
 ## Provenance
 
 Windows fork of https://github.com/cmagnussen/blitztext-app at
