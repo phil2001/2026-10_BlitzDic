@@ -241,3 +241,22 @@ passed (two optional ASR tests skipped). This resolves the observed short-fixtur
 failure on this workstation; it does not establish behavior on every audio device,
 long-form accuracy or combined-source quality. The installer needs rebuilding.
 No captured waveform or transcript was saved by the comparison script.
+
+## Mixed-source and real local summary tests, 2026-10-31
+
+The full meeting-audio UI test passed with BLITZDIC_TEST_AUDIO_SOURCE=both for
+Whisper and Parakeet Ultra. A synthetic microphone and real Windows playback of
+the speech fixture were mixed, recognized locally, and left no saved meeting or
+dictation history. This is a controlled short test, not long-recording validation.
+
+An actual LM Studio server and the preinstalled qwen2.5-coder-3b-instruct model
+were exercised through the Meetings service using a synthetic German transcript.
+The protocol and model inference worked, but quality checks found omitted tasks,
+unfounded additions and misclassified open questions. Instructions were clarified
+for first-person speaker assignments, absent deadlines and open questions. The
+stronger verify-real-meeting-model.mjs still fails the open-question check for this
+small coding model. Do not represent it as a successful summary-quality validation.
+The script is an opt-in real-model quality gate, not part of deterministic unit CI.
+The temporarily loaded test model was unloaded and its server stopped afterwards,
+restoring their original unloaded/stopped state. No new model was downloaded.
+Further model-quality work is required before claiming reliable meeting summaries.
