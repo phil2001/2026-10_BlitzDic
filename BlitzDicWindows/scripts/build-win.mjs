@@ -19,6 +19,7 @@ for (const file of ['models/whisper/model.bin', 'models/parakeet-ultra/encoder-m
   'models/parakeet-ultra/decoder_joint-model.int8.onnx']) await access(resolve(root, file));
 await mkdir(resolve(root, buildRoot), {recursive: true});
 console.log(`Build: ${id}\nInstaller output: ${output}`);
+await run(python, ['scripts/setup-diarization.py', '--verify-only']);
 await run(python, ['scripts/collect-licenses.py', `${buildRoot}/licenses`]);
 await run(`${process.env.SystemRoot}/System32/WindowsPowerShell/v1.0/powershell.exe`,
   ['-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-File', 'scripts/build-speech.ps1',

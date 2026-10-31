@@ -9,6 +9,11 @@ files:
   - package.json
   - SYSTEMVORAUSSETZUNGEN.md
 extraResources:
+  - from: models/diarization
+    to: models/diarization
+    filter: ["model.int8.onnx", "nemo_en_titanet_small.onnx"]
+  - from: licenses/diarization
+    to: licenses/diarization
   - from: models/whisper
     to: models/whisper
     filter: ["**/*", "!.cache/**/*"]

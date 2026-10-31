@@ -4,10 +4,11 @@ import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 const root = resolve(import.meta.dirname, '..');
 const env = {...process.env}; delete env.ELECTRON_RUN_AS_NODE;
+const executablePath = process.env.BLITZDIC_TEST_EXECUTABLE;
 const source = process.env.BLITZDIC_TEST_AUDIO_SOURCE || 'microphone';
 assert.ok(['microphone', 'system', 'both'].includes(source));
 const fixture = source === 'microphone' ? null : (await readFile(`${root}/.runtime/test-speech.wav`)).toString('base64');
-const app = await electron.launch({args: [root, `--user-data-dir=${root}/.runtime/meeting-audio-${Date.now()}`,
+const app = await electron.launch({executablePath, args: [...(executablePath ? [] : [root]), `--user-data-dir=${root}/.runtime/meeting-audio-${Date.now()}`,
   ...(source === 'system' ? [] : ['--use-fake-device-for-media-stream', '--use-fake-ui-for-media-stream',
   `--use-file-for-fake-audio-capture=${root}/.runtime/test-speech.wav`])], env});
 try {

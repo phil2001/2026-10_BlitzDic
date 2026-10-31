@@ -32,8 +32,8 @@ Ein zusätzliches lokales LLM hat eigene RAM-/VRAM-Anforderungen.
 ## Installation und Bedienung
 
 Der bisher lokal gebaute Entwicklungsinstaller liegt unter
-`BlitzDicWindows/dist/windows-2026-10-31T16-51-34-965Z-b5d89f/BlitzDic Setup 0.2.0.exe` und ist etwa
-1,10 GB groß. Er ist nicht signiert und enthält die aktuelle Diktat- und Einfügelaufzeit. Eine fertige Release-Datei ist noch nicht veröffentlicht.
+`BlitzDicWindows/dist/windows-2026-10-31T17-12-37-801Z-29ba3b/BlitzDic Setup 0.3.0.exe` und ist etwa
+1,14 GB groß. Er ist nicht signiert und enthält die aktuelle Diktat- und Einfügelaufzeit. Eine fertige Release-Datei ist noch nicht veröffentlicht.
 
 1. Nach Installation BlitzDic öffnen und unter **Modelle** Whisper oder Parakeet wählen.
 2. Unter **Diktat** Mikrofon und Schreibmodus wählen, Aufnahme starten und beenden.
@@ -70,6 +70,7 @@ Installer bauen:
 
 ```powershell
 uv pip install --python .runtime/venv/Scripts/python.exe pyinstaller==6.22.3
+.runtime/venv/Scripts/python.exe scripts/setup-diarization.py
 npm.cmd run build:win
 ```
 
@@ -116,12 +117,11 @@ Zuvor bleibt das Meeting-Transkript nur im geöffneten Fenster. Kleine Modelle
 können Aufgaben und offene Fragen falsch zuordnen; Ergebnisse müssen geprüft
 werden. Ein tatsächlicher Test mit Qwen 2.5 Coder 3B hat solche Fehler gezeigt.
 
-Version 0.2.0 enthält diese Funktionen. Sprecherzuordnung, Live-Notizen und
+Version 0.3.0 enthält diese Funktionen. Sprecherzuordnung, Live-Notizen und
 Langaufnahmequalität sind noch nicht abschließend umgesetzt beziehungsweise geprüft.
 
-Die Entwicklungsoberfläche bietet inzwischen eine optionale experimentelle
-Sprechertrennung für Meeting-Aufnahmen. Sie ist nur bei vorhandenen lokalen
-Zusatzmodellen aktiv; der bisherige Installer 0.2.0 enthält diese noch nicht.
-Sprecherkennungen gelten je Aufnahmeabschnitt und werden als Teil des Transkripts
-gespeichert. Die automatische Sprecherzahl ist noch unzuverlässig; eine bekannte
-Zahl kann vorgegeben werden.
+Version 0.3.0 bietet optionale experimentelle Sprechertrennung mit enthaltenen
+Zusatzmodellen. Sprecherkennungen gelten je Aufnahmeabschnitt und werden als Teil
+des Transkripts gespeichert. Die automatische Sprecherzahl ist noch unzuverlaessig;
+eine bekannte Zahl kann von 1 bis 20 vorgegeben werden. Auf dem Ziel-PC sind keine
+separaten Modell- oder Python-Installationen erforderlich.

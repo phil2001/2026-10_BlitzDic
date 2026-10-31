@@ -367,3 +367,27 @@ consistently for every count from one to twenty. Two non-UTF8 bytes introduced i
 new explanatory text were also corrected. Automatic-count quality, auxiliary model
 provenance/licensing, reproducible acquisition and installer bundling remain open.
 The 0.2.0 installer does not yet include these controls or auxiliary models.
+
+## Bundled speaker package 0.3.0, 2026-10-31
+
+Built: BlitzDicWindows/dist/windows-2026-10-31T17-12-37-801Z-29ba3b/BlitzDic Setup 0.3.0.exe
+Size: 1,141,066,999 bytes. SHA-256:
+E2A6111637A8201A5E5784A0E28556E836FC3CF62394C4DA9E979A209EDE57E7
+
+Includes both preferred ASR models, auxiliary speaker models, frozen sherpa runtime,
+local transcript saving and current speaker controls. Acquisition is hash-pinned
+and build-verified; no extra install is required by the end user. Provenance was
+traced through the official sherpa export documentation to NVIDIA NGC TitaNet-S
+v1.19.0, whose original card refers model usage to the NeMo Toolkit license.
+The corresponding Apache-2.0 text and the segmentation archive's CNRS MIT text
+are included with source attribution. This does not close unrelated native-library
+review (FFmpeg/libsndfile and other binary dependency obligations).
+
+The packed executable passed actual microphone -> diarization -> Whisper/Parakeet
+-> labeled transcript -> encrypted save -> reload using a fresh app profile and
+synthetic single-speaker audio. The packaged license inventory has 36 dependencies
+and no missing package notices. The one missing core notice seen at initial
+collection was supplemented from the official v2.0.1 LICENSE before packaging;
+the same version-pinned notice is now used by future collector runs.
+Actual 0.3 installer execution, clean VM, automatic speaker quality and other
+remaining acceptance gates are still open; the overall goal remains incomplete.

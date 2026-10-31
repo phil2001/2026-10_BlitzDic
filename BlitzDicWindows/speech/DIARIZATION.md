@@ -56,3 +56,20 @@ transitive and touching range behavior without model dependencies.
 
 This action remains internal. User controls, optional model-availability checks,
 transcript persistence and fresh packaged-worker validation still need integration.
+
+## Packaging update
+
+The 0.3 build includes both auxiliary ONNX files and their dedicated attribution
+and license directory. Run `.runtime/venv/Scripts/python.exe scripts/setup-diarization.py`
+once during development; `--verify-only` checks existing assets without network.
+Builds run verification automatically before packaging. Downloads and extracted
+model bytes are validated against checked-in SHA-256 fingerprints, existing
+mismatches are retained and rejected, and archive extraction reads only the one
+expected regular-file member without extracting paths.
+
+PyInstaller now collects sherpa_onnx native components. The packaged-app microphone
+workflow passed actual diarization plus Whisper and Parakeet, then persisted labeled
+text through encrypted save/reload using the frozen worker and bundled models.
+Known speaker count one was supplied in this UI fixture; automatic count accuracy
+is still experimental. The 0.3 installer remains unsigned, and clean-VM/actual
+installer execution for this new version remains separate from packaged-app tests.

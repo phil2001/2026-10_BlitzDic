@@ -31,3 +31,15 @@ und Chromium-Hinweise sowie die versionsgebundenen Ergänzungen unter
 BlitzDicWindows/licenses/upstream. Das Build-Inventar dokumentiert Herkunft und
 Prüfsummen. Eingebettete native Bibliotheken und deren Quellcodepflichten müssen
 vor der fertigen Veröffentlichung zusätzlich geprüft werden.
+
+## Speaker auxiliary models in Windows 0.3
+
+The package now also includes pyannote segmentation-3.0 (CNRS, MIT) and
+NVIDIA NeMo TitaNet-Small (the original NGC card refers to the NeMo Toolkit
+license; the v1.19.0 Apache-2.0 text is included). Both ONNX conversions are
+published by sherpa-onnx and distributed unchanged by BlitzDic. Dedicated
+attribution, source links and complete texts are in
+BlitzDicWindows/licenses/diarization and the installed resources/licenses/diarization.
+Pinned source URLs and SHA-256 fingerprints are in speech/diarization-models.json.
+The sherpa-onnx/core runtime is Apache-2.0; its version-bound notice is collected
+with the remaining Python dependencies. General native-library review remains open.
