@@ -30,6 +30,30 @@ async function refreshHistory() {
     article.append(time, text, copy); $('history-list').append(article);
   }
 }
+async function refreshMeetings() {
+  const entries = await api.meetings(); $('meeting-list').replaceChildren();
+  if (!entries.length) $('meeting-list').textContent = 'Noch keine Meetings.';
+  for (const entry of entries) {
+    const button = document.createElement('button');
+    button.textContent = `${entry.title} · ${new Date(entry.createdAt).toLocaleString('de-DE')}`;
+    button.onclick = () => { $('meeting-title').value = entry.title; $('meeting-transcript').value = entry.transcript; $('meeting-result').value = entry.summary; };
+    $('meeting-list').append(button);
+  }
+}
+$('meeting-from-dictation').onclick = () => { $('meeting-transcript').value = lastOriginal || $('result').value; };
+$('meeting-summarize').onclick = attempt(async () => {
+  $('meeting-summarize').disabled = true; $('meeting-cancel').hidden = false;
+  status('Meeting wird zusammengefasst …');
+  try {
+    const entry = await api['meeting-summary']($('meeting-transcript').value, $('meeting-title').value);
+    $('meeting-result').value = entry.summary; await refreshMeetings(); status('Meeting verschlüsselt gespeichert.');
+  } finally { $('meeting-summarize').disabled = false; $('meeting-cancel').hidden = true; }
+});
+$('meeting-cancel').onclick = attempt(() => api.cancel());
+$('meeting-copy').onclick = attempt(async () => { await api.copy($('meeting-result').value); status('Zusammenfassung kopiert.'); });
+$('meetings-clear').onclick = attempt(async () => {
+  if (confirm('Alle gespeicherten Meetings leeren?')) { await api['meetings-clear'](); await refreshMeetings(); }
+});
 const providerConfig = () => Object.fromEntries(['provider', 'location', 'baseURL', 'model', 'apiKey'].map(id => [id, $(id).value]));
 document.querySelectorAll('nav button').forEach(button => button.onclick = () => {
   document.querySelectorAll('main > section').forEach(section => { section.hidden = section.id !== button.dataset.page; });
@@ -154,5 +178,5 @@ try {
   customVisibility();
   $('history-enabled').checked = settings.historyEnabled;
   $('terms').value = settings.modeSettings.customTerms.join('\n'); $('instruction').value = settings.modeSettings.systemPrompt || '';
-  updateLocation(); await refreshHistory();
+  updateLocation(); await refreshHistory(); await refreshMeetings();
 } catch (error) { status(error.message); }

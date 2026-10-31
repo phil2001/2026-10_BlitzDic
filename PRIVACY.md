@@ -22,3 +22,10 @@ vorübergehend lokal gelesen, um Änderungen während der Erkennung zu erkennen.
 Gespeichert wird er nicht; nur ein flüchtiger Fingerabdruck und die Auswahlposition
 werden verglichen. Passwortfelder werden ausgeschlossen. Details:
 [Windows-Einfügen](BlitzDicWindows/speech/WINDOWS_INSERTION.md).
+
+Meeting-Zusammenfassungen senden das eingegebene Transkript an denselben gewählten
+LLM-Endpunkt. Original und Zusammenfassung liegen in einer eigenen verschlüsselten
+Sammlung mit maximal 100 Einträgen; sie lässt sich auf der Meeting-Seite leeren.
+Die allgemeine Option „Verlauf speichern“ betrifft den Diktatverlauf. Meetings
+werden durch den ausdrücklich beschrifteten Zusammenfassen-und-Speichern-Schritt
+unabhängig davon gespeichert.

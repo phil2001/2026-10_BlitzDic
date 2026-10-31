@@ -44,6 +44,9 @@ export class PrivateStore {
   }
   saveSettings(settings) { return this.update('settings', defaultSettings(), () => settings); }
   history() { return this.read('history', []); }
+  meetings() { return this.read('meetings', []); }
+  appendMeeting(entry) { return this.update('meetings', [], entries => [entry, ...entries].slice(0, 100)); }
+  clearMeetings() { return this.update('meetings', [], () => []); }
   appendHistory(entry, limit = 100) {
     const count = Math.max(1, Math.min(1000, Number.isFinite(limit) ? Math.trunc(limit) : 100));
     return this.update('history', [], entries => [entry, ...entries].slice(0, count));

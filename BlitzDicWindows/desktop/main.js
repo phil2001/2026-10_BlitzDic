@@ -7,9 +7,10 @@ import { Dictation } from '../src/dictation.js';
 import { runSpeech, speechPresets } from '../src/speech.js';
 import { providers, listModels, testConnection } from '../src/providers.js';
 import { modeForApp } from '../src/app-modes.js';
+import { Meetings } from '../src/meetings.js';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-let window, flow, store, tray, quitting = false;
+let window, flow, store, tray, meetings, quitting = false;
 const uiURL = pathToFileURL(join(root, 'ui/index.html')).href;
 app.setName('BlitzDic');
 if (!app.requestSingleInstanceLock()) app.quit();
@@ -18,10 +19,11 @@ else app.whenReady().then(async () => {
   const pythonPath = app.isPackaged ? join(process.resourcesPath, 'speech-runtime/blitzdic-speech.exe') : join(root, '.runtime/venv/Scripts/python.exe');
   const modelRoot = app.isPackaged ? join(process.resourcesPath, 'models') : join(root, 'models');
   flow = new Dictation({ store, modelRoot, pythonPath });
+  meetings = new Meetings({store});
   let insertionTarget = null, recording = false, capturePending = false, captureEpoch = 0;
   let insertionRequested = false, insertionProblem = '';
   async function triggerShortcut(mode) {
-    if (flow.active || capturePending) return;
+    if (flow.active || meetings.active || capturePending) return;
     if (!recording) {
       capturePending = true;
       insertionRequested = true; insertionProblem = '';
@@ -96,10 +98,12 @@ else app.whenReady().then(async () => {
     return runSpeech({ action: 'download', preset, modelDirectory: join(modelRoot, preset) }, { pythonPath, timeoutMs: 3600000 });
   });
   handle('import', async mode => {
+    if (meetings.active) throw new Error('Bitte die Meeting-Zusammenfassung abwarten oder abbrechen.');
     const selected = await dialog.showOpenDialog(window, { properties: ['openFile'], filters: [{ name: 'Audio', extensions: ['wav', 'mp3', 'm4a', 'ogg', 'flac', 'webm'] }] });
     return selected.canceled ? null : flow.process(selected.filePaths[0], mode);
   });
   handle('audio', async (bytes, mode) => {
+    if (meetings.active) throw new Error('Bitte die Meeting-Zusammenfassung abwarten oder abbrechen.');
     if (!(bytes instanceof ArrayBuffer) || bytes.byteLength > 350 * 1024 * 1024) throw new Error('Ungültige Aufnahme.');
     const target = insertionTarget; insertionTarget = null;
     const requested = insertionRequested, problem = insertionProblem;
@@ -114,7 +118,13 @@ else app.whenReady().then(async () => {
     }
     return entry;
   });
-  handle('cancel', () => { captureEpoch++; insertionTarget = null; insertionRequested = false; insertionProblem = ''; flow.cancel(); });
+  handle('cancel', () => { captureEpoch++; insertionTarget = null; insertionRequested = false; insertionProblem = ''; flow.cancel(); meetings.cancel(); });
+  handle('meetings', () => store.meetings());
+  handle('meeting-summary', (transcript, title) => {
+    if (flow.active || recording || capturePending) throw new Error('Bitte das Diktat zuerst beenden.');
+    return meetings.summarize(transcript, title);
+  });
+  handle('meetings-clear', () => store.clearMeetings());
   handle('recording-state', active => { recording = !!active; tray.setToolTip(active ? 'BlitzDic · Aufnahme läuft' : 'BlitzDic · Bereit'); });
   handle('copy', text => { if (typeof text !== 'string') throw new Error('Ungültiger Text.'); clipboard.writeText(text); });
   handle('history-clear', () => store.clearHistory());
@@ -125,5 +135,5 @@ else app.whenReady().then(async () => {
 }).catch(error => { dialog.showErrorBox('BlitzDic konnte nicht starten', error.message); app.quit(); });
 app.on('second-instance', () => { window?.show(); window?.focus(); });
 app.on('window-all-closed', () => { flow?.cancel(); app.quit(); });
-app.on('before-quit', () => { quitting = true; flow?.cancel(); });
+app.on('before-quit', () => { quitting = true; flow?.cancel(); meetings?.cancel(); });
 app.on('will-quit', () => { globalShortcut.unregisterAll(); tray?.destroy(); });

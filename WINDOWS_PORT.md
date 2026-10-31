@@ -154,3 +154,19 @@ three supplemental license notices; a later build must include those changes.
 The physical microphone, Office, meetings, visual polish and native-library license
 review remain open. Latest GitHub Windows tests for ed54fba completed successfully:
 https://github.com/phil2001/2026-10_BlitzDic/actions/runs/41220060386
+
+## Meeting summaries, 2026-10-31
+
+A Meetings page now accepts an existing transcript or the last dictation's original
+text and summarizes it through the configured local/LAN/API provider. Longer source
+text is processed in bounded chunks and merged; prompts require source-grounded
+facts, explicit uncertainty, decisions, tasks and open questions. Prompt constraints
+are not a guarantee of model accuracy. Original transcript and summary are stored
+in a separate DPAPI-encrypted collection capped at 100 entries. Summary generation
+is cancellable; provider failures preserve the input and do not save partial results.
+This does not yet provide live meeting capture, system audio or speaker diarization.
+
+29 unit/integration tests passed (two optional actual-model tests skipped).
+scripts/verify-meetings.mjs passed the UI -> local mock HTTP provider -> encrypted
+store -> reload path. This proves orchestration and persistence, not actual LLM
+summary quality. The existing installer predates this feature and must be rebuilt.

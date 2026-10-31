@@ -101,3 +101,10 @@ Programmregeln lassen sich unter Einstellungen hinterlegen, zum Beispiel
 `clean`, `calm` und `emoji`. Sie gelten beim Start über Strg+Umschalt+1 (bzw.
 das konfigurierte Wortgenau-Kürzel). Die anderen Modus-Kürzel bleiben ausdrücklich
 wählbar. Regeln werden zusammen mit den Einstellungen verschlüsselt gespeichert.
+
+Unter **Meetings** kannst du ein Transkript eingeben oder das letzte ursprüngliche
+Diktat übernehmen. Die Zusammenfassung verwendet den unter **Verbindungen**
+gewählten LLM-Anbieter. Original und Ergebnis werden verschlüsselt gespeichert.
+KI-Zusammenfassungen vor Verwendung prüfen. Live-Meetingaufnahme, Systemaudio und
+Sprecherzuordnung sind noch offen; der bisherige Installer enthält diese neue Seite
+noch nicht.
