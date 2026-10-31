@@ -391,3 +391,20 @@ collection was supplemented from the official v2.0.1 LICENSE before packaging;
 the same version-pinned notice is now used by future collector runs.
 Actual 0.3 installer execution, clean VM, automatic speaker quality and other
 remaining acceptance gates are still open; the overall goal remains incomplete.
+
+## Native binary evidence and build integration, 2026-10-31
+
+Added native-inventory.py and map-native-package.py to the build pipeline. The first
+records 118 installed package DLL/PYD fingerprints and queries actual FFmpeg DLL
+license/configuration exports: all seven report LGPL version 3 or later, version
+8.0. The second verified the existing 0.3.0 speech package's 182 native files:
+111 match installed package hashes, 71 are outside that package-only inventory
+(mainly Python/Windows runtime files, with OpenSSL/libffi/sqlite dependencies).
+Both scopes and the unmatched set remain explicit; this is not a completed audit.
+
+Official FFmpeg n8.0 LGPLv3/GPLv3 texts and LICENSE.md component notes were added.
+The license collector now bundles this directory. A new collection pass found 36
+Python dependencies and no missing package notices. Native source/build revision,
+corresponding-source and remaining binary notice work are still open. Existing
+0.3.0 installer predates these inventory files; a later build will include them.
+No application behavior was changed or re-tested unnecessarily in this step.

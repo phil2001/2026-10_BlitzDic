@@ -21,9 +21,12 @@ await mkdir(resolve(root, buildRoot), {recursive: true});
 console.log(`Build: ${id}\nInstaller output: ${output}`);
 await run(python, ['scripts/setup-diarization.py', '--verify-only']);
 await run(python, ['scripts/collect-licenses.py', `${buildRoot}/licenses`]);
+await run(python, ['scripts/native-inventory.py', `${buildRoot}/licenses/native-binaries.json`]);
 await run(`${process.env.SystemRoot}/System32/WindowsPowerShell/v1.0/powershell.exe`,
   ['-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-File', 'scripts/build-speech.ps1',
     '-OutputDirectory', speechOutput, '-WorkDirectory', `${buildRoot}/speech`]);
+await run(python, ['scripts/map-native-package.py', `${buildRoot}/licenses/native-binaries.json`,
+  `${speechOutput}/blitzdic-speech`, `${buildRoot}/licenses/native-package-map.json`]);
 let config = await readFile(resolve(root, 'electron-builder.yml'), 'utf8');
 config = config.replace('output: dist/windows', `output: ${output}`)
   .replace('from: dist/speech/blitzdic-speech', `from: ${speechOutput}/blitzdic-speech`)

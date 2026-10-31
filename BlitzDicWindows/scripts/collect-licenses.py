@@ -66,6 +66,7 @@ for source, filename in extras.items():
     if not source.is_file():
         raise SystemExit(f'Required notice missing: {source}')
     shutil.copyfile(source, output / filename)
+shutil.copytree(root / 'licenses/native', output / 'native')
 (output / 'inventory.json').write_text(json.dumps(manifest, indent=2), encoding='utf-8')
 print(json.dumps({'collectedPackages': len(manifest['packages']),
                   'missingPackageNotices': manifest['missingPackageNotices'],
