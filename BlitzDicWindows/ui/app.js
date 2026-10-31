@@ -1,4 +1,5 @@
 import { Recorder } from '../src/recorder.js';
+import { parseAppModes } from '../src/app-modes.js';
 const $ = id => document.getElementById(id);
 const api = window.blitz;
 let settings, catalog, busy = false, lastOriginal = '';
@@ -107,6 +108,17 @@ try {
     settings.modeSettings.replacements = rules; await save(); status('Ersetzungen gespeichert.');
   });
   $('settings').append(replacementHeading, replacementLabel, replacementSave);
+  const appTitle = document.createElement('h3'); appTitle.textContent = 'Schreibmodus pro Programm';
+  const appNote = document.createElement('p'); appNote.textContent = 'Gilt beim Start über das Wortgenau-Tastenkürzel (standardmäßig Strg+Umschalt+1). Die anderen Modus-Tastenkürzel behalten ihre feste Wahl. Eine Regel pro Zeile, zum Beispiel: winword.exe => clean. Modi: verbatim, clean, calm, emoji.';
+  const appRules = document.createElement('textarea'); appRules.id = 'app-mode-rules';
+  appRules.setAttribute('aria-label', 'Programmregeln für Schreibmodi');
+  appRules.value = (settings.appModes || []).map(rule => `${rule.executable} => ${rule.mode}`).join('\n');
+  const appSave = document.createElement('button'); appSave.id = 'save-app-modes'; appSave.textContent = 'Programmregeln speichern';
+  appSave.onclick = attempt(async () => {
+    const rules = parseAppModes(appRules.value); settings.appModes = rules;
+    await save(); status('Programmregeln gespeichert.');
+  });
+  $('settings').append(appTitle, appNote, appRules, appSave);
   const shortcutsTitle = document.createElement('h3'); shortcutsTitle.textContent = 'Globale Tastenkürzel';
   const shortcutsNote = document.createElement('p'); shortcutsNote.textContent = 'Einmal drücken startet, erneut drücken beendet die Aufnahme. Beim Schließen bleibt BlitzDic im Infobereich aktiv.';
   $('settings').append(shortcutsTitle, shortcutsNote);

@@ -6,6 +6,7 @@ import { windowsCrypto } from '../src/windows-storage.js';
 import { Dictation } from '../src/dictation.js';
 import { runSpeech, speechPresets } from '../src/speech.js';
 import { providers, listModels, testConnection } from '../src/providers.js';
+import { modeForApp } from '../src/app-modes.js';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 let window, flow, store, tray, quitting = false;
@@ -26,9 +27,10 @@ else app.whenReady().then(async () => {
       insertionRequested = true; insertionProblem = '';
       const epoch = captureEpoch;
       try {
-        const {target: captured, reason} = await runSpeech({ action: 'capture-target' }, { pythonPath, timeoutMs: 5000 });
+        const {target: captured, reason, executable} = await runSpeech({ action: 'capture-target' }, { pythonPath, timeoutMs: 5000 });
         if (epoch !== captureEpoch) return;
         insertionTarget = captured;
+        mode = modeForApp(mode, executable, (await store.settings()).appModes);
         if (!captured) insertionProblem = `Kein unterstütztes Eingabefeld erkannt (${reason || 'unbekannter Feldtyp'}); Text bleibt in BlitzDic.`;
       }
       catch (error) { insertionTarget = null; insertionProblem = `Eingabefeld konnte nicht erfasst werden: ${error.message}`; }

@@ -10,9 +10,12 @@ const app = await electron.launch({args: [resolve(import.meta.dirname, 'uia-test
 const worker = request => runSpeech(request, {pythonPath: `${root}/.runtime/venv/Scripts/python.exe`, timeoutMs: 10000});
 try {
   const page = await app.firstWindow();
+  await app.evaluate(({app, BrowserWindow}) => { app.focus({steal: true}); BrowserWindow.getAllWindows()[0].focus(); });
   await page.locator('#editor').click();
   await page.locator('#editor').evaluate(element => element.setSelectionRange(7, 7));
-  const target = (await worker({action: 'capture-target'})).target;
+  const captured = await worker({action: 'capture-target'});
+  assert.equal(captured.executable, 'electron.exe');
+  const target = captured.target;
   assert.equal(target?.kind, 'uia', JSON.stringify(target));
   assert.equal((await worker({action: 'insert-text', target, text: 'Grüße! 🌍'})).inserted, true);
   await page.waitForFunction(() => document.querySelector('#editor').value === 'Before Grüße! 🌍');

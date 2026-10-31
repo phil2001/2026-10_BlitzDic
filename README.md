@@ -95,3 +95,9 @@ Die ursprüngliche Git-Historie bleibt erhalten. BlitzDic verwendet einen eigene
 Namen und eigene Oberfläche. Dieses Repository entwickelt ausschließlich Windows 11.
 MIT-Lizenz: [LICENSE](LICENSE). Modelle und Abhängigkeiten haben eigene
 [Lizenzhinweise](THIRD_PARTY_NOTICES.md).
+
+Programmregeln lassen sich unter Einstellungen hinterlegen, zum Beispiel
+`winword.exe => clean` oder `chrome.exe => calm`. Erlaubte Modi sind `verbatim`,
+`clean`, `calm` und `emoji`. Sie gelten beim Start über Strg+Umschalt+1 (bzw.
+das konfigurierte Wortgenau-Kürzel). Die anderen Modus-Kürzel bleiben ausdrücklich
+wählbar. Regeln werden zusammen mit den Einstellungen verschlüsselt gespeichert.

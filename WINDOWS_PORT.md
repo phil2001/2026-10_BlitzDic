@@ -118,3 +118,16 @@ the revised collector reports no missing package notices. They will be included
 in the next installer. Native-library source/license obligations still require
 review. This remains an unsigned development build, not a finished release;
 installer execution on a clean Windows installation is still unverified.
+
+Program-specific writing modes are now available under Settings. Rules use exact
+executable names, for example winword.exe => clean. They apply to the default
+verbatim shortcut; explicit clean/calm/emoji shortcuts retain their selected mode.
+The worker resolves the foreground process executable via Windows APIs and checks
+it again after target capture. No window title or process path is persisted.
+27 automated tests passed (two optional ASR tests skipped). The Electron UI test
+verified encrypted rule persistence across reload and rejection of invalid modes.
+A foreground integration attempt was stopped because Windows reported chrome.exe
+instead of the test application's electron.exe. Actual per-program selection in
+the global-shortcut flow therefore still needs an uncontested desktop test.
+GitHub Windows tests for e6f8821 completed successfully. The prior Windows commits
+have been pushed to origin/main; model weights and local audio remain outside Git.

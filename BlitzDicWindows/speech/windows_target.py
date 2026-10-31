@@ -5,8 +5,31 @@ Password contents are never read; document fingerprints are not persisted.
 """
 import ctypes as c
 from ctypes import wintypes as w
+from pathlib import PureWindowsPath
 
 user32 = c.WinDLL('user32', use_last_error=True)
+kernel32 = c.WinDLL('kernel32', use_last_error=True)
+user32.GetForegroundWindow.restype = w.HWND
+kernel32.OpenProcess.argtypes = [w.DWORD, w.BOOL, w.DWORD]
+kernel32.OpenProcess.restype = w.HANDLE
+kernel32.QueryFullProcessImageNameW.argtypes = [w.HANDLE, w.DWORD, w.LPWSTR, c.POINTER(w.DWORD)]
+kernel32.CloseHandle.argtypes = [w.HANDLE]
+
+def foreground_app():
+    window = user32.GetForegroundWindow()
+    pid = w.DWORD()
+    user32.GetWindowThreadProcessId(window, c.byref(pid))
+    process = kernel32.OpenProcess(0x1000, False, pid.value)
+    if not process:
+        return ''
+    try:
+        size = w.DWORD(32768); path = c.create_unicode_buffer(size.value)
+        if not kernel32.QueryFullProcessImageNameW(process, 0, path, c.byref(size)):
+            return ''
+        return PureWindowsPath(path.value).name.lower() if user32.GetForegroundWindow() == window else ''
+    finally:
+        kernel32.CloseHandle(process)
+
 class GUI(c.Structure):
     _fields_ = [('cbSize', w.DWORD), ('flags', w.DWORD), ('hwndActive', w.HWND),
                 ('hwndFocus', w.HWND), ('hwndCapture', w.HWND), ('hwndMenuOwner', w.HWND),

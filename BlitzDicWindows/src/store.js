@@ -6,6 +6,7 @@ export const defaultSettings = () => ({
   speech: { preset: 'whisper', language: '', microphone: '' },
   provider: { provider: 'ollama', location: 'local', baseURL: 'http://127.0.0.1:11434/v1', model: '', apiKey: '' },
   mode: 'verbatim', modeSettings: { customTerms: [], replacements: [] },
+  appModes: [],
   shortcuts: { verbatim: 'CommandOrControl+Shift+1', clean: 'CommandOrControl+Shift+2', calm: 'CommandOrControl+Shift+3', emoji: 'CommandOrControl+Shift+4' },
   historyEnabled: true, historyLimit: 100,
 });

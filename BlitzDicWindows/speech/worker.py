@@ -20,10 +20,12 @@ PRESETS = {
 
 def run(request):
     if request['action'] in ('capture-target', 'insert-text'):
-        from windows_target import capture, insert
+        from windows_target import capture, insert, foreground_app
         if request['action'] == 'capture-target':
+            executable = foreground_app()
             target = capture()
-            return {'target': target, 'reason': capture.reason if not target else ''}
+            return {'target': target, 'reason': capture.reason if not target else '',
+                    'executable': executable if foreground_app() == executable else ''}
         return insert(request.get('target'), request.get('text'))
     root = Path(request["modelDirectory"]).resolve()
     preset = PRESETS.get(request.get("preset"))
