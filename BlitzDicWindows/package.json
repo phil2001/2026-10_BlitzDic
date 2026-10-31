@@ -1,6 +1,6 @@
 {
   "name": "blitzdic-windows",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "private": true,
   "type": "module",
   "main": "desktop/main.js",
@@ -17,6 +17,6 @@
     "electron-builder": "^26.18.0",
     "playwright": "^1.64.1"
   },
-  "description": "Lokale Diktate und Meeting-Transkription f\u00fcr Windows 11",
+  "description": "Lokale Diktate und Meeting-Transkription für Windows 11",
   "author": "phil2001"
 }

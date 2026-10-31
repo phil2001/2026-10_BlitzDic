@@ -8,9 +8,7 @@ from pathlib import Path
 
 
 def run(request):
-    import av
-    import numpy as np
-    import soundfile as sf
+    from audio_decode import decode_audio
     import sherpa_onnx as sherpa
     root = Path(request['modelDirectory']).resolve()
     count = request.get('speakerCount', -1)
@@ -27,16 +25,11 @@ def run(request):
         raise ValueError('Lokale Sprecherzuordnungsmodelle fehlen oder sind unvollständig.')
     audio = (io.BytesIO(base64.b64decode(request['audioBase64'], validate=True))
              if request.get('audioBase64') else str(Path(request['audioPath']).resolve(strict=True)))
-    waveform, rate = sf.read(audio, dtype='float32', always_2d=True)
-    waveform = waveform.mean(axis=1)
+    waveform, rate = decode_audio(audio)
     if not len(waveform): return {'speakers': [], 'speakerCount': 0}
     model = sherpa.OfflineSpeakerDiarization(config)
     if rate != model.sample_rate:
-        frame = av.AudioFrame.from_ndarray(waveform.reshape(1, -1), format='flt', layout='mono')
-        frame.sample_rate = rate
-        resampler = av.AudioResampler(format='flt', layout='mono', rate=model.sample_rate)
-        frames = resampler.resample(frame) + resampler.resample(None)
-        waveform = np.concatenate([item.to_ndarray().reshape(-1) for item in frames])
+        raise ValueError('Sprecherzuordnungsmodell erwartet eine andere Abtastrate.')
     result = model.process(waveform)
     segments = result.sort_by_start_time()
     # Normalize cluster IDs by first appearance for understandable display.

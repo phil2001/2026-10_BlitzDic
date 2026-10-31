@@ -126,10 +126,17 @@ des Transkripts gespeichert. Die automatische Sprecherzahl ist noch unzuverlaess
 eine bekannte Zahl kann von 1 bis 20 vorgegeben werden. Auf dem Ziel-PC sind keine
 separaten Modell- oder Python-Installationen erforderlich.
 
-Der aktuelle Installer 0.3.1 verwendet die bereinigte DLL-Aufloesung des Builds.
+Der aktuelle lokale Test-Installer 0.3.2 verwendet die bereinigte DLL-Aufloesung des Builds.
 Die enthaltenen nativen Herkunftsinventare wurden gegen die paketierten Dateien
 geprueft. Die gepackte App bestand beide Sprachmodelle sowie Meeting-Aufnahme,
 Sprechertrennung und verschluesseltes Speichern mit frischem Profil.
+Version 0.3.2 enthält außerdem die begrenzte Zusammenführung langer Meeting-Texte,
+das automatische Abschließen bei unerwartetem Ende einer Aufnahmequelle und den
+gemeinsamen Audiodecoder für Parakeet und Sprecherzuordnung. M4A/AAC und WebM/Opus
+wurden mit echten Sprachmodellen geprüft, auch in der gepackten Laufzeit.
+Whisper und Parakeet benötigen auf dem Ziel-PC keine separate Python-, FFmpeg-
+oder LM-Studio-Installation. Der Installer ist noch unsigniert; ein öffentlicher
+Release und die vollständige Prüfung der nativen Lizenzpflichten stehen aus.
 
 Ein kurzer synthetischer deutscher Meeting-Test wurde mit einem bereits lokal
 installierten Gemma-4-E4B-Modell erfolgreich durch die gesamte Oberfläche bis zum

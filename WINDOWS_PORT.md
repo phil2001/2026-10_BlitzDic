@@ -536,3 +536,38 @@ identified de and both engines returned the expected German facts. This provides
 synthetic German evidence, not physical microphone, accent/dialect, clinical-vocabulary
 or general accuracy validation. Test audio remains ignored locally, outside Git.
 No application behavior or dependency changed, so unrelated tests were not repeated.
+
+## Consistent compressed-audio import, 2026-10-31
+
+The import UI already offered M4A and WebM, but Parakeet and speaker processing
+used libsndfile, which could not reliably decode those containers. Both paths now
+share a PyAV decoder that selects the first audio stream, downmixes to mono and
+resamples to 16 kHz, including draining the resampler. Whisper retains its existing
+decoder. Meeting turn boundaries use the same decoded sample rate as diarization.
+No new runtime dependency or external FFmpeg installation is required.
+
+make-audio-formats.py creates local AAC/M4A and Opus/WebM variants of the synthetic
+English fixture. verify-audio-formats.mjs passed both formats through actual Whisper,
+actual Parakeet, speaker detection and combined speaker-labeled Parakeet recognition.
+test-audio-decode.py passed duration/frequency preservation from stereo 48 kHz and
+rejection of a video-only MP4. The 35 Node tests passed, with two optional ASR cases
+skipped; the format checks separately ran real inference. These checks cover those
+two codec/container pairs, not every codec variant sharing the file extensions.
+
+The frozen 0.3.2 speech executable passed the same format checks. The speaker/ASR
+regression retained ten turns/four IDs in the Chinese sample and thirty turns
+across the 105-second English sample. The complete 0.3.2 Windows package was built
+in BlitzDicWindows/dist/windows-2026-10-31T20-49-55-471Z-378a41. It includes the
+previous source-ended handling and hierarchical summary changes. Its native map
+contains 138 binaries with no unresolved or external build origins.
+
+The packaged app passed fresh-profile checks, both bundled ASR engines, German
+recognition without a language hint, and a synthetic microphone meeting through
+speaker transcription and encrypted save/reload. The latter injected duplicate
+ended events and verified automatic completion and the source-ended notice.
+These are packed-application tests, not a fresh Windows VM or a new execution of
+the NSIS installer. The local installer remains unsigned and unpublished; native
+corresponding-source/license obligations remain under review.
+
+Installer 0.3.2: 1,140,226,775 bytes; SHA-256
+F3D46353C2B903989EEFF8BA5F33B9DEF10689D77C21C393A8B284B3875A84CA.

@@ -77,10 +77,9 @@ def run(request):
                                           vad_filter=True, condition_on_previous_text=False)
         items = [{"start": s.start, "end": s.end, "text": s.text.strip()} for s in segments]
         return {"text": " ".join(s["text"] for s in items), "segments": items, "language": info.language}
-    import soundfile as sf
     import numpy as np
-    waveform, rate = sf.read(audio, dtype="float32", always_2d=True)
-    waveform = waveform.mean(axis=1)
+    from audio_decode import decode_audio
+    waveform, rate = decode_audio(audio)
     model = load_parakeet(str(root))
     # Bound encoder memory. Prefer a quiet boundary near 20 seconds.
     items = []

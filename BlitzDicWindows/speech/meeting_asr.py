@@ -20,10 +20,11 @@ def group_overlaps(ranges):
 
 def run(request, transcribe):
     import soundfile as sf
+    from audio_decode import decode_audio
     from diarization import run as diarize
     audio = (io.BytesIO(base64.b64decode(request['audioBase64'], validate=True))
              if request.get('audioBase64') else request['audioPath'])
-    waveform, rate = sf.read(audio, dtype='float32', always_2d=True)
+    waveform, rate = decode_audio(audio)
     detection = diarize({**request, 'modelDirectory': request['diarizationDirectory']})
     groups = group_overlaps(detection['speakers'])
     entries = []
