@@ -713,10 +713,15 @@ package-notice hash, matched the actual OpenMP DLL to its notice provenance and
 verified the contained FFmpeg source. Fresh-profile UI and both bundled speech
 models passed. The synthetic-microphone meeting test passed speaker transcription
 for both engines and encrypted speaker-labeled save/reload without libsndfile.
-Windows CI now also runs the PCM encoder unit checks with Python 3.12.12 and the
+Windows CI now also runs the PCM encoder unit checks with Python 3.12 and the
 pinned NumPy version; official setup-node/setup-python v7 examples were verified.
 
 Installer: 1,148,440,253 bytes; SHA-256
 02D0B5316A6B3F268CAB7D926D365351DA4842DBFE83848618061B82C89B9F41.
 Unsigned local development artifact. Component-wide redistribution review,
 clean-PC validation and other overall release gates remain open.
+
+The first added Python CI step requested 3.12.12, which GitHub does not provide
+as a Windows binary. The workflow now selects its available 3.12 Windows line;
+the app's separately bundled Python 3.12.12 runtime is unchanged. This distinction
+does not turn a CI interpreter check into a test of the packaged interpreter.
