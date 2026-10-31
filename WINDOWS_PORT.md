@@ -516,3 +516,23 @@ the browser event contract; physical USB unplugging and Windows session loss rem
 unverified. No audio/history/meeting entries were persisted by that test.
 Installer 0.3.1 predates this behavior and hierarchical summary changes and must
 be rebuilt before those are represented as delivered in the installer.
+
+## German speech validation, 2026-10-31
+
+A German SAPI Hedda token was already installed under the classic Windows speech
+registry, despite the earlier .NET voice enumeration returning only Zira. The new
+make-german-speech.ps1 uses that existing token directly to create a synthetic
+German fixture under .runtime. It does not modify registry voice registrations,
+install language packs or contact an external speech service. The script includes
+a UTF-8 BOM because Windows PowerShell 5 must decode the German umlauts correctly.
+The Windows voice is a test-fixture dependency, not an application requirement.
+
+verify-german-speech.mjs passed with both real speech models on the German sentence:
+meeting tomorrow at nine, Anna reviewing documents, budget 2500 euros and the open
+Berlin delivery question. Umlaute and the factual phrases were retained. The first
+run used project Python with language de. The final run used the 0.3.1 packaged
+speech executable and its packaged model files with no language hint; Whisper
+identified de and both engines returned the expected German facts. This provides
+synthetic German evidence, not physical microphone, accent/dialect, clinical-vocabulary
+or general accuracy validation. Test audio remains ignored locally, outside Git.
+No application behavior or dependency changed, so unrelated tests were not repeated.

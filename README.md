@@ -136,3 +136,9 @@ installierten Gemma-4-E4B-Modell erfolgreich durch die gesamte Oberfläche bis z
 verschlüsselten Speichern und Neuladen geprüft. Das Modell ist nicht im Installer
 enthalten. Dieser einzelne Qualitätsnachweis ersetzt keine Prüfung der Ergebnisse
 bei eigenen Meetings oder anderen Modellen.
+
+Deutsche Erkennung wurde mit beiden gebündelten Sprachmodellen und einem lokal
+erzeugten deutschen Testsatz geprüft, auch ohne Sprachvorgabe in der gepackten
+Windows-Laufzeit. Umlaute, Uhrzeit und Budget wurden korrekt erkannt. Die dafür
+verwendete Windows-Teststimme wird von BlitzDic selbst nicht benötigt; reale
+Mikrofonqualität, Dialekte und Fachwortschatz sind damit noch nicht belegt.
