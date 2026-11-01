@@ -3,6 +3,7 @@ import ctypes as c
 from ctypes import wintypes as w
 import time
 import sys
+import os
 user32 = c.WinDLL('user32', use_last_error=True)
 user32.keybd_event.argtypes = [c.c_ubyte, c.c_ubyte, c.c_uint, c.c_size_t]
 user32.GetForegroundWindow.restype = w.HWND
@@ -32,7 +33,7 @@ try:
         # SW_HIDE from STARTUPINFO and can hide the *target* test window.
         # The Electron fixture already shows it; request activation only.
         user32.SetForegroundWindow(expected)
-        deadline = time.monotonic() + .5
+        deadline = time.monotonic() + (600 if os.environ.get('BLITZDIC_TEST_WAIT_FOR_FOCUS') == '1' else .5)
         while user32.GetForegroundWindow() != expected and time.monotonic() < deadline:
             time.sleep(.01)
     window = user32.GetForegroundWindow()

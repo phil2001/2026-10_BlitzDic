@@ -66,6 +66,7 @@ try {
     await target.evaluate(({app, BrowserWindow}) => { app.focus({steal: true}); BrowserWindow.getAllWindows()[0].focus(); });
     await editor.locator('#editor').click();
     await editor.locator('#editor').evaluate(element => element.setSelectionRange(7, 7));
+    if (process.env.BLITZDIC_TEST_WAIT_FOR_FOCUS === '1') console.log('READY: waiting for the exact owned editor foreground window; no keys sent yet.');
     await shortcut(hold ? 'down' : 'toggle');
   } else console.log(`READY: focus the owned test editor, place cursor at end, then ${hold ? 'hold' : 'press'} Ctrl+Shift+${shortcutNumber}.`);
   await page.waitForFunction(() => document.querySelector('#record').textContent === 'Aufnahme beenden', {}, {timeout: externalInput ? 180000 : 15000});

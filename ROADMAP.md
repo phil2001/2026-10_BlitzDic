@@ -3,9 +3,8 @@
 - Physische Mikrofontests, weitere Office-/Browser-Versionen und ein frisches Windows 11 prüfen.
 - Echte LAN- und Cloud-Anbieter zusätzlich zu lokalen Servern und Protokoll-Fixtures prüfen.
 - Verbleibende Originalfunktionen portieren: Website-Regeln,
-  Halten-zum-Diktieren, optionales Stummschalten und Live-Meeting-Notizen.
-- Haltemodus aus 0.3.10-dev.0 mit echten Windows-Tasten abnehmen; bislang sind
-  Zustandsmaschine und IPC-/Mikrofonablauf geprüft. Escape-Steuerung noch portieren.
+  optionales Stummschalten und Live-Meeting-Notizen.
+- Escape-Steuerung noch portieren.
 - Weitere Meeting-Funktionen des Originals prüfen: Echo-Unterdrückung.
 - Oberfläche visuell abschließen und Zugänglichkeit prüfen.
 - Vollständige Drittanbieter-Lizenzen bündeln und Installer auf sauberem Windows testen.
@@ -24,5 +23,9 @@ sind geprüft; ein echter Maus-Drag und mehrere Monitore bleiben zu prüfen.
 Version 0.3.9 ergänzt Sprechernamen je Aufnahmeabschnitt, Änderungen im bestehenden
 Archiveintrag und die Kennzeichnung älterer Zusammenfassungen. Original-IDs bleiben
 erhalten; die Zuordnung erkennt keine realen Identitäten.
+Version 0.3.10-dev.0 ergänzt Halten-zum-Diktieren. Native Windows-Tastenereignisse,
+Aufnahmeanzeige und Einfügen im externen Chromium-Editor sind für Halten und
+Start/Stopp mit beiden gebündelten Modellen geprüft. Die Audioquelle war dabei
+eine Testdatei; dies ersetzt keinen Test mit einem physischen Mikrofon.
 Der Installationsablauf 0.1.0 → 0.3.6 wurde auf dem Entwicklungs-PC geprüft.
 Details, Grenzen und Nachweise: [WINDOWS_PORT.md](WINDOWS_PORT.md).

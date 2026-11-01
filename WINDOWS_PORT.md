@@ -966,6 +966,40 @@ All retained QA screenshots/scripts are in the external task visualization folde
 Experimental installer: BlitzDicWindows/dist/windows-2026-11-01T01-22-29-281Z-9ca584-final/BlitzDic Setup 0.3.10-dev.0.exe;
 1,148,470,352 bytes; SHA-256
 BECC2C14AE8F7FE1676558F342ED03124102907FCDD4A6814D08D3997DD67128.
-This is an unsigned development snapshot with an unproven native-key flow, not an
-accepted replacement for 0.3.9. Installed 0.3.6 remains untouched. Other full-scope
-release gates remain open; the goal is not complete.
+At packaging time this was an unsigned development snapshot with an unproven
+native-key flow. The subsequent native results below close that particular gate.
+Installed 0.3.6 remains untouched. Other full-scope release gates remain open;
+the goal is not complete.
+
+## Native hold/toggle acceptance, 2026-11-01
+
+The user confirmed that Windows was unlocked and locally operable. A fresh owned
+test editor was observed and focused through Computer Use; no desktop, security
+setting or unrelated application was changed. The test helper can now optionally
+wait up to ten minutes for that exact foreground HWND with
+BLITZDIC_TEST_WAIT_FOR_FOCUS=1. It still refuses input if the owned-window or
+unheld-key checks fail. The harness prints its ready state before waiting.
+
+The unchanged packaged 0.3.10-dev.0 executable from the -final output above passed
+these four end-to-end cases with fresh application profiles:
+
+| Windows shortcut behavior | Bundled speech model | Result |
+| --- | --- | --- |
+| Hold, then release | Whisper Small | Passed |
+| Hold, then release | Parakeet Ultra | Passed |
+| Press to start, press to stop | Whisper Small | Passed |
+| Press to start, press to stop | Parakeet Ultra | Passed |
+
+These tests injected actual Windows keydown/up events through the guarded helper,
+captured a WAV fixture through Chromium's synthetic microphone and ran the actual
+bundled ASR runtime. Every successful case confirmed that the visible recording
+indicator preserved the exact external foreground HWND, hid after stopping and
+inserted the recognized text at the original Chromium cursor. Local sentence
+continuation fitting also passed. They are not physical microphone or manual
+hardware-keyboard tests, and do not establish behavior in every application.
+
+One initial toggle run recognized speech but the insertion guard rejected the
+target as changed; the text remained available in BlitzDic and the editor was
+unchanged. An isolated repeat passed. The precise cause of that rejection was
+not established; it is retained here rather than counted as a passing insertion.
+Earlier failed activation attempts did not demonstrate a locked desktop.

@@ -115,9 +115,11 @@ müssen auf Zuordnung von Aufgaben, Zahlen und offenen Fragen geprüft werden.
 
 Der Quellstand **0.3.10-dev.0** ergänzt unter Einstellungen die Wahl zwischen
 Drücken und Halten eines Kürzels. Zustands-, Mikrofonstart-/Abbruch- und IPC-Tests
-sind bestanden. Der vollständige Ablauf mit echten Windows-Tasten ist noch
-nicht abgenommen, weil der Testeditor derzeit nicht automatisch den Fokus erhält.
-Dieser Vorabstand ersetzt die oben genannte Testbasis 0.3.9 nicht.
+sowie der native Windows-Tastenablauf sind bestanden: Halten und Start/Stopp
+wurden mit beiden gebündelten Sprachmodellen bis zum Einfügen in einen externen
+Editor geprüft. Die Aufnahme verwendete eine Audio-Testdatei. Physische Mikrofone
+und weitere Zielprogramme bleiben separat zu prüfen. Der Vorabstand bleibt eine
+Entwicklungsfassung; die übrigen Fertigstellungsschritte stehen unten.
 
 Benötigt: Node.js 22 oder neuer, npm und uv. PowerShell im Projektordner:
 
