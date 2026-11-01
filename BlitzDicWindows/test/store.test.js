@@ -39,3 +39,18 @@ test('corrupt ciphertext is preserved and never replaced by defaults', async () 
   await assert.rejects(store.appendHistory({ text: 'new' }), /nicht entschlüsselt/);
   assert.equal(await readFile(file, 'utf8'), 'broken');
 });
+
+test('meeting-name updates serialize with appends and cannot recreate missing entries', async () => {
+  const {dir, store} = await fixture();
+  await store.appendMeeting({id: 'old', transcript: 'Sprecher 1: Original.'});
+  await Promise.all([store.updateMeeting('old', entry => ({...entry, speakerNames: [{section: 0, speaker: 1, name: 'PRIVATE_NAME'}]})),
+    store.appendMeeting({id: 'new', transcript: 'New source'})]);
+  const entries = await store.meetings();
+  assert.deepEqual(entries.map(entry => entry.id), ['new', 'old']);
+  assert.equal(entries[1].transcript, 'Sprecher 1: Original.');
+  assert.equal(entries[1].speakerNames[0].name, 'PRIVATE_NAME');
+  assert.equal((await readFile(join(dir, 'meetings.bin'))).includes('PRIVATE_NAME'), false);
+  await store.clearMeetings();
+  await assert.rejects(store.updateMeeting('old', entry => entry), /nicht mehr vorhanden/);
+  assert.deepEqual(await store.meetings(), []);
+});

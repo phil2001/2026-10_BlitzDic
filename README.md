@@ -20,6 +20,7 @@ Keine separate Python-Installation, kein LM Studio und kein nachträglicher Mode
 - Abschaltbare Aufnahmeanzeige mit Pegel, Laufzeit, Ziehgriff und Stopp-Knopf.
 - Meetings mit Mikrofon, Systemaudio oder beiden Quellen; optionale Sprecherzuordnung,
   lokales Speichern von Transkripten und Zusammenfassungen über den gewählten LLM-Anbieter.
+- Manuelle Sprechernamen je Aufnahmeabschnitt; Original-IDs bleiben gespeichert.
 - Verschlüsselte Einstellungen, API-Schlüssel und Verlauf über Windows-DPAPI.
 - Systemvoraussetzungen direkt bei der Modellauswahl.
 
@@ -35,8 +36,8 @@ Ein zusätzliches lokales LLM hat eigene RAM-/VRAM-Anforderungen.
 
 ## Installation und Bedienung
 
-Der aktuelle lokal gebaute Entwicklungsinstaller ist **0.3.8** unter
-`BlitzDicWindows/dist/windows-2026-11-01T00-40-31-732Z-e9c39c/BlitzDic Setup 0.3.8.exe`
+Der aktuelle lokal gebaute Entwicklungsinstaller ist **0.3.9** unter
+`BlitzDicWindows/dist/windows-2026-11-01T00-56-29-939Z-6e8751-final/BlitzDic Setup 0.3.9.exe`
 (etwa 1,15 GB). Er ist nicht signiert. Eine fertige Release-Datei ist noch nicht
 veröffentlicht. Ältere Testbuilds bitte durch diesen Stand ersetzen: 0.3.4 behebt
 die UTF-8-Verarbeitung von Umlauten und Emoji in der gebündelten Sprachlaufzeit.
@@ -55,6 +56,9 @@ Pegel und Laufzeit, ohne den Fokus des Zielprogramms zu übernehmen. Am linken
 Griff lässt sie sich verschieben, ein Klick auf die Anzeige beendet das Diktat
 oder den Meeting-Abschnitt. × oder Rechtsklick blendet sie für die laufende
 Aufnahme aus; unter **Einstellungen** ist sie dauerhaft abschaltbar.
+0.3.9 ergänzt abschnittsgebundene Sprechernamen. Bei gespeicherten Meetings werden
+die Namen im selben Archiveintrag aktualisiert. Frühere Zusammenfassungen bleiben
+erhalten und werden bei geänderten Namen als veraltet gekennzeichnet.
 
 1. Nach Installation BlitzDic öffnen und unter **Modelle** Whisper oder Parakeet wählen.
 2. Unter **Diktat** Mikrofon und Schreibmodus wählen, Aufnahme starten und beenden.
@@ -90,6 +94,16 @@ Sprechertrennung ist optional und experimentell. Eine bekannte Sprecherzahl
 von 1 bis 20 ist zuverlässiger als die automatische Schätzung. Sprecherkennungen
 gelten nur innerhalb eines Aufnahmeabschnitts; echte Namen werden nicht erkannt.
 Die dafür nötigen Zusatzmodelle sind enthalten.
+
+Unter dem Transkript lassen sich Sprecher manuell benennen. **Namen übernehmen**
+aktualisiert die Vorschau; ein leeres Namensfeld stellt die ursprüngliche ID wieder her.
+Bei einem geöffneten gespeicherten Meeting heißt der Knopf **Namen übernehmen und
+speichern** und ändert denselben Eintrag. Bei neuen Transkripten anschließend lokal
+speichern oder zusammenfassen. Original-IDs und Namen werden getrennt verschlüsselt
+gespeichert. Überlappende Beiträge bleiben als solche markiert. Beim ausdrücklichen
+Zusammenfassen erhält der gewählte LLM-Endpunkt die benannten Sprecherzeilen.
+Manuelle Änderungen am Transkript übernehmen den sichtbaren Text und setzen die
+Zuordnungen zurück; das gespeicherte Original bleibt bis zu einer neuen Speicherung erhalten.
 
 **Transkript lokal speichern** arbeitet ohne LLM. **Zusammenfassen und speichern**
 sendet das Transkript an den unter **Verbindungen** gewählten Endpunkt und speichert

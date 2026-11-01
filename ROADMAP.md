@@ -4,7 +4,7 @@
 - Echte LAN- und Cloud-Anbieter zusätzlich zu lokalen Servern und Protokoll-Fixtures prüfen.
 - Verbleibende Originalfunktionen portieren: Website-Regeln,
   Halten-zum-Diktieren, optionales Stummschalten und Live-Meeting-Notizen.
-- Weitere Meeting-Funktionen des Originals prüfen: Sprecher umbenennen und Echo-Unterdrückung.
+- Weitere Meeting-Funktionen des Originals prüfen: Echo-Unterdrückung.
 - Oberfläche visuell abschließen und Zugänglichkeit prüfen.
 - Vollständige Drittanbieter-Lizenzen bündeln und Installer auf sauberem Windows testen.
 - Aktuellen Windows-Build im Zielrepository veröffentlichen.
@@ -19,5 +19,8 @@ Satzanfängen beim geschützten Einfügen in native Felder, Chromium und Word.
 Version 0.3.8 ergänzt die abschaltbare Aufnahmeanzeige mit Pegel, Laufzeit und
 Stopp-/Ausblendsteuerung. Native Ziehregion und Erhalt des Vordergrundfensters
 sind geprüft; ein echter Maus-Drag und mehrere Monitore bleiben zu prüfen.
+Version 0.3.9 ergänzt Sprechernamen je Aufnahmeabschnitt, Änderungen im bestehenden
+Archiveintrag und die Kennzeichnung älterer Zusammenfassungen. Original-IDs bleiben
+erhalten; die Zuordnung erkennt keine realen Identitäten.
 Der Installationsablauf 0.1.0 → 0.3.6 wurde auf dem Entwicklungs-PC geprüft.
 Details, Grenzen und Nachweise: [WINDOWS_PORT.md](WINDOWS_PORT.md).

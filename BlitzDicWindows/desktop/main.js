@@ -140,7 +140,8 @@ else app.whenReady().then(async () => {
   });
   handle('cancel', () => { captureEpoch++; insertionTarget = null; insertionRequested = false; insertionProblem = ''; flow.cancel(); meetings.cancel(); });
   handle('meetings', () => store.meetings());
-  handle('meeting-save', (transcript, title) => meetings.saveTranscript(transcript, title));
+  handle('meeting-save', (transcript, title, names) => meetings.saveTranscript(transcript, title, names));
+  handle('meeting-rename', (id, transcript, names) => meetings.renameSpeakers(id, transcript, names));
   handle('meeting-audio', async (bytes, options = {}) => {
     if (meetings.active) throw new Error('Eine Meeting-Zusammenfassung läuft bereits.');
     if (!(bytes instanceof ArrayBuffer) || bytes.byteLength > 350 * 1024 * 1024) throw new Error('Ungültige Aufnahme.');
@@ -152,9 +153,9 @@ else app.whenReady().then(async () => {
     insertionTarget = null; insertionRequested = false;
     return flow.process(Buffer.from(bytes), 'verbatim', {saveHistory: false, diarize, speakerCount});
   });
-  handle('meeting-summary', (transcript, title) => {
+  handle('meeting-summary', (transcript, title, names) => {
     if (flow.active || recording || capturePending) throw new Error('Bitte das Diktat zuerst beenden.');
-    return meetings.summarize(transcript, title);
+    return meetings.summarize(transcript, title, names);
   });
   handle('meetings-clear', () => store.clearMeetings());
   handle('recording-state', async active => {

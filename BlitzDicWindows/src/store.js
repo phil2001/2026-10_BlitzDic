@@ -47,6 +47,16 @@ export class PrivateStore {
   history() { return this.read('history', []); }
   meetings() { return this.read('meetings', []); }
   appendMeeting(entry) { return this.update('meetings', [], entries => [entry, ...entries].slice(0, 100)); }
+  async updateMeeting(id, transform) {
+    let updated;
+    await this.update('meetings', [], entries => {
+      const index = entries.findIndex(entry => entry.id === id);
+      if (index < 0) throw new Error('Gespeichertes Meeting nicht mehr vorhanden.');
+      updated = transform(entries[index]);
+      return entries.map((entry, current) => current === index ? updated : entry);
+    });
+    return updated;
+  }
   clearMeetings() { return this.update('meetings', [], () => []); }
   appendHistory(entry, limit = 100) {
     const count = Math.max(1, Math.min(1000, Number.isFinite(limit) ? Math.trunc(limit) : 100));

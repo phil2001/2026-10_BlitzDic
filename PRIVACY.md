@@ -29,6 +29,12 @@ gesendet. Passwortfelder werden ausgeschlossen. Details:
 Meeting-Zusammenfassungen senden das eingegebene Transkript an denselben gewählten
 LLM-Endpunkt. Original und Zusammenfassung liegen in einer eigenen verschlüsselten
 Sammlung mit maximal 100 Einträgen; sie lässt sich auf der Meeting-Seite leeren.
+Manuell zugeordnete Sprechernamen liegen zusammen mit den ursprünglichen Sprecher-IDs
+in dieser verschlüsselten Sammlung. Namen sind keine automatisch erkannten Identitäten.
+Bei einer ausdrücklich gestarteten Zusammenfassung enthält der an den gewählten
+LLM-Endpunkt gesendete Text die zugeordneten Namen. Eine reine Namensänderung
+kontaktiert keinen LLM-Anbieter. Frühere Zusammenfassungen werden dabei erhalten
+und gegebenenfalls als veraltet markiert.
 Die allgemeine Option „Verlauf speichern“ betrifft den Diktatverlauf. Meetings
 werden durch den ausdrücklich beschrifteten Zusammenfassen-und-Speichern-Schritt
 unabhängig davon gespeichert.

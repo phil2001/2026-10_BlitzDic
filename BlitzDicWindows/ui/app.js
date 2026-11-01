@@ -1,5 +1,6 @@
 import { Recorder } from '../src/recorder.js';
 import { parseAppModes } from '../src/app-modes.js';
+import { meetingSpeakers, namedMeetingTranscript, normalizeSpeakerNames, speakerSectionHeading } from '../src/meeting-speakers.js';
 const $ = id => document.getElementById(id);
 const api = window.blitz;
 let settings, catalog, busy = false, lastOriginal = '';
@@ -9,6 +10,76 @@ let speakerOptions = {enabled: false, speakerCount: -1};
 let speakerModelsAvailable = false;
 const status = text => { $('status').textContent = text; };
 const attempt = fn => async () => { try { await fn(); } catch (error) { status(error.message); } };
+let speakerDraft = {source: '', names: [], rendered: ''};
+let loadedMeetingId = null;
+const summaryWarning = document.createElement('p'); summaryWarning.id = 'meeting-summary-warning'; summaryWarning.hidden = true;
+summaryWarning.textContent = 'Diese Zusammenfassung verwendet frühere Sprechernamen. Sie bleibt erhalten; bitte bei Bedarf neu zusammenfassen.';
+$('meeting-result').parentElement.before(summaryWarning);
+$('meeting-result').setAttribute('aria-describedby', 'meeting-summary-warning');
+const speakerEditor = document.createElement('div'); speakerEditor.id = 'meeting-speaker-editor'; speakerEditor.hidden = true;
+const speakerTitle = document.createElement('h3'); speakerTitle.textContent = 'Sprechernamen';
+const speakerNote = document.createElement('p');
+speakerNote.textContent = 'Namen manuell zuordnen. Gleiche IDs in verschiedenen Aufnahmeabschnitten sind unabhängig. Leeres Feld stellt die Sprecher-ID wieder her. Manuelle Transkriptänderungen übernehmen den sichtbaren Text und setzen die Zuordnungen zurück.';
+const speakerFields = document.createElement('div'); speakerFields.id = 'meeting-speaker-fields';
+const speakerApply = document.createElement('button'); speakerApply.id = 'meeting-speaker-apply'; speakerApply.textContent = 'Namen übernehmen';
+speakerEditor.append(speakerTitle, speakerNote, speakerFields, speakerApply);
+$('meeting-transcript').parentElement.after(speakerEditor);
+function speakerControls() {
+  const slots = meetingSpeakers(speakerDraft.source); speakerFields.replaceChildren(); speakerEditor.hidden = !slots.length;
+  const groups = new Map();
+  for (const {section, speaker} of slots) {
+    if (!groups.has(section)) {
+      const group = document.createElement('fieldset'), legend = document.createElement('legend');
+      group.disabled = meetingBusy;
+      legend.textContent = section ? `Aufnahmeabschnitt ${section}` : 'Transkript'; group.append(legend);
+      groups.set(section, group); speakerFields.append(group);
+    }
+    const label = document.createElement('label'); label.textContent = `Sprecher ${speaker}`;
+    const input = document.createElement('input'); input.maxLength = 80; input.placeholder = 'Name (optional)';
+    input.dataset.section = section; input.dataset.speaker = speaker;
+    input.value = speakerDraft.names.find(item => item.section === section && item.speaker === speaker)?.name ?? '';
+    label.append(input); groups.get(section).append(label);
+  }
+}
+function setMeetingDraft(source, names = [], savedId = null) {
+  const normalized = normalizeSpeakerNames(source, names), rendered = namedMeetingTranscript(source, normalized);
+  speakerDraft = {source, names: normalized, rendered}; loadedMeetingId = savedId;
+  speakerApply.textContent = savedId ? 'Namen übernehmen und speichern' : 'Namen übernehmen';
+  $('meeting-transcript').value = rendered; speakerControls();
+}
+function setMeetingSummary(entry) {
+  $('meeting-result').value = entry.summary ?? ''; summaryWarning.hidden = entry.summaryStale !== true;
+}
+function currentMeetingDraft() {
+  if ($('meeting-transcript').value !== speakerDraft.rendered) setMeetingDraft($('meeting-transcript').value);
+  return speakerDraft;
+}
+function meetingEditingUI(locked) {
+  $('meeting-transcript').readOnly = locked; $('meeting-title').disabled = locked;
+  speakerApply.disabled = locked;
+  speakerFields.querySelectorAll('fieldset').forEach(group => {group.disabled = locked;});
+}
+$('meeting-transcript').addEventListener('change', attempt(async () => {
+  currentMeetingDraft(); setMeetingSummary({});
+}));
+speakerApply.onclick = attempt(async () => {
+  if (meetingBusy) return;
+  const draft = currentMeetingDraft();
+  const names = [...speakerFields.querySelectorAll('input')].filter(input => input.value.trim()).map(input => ({
+    section: Number(input.dataset.section), speaker: Number(input.dataset.speaker), name: input.value,
+  }));
+  if (loadedMeetingId) {
+    meetingBusy = true; meetingEditingUI(true);
+    try {
+      const entry = await api['meeting-rename'](loadedMeetingId, draft.source, names);
+      setMeetingDraft(entry.transcript, entry.speakerNames ?? [], entry.id); setMeetingSummary(entry);
+      await refreshMeetings(); status('Sprechernamen im gespeicherten Meeting aktualisiert.');
+    } finally {meetingBusy = false; meetingEditingUI(false);}
+  } else {
+    setMeetingDraft(draft.source, names); setMeetingSummary({});
+    status('Sprechernamen übernommen. Zum Speichern „Transkript lokal speichern“ oder „Zusammenfassen und speichern“ wählen.');
+  }
+});
 let lastLevelSent = 0;
 function level(value) {
   const now = performance.now();
@@ -21,6 +92,7 @@ const recorder = new Recorder({ onLevel: value => { $('level').value = value; le
 const meetingRecorder = new Recorder({onLevel: value => { $('meeting-level').value = value; level(value); }, onLimit: () => $('meeting-record').click(),
   onEnded: () => {meetingSourceEnded = true; $('meeting-record').click();}});
 function meetingRecordingUI(active) {
+  meetingEditingUI(meetingBusy);
   api['recording-state'](active).catch(error => status(error.message));
   $('meeting-record').textContent = active ? 'Aufnahme beenden und transkribieren' : 'Meeting aufnehmen';
   $('meeting-level').hidden = !active;
@@ -34,12 +106,25 @@ $('meeting-record').onclick = attempt(async () => {
     const wav = meetingRecorder.stop(); meetingBusy = true; meetingRecordingUI(false);
     try {
       const entry = await api['meeting-audio'](wav, speakerOptions);
-      const existing = $('meeting-transcript').value.trim();
-      const text = speakerOptions.enabled ? `Aufnahmeabschnitt (Sprecherkennungen gelten nur hier):\n${entry.original}` : entry.original;
-      $('meeting-transcript').value = [existing, text].filter(Boolean).join('\n\n');
+      const draft = currentMeetingDraft();
+      // Every recording starts a section, including recordings without diarization.
+      // An old section's alias must never spill into later unlabelled audio.
+      const text = `${speakerSectionHeading}\n${entry.original}`;
+      const combined = [draft.source, text].filter(value => value.trim()).join('\n\n');
+      const display = [draft.rendered, text].filter(value => value.trim()).join('\n\n');
+      if (combined.length > 500000 || display.length > 500000) {
+        // Keep every recognized word available even when the save limit is exceeded.
+        $('meeting-transcript').value = display;
+        speakerEditor.hidden = true; setMeetingSummary({});
+        status('Transkript vollständig vorhanden, aber über 500.000 Zeichen. Vor weiterem Aufnehmen oder Speichern kürzen oder aufteilen.');
+        return;
+      }
+      setMeetingDraft(combined, draft.names);
+      setMeetingSummary({});
       status('Meeting lokal transkribiert. ' + (meetingSourceEnded ? 'Die Audioquelle wurde beendet; der vorhandene Abschnitt wurde verarbeitet.' : 'Die Zusammenfassung kann jetzt gestartet werden.'));
     } finally { meetingBusy = false; meetingRecordingUI(false); }
   } else {
+    if ($('meeting-transcript').value.length > 500000) throw new Error('Transkript vor weiterem Aufnehmen auf höchstens 500.000 Zeichen kürzen oder aufteilen.');
     meetingSourceEnded = false;
     speakerOptions = {enabled: $('meeting-diarize').checked, speakerCount: Number($('meeting-speaker-count').value)};
     $('meeting-cancel').hidden = false; status('Mikrofon wird gestartet …');
@@ -78,30 +163,42 @@ async function refreshMeetings() {
   for (const entry of entries) {
     const button = document.createElement('button');
     button.textContent = `${entry.title} · ${new Date(entry.createdAt).toLocaleString('de-DE')}`;
-    button.onclick = () => { $('meeting-title').value = entry.title; $('meeting-transcript').value = entry.transcript; $('meeting-result').value = entry.summary; };
+    button.onclick = attempt(async () => {
+      if (meetingBusy || meetingRecorder.state !== 'idle') return;
+      setMeetingDraft(entry.transcript, entry.speakerNames ?? [], entry.id);
+      $('meeting-title').value = entry.title; setMeetingSummary(entry);
+    });
     $('meeting-list').append(button);
   }
 }
-$('meeting-from-dictation').onclick = () => { $('meeting-transcript').value = lastOriginal || $('result').value; };
+$('meeting-from-dictation').onclick = attempt(async () => {
+  if (meetingBusy || meetingRecorder.state !== 'idle') return;
+  setMeetingDraft(lastOriginal || $('result').value); setMeetingSummary({});
+});
 $('meeting-save').onclick = attempt(async () => {
   if (meetingBusy || busy || meetingRecorder.state !== 'idle') return;
+  const draft = currentMeetingDraft();
   meetingBusy = true; $('meeting-save').disabled = true;
+  meetingEditingUI(true);
   try {
-    await api['meeting-save']($('meeting-transcript').value, $('meeting-title').value);
-    $('meeting-result').value = '';
+    const entry = await api['meeting-save'](draft.source, $('meeting-title').value, draft.names);
+    setMeetingDraft(entry.transcript, entry.speakerNames ?? [], entry.id); setMeetingSummary(entry);
     await refreshMeetings(); status('Transkript lokal verschlüsselt gespeichert.');
-  } finally {meetingBusy = false; $('meeting-save').disabled = false;}
+  } finally {meetingBusy = false; $('meeting-save').disabled = false; meetingEditingUI(false);}
 });
 $('meeting-summarize').onclick = attempt(async () => {
   if (meetingBusy || busy || recorder.state !== 'idle' || meetingRecorder.state !== 'idle') return;
+  const draft = currentMeetingDraft();
   meetingBusy = true;
   $('meeting-summarize').disabled = true; $('meeting-cancel').hidden = false;
-  $('meeting-result').value = '';
+  setMeetingSummary({});
   status('Meeting wird zusammengefasst …');
+  meetingEditingUI(true);
   try {
-    const entry = await api['meeting-summary']($('meeting-transcript').value, $('meeting-title').value);
-    $('meeting-result').value = entry.summary; await refreshMeetings(); status('Meeting verschlüsselt gespeichert.');
-  } finally { meetingBusy = false; $('meeting-summarize').disabled = false; $('meeting-cancel').hidden = true; }
+    const entry = await api['meeting-summary'](draft.source, $('meeting-title').value, draft.names);
+    setMeetingDraft(entry.transcript, entry.speakerNames ?? [], entry.id); setMeetingSummary(entry);
+    await refreshMeetings(); status('Meeting verschlüsselt gespeichert.');
+  } finally { meetingBusy = false; $('meeting-summarize').disabled = false; $('meeting-cancel').hidden = true; meetingEditingUI(false); }
 });
 $('meeting-cancel').onclick = attempt(async () => { meetingRecorder.cancel(); await api.cancel(); meetingRecordingUI(false); status('Abgebrochen.'); });
 $('meeting-copy').onclick = attempt(async () => { await api.copy($('meeting-result').value); status('Zusammenfassung kopiert.'); });

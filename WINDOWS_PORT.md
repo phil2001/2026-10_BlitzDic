@@ -857,3 +857,56 @@ Installer: BlitzDicWindows/dist/windows-2026-11-01T00-40-31-732Z-e9c39c/BlitzDic
 Unsigned local development artifact. It does not replace the installed 0.3.6
 test installation. Other upstream-parity, hardware, clean-PC and native-library
 redistribution gates remain open.
+
+## Scoped speaker names and archived-meeting updates, 2026-11-01
+
+The upstream speaker-renaming feature is ported with explicit per-recording
+scope. Anchored speaker labels (IDs 1–20) and recording headings identify the
+controls; text inside an utterance is never globally replaced. Names can be
+cleared to restore IDs. Overlap labels preserve their uncertainty. Every newly
+recorded section gets a heading, even without diarization, so an earlier section's
+names cannot spill into later recordings. Manually editing a named transcript
+adopts the visible text as a new draft and resets its alias metadata.
+
+Original transcript and validated alias metadata are stored separately. A summary
+receives the named transcript while the saved original retains its IDs. Names are
+not real-world identities inferred by the model. For existing archived meetings,
+the new meeting-rename IPC updates that record atomically, checks the expected
+original text and cannot recreate a deleted meeting. Old summaries remain intact
+with a visible stale marker after names change; changing names does not invoke
+any provider. Save/summary/rename operations lock draft editing until complete.
+
+The regular suite passed 42 tests (two optional real-ASR unit tests skipped).
+Tests cover scoped IDs, partial naming, overlap, literal utterance preservation,
+invalid/stale/duplicate aliases, summary payloads, archived-record identity/source,
+old-summary retention and atomic encrypted updates concurrent with appends/clear.
+The UI also preserves the full recognized text when an appended section exceeds
+the 500K-character save limit and remains editable after invalid draft requests.
+
+Browser plugin not available; Electron/Playwright exercised source and final
+packaged 0.3.9 at 1200×820 and 760×620. Page identity, meaningful UI, absence of an
+error surface, observed console/page-error health, screenshots and interactions
+passed. The test verified Unicode/emoji names, independent IDs across two sections,
+reset, real DPAPI save/reload, in-place archive rename without duplicates, named
+summary protocol requests, stale-summary retention on reopen, manual-edit reset
+and real-ASR oversized-draft recovery. The summary provider was an isolated
+loopback fixture, not a new real-LLM quality benchmark. Source and packaged actual
+Whisper/Parakeet microphone→diarization→transcript→rename→encrypted reload checks
+passed. The synthetic known-one-speaker fixture does not prove physical
+multi-speaker diarization accuracy. Both packaged ASR imports and the 111 native
+origin, notice hash and corresponding FFmpeg source checks also passed.
+
+The first 0.3.9 package in windows-2026-11-01T00-56-29-939Z-6e8751 missed a final
+UI-only correction for an obsolete summary hint in the overflow case. A byte
+comparison identified the mismatch. It was retained and superseded by a fresh
+electron-builder package in the -final output below, reusing the identical frozen
+runtime and license inventory. All seven changed runtime/UI source files matched
+the final app.asar byte-for-byte before the packaged tests were run. Temporary UI
+scripts and screenshots remain outside the repository in the visualization folder.
+
+Final installer: BlitzDicWindows/dist/windows-2026-11-01T00-56-29-939Z-6e8751-final/BlitzDic Setup 0.3.9.exe;
+1,148,464,533 bytes; SHA-256
+642E2F6923675AB4E916C0654CE20D51D5A3DD6839DB3FF22B1042FB4CA3FBA6.
+Unsigned, unpublished local development artifact. The installed 0.3.6 remains
+untouched. Remaining upstream features and hardware/clean-PC/native-license
+release gates are still open; this is not a finished-release claim.

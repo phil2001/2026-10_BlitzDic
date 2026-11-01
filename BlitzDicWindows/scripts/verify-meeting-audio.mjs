@@ -73,6 +73,13 @@ try {
     console.log(`PASS: meeting ${source} -> ${preset} -> transcript, no automatic summary or persistent history`);
   }
   if (diarize) {
+    const rename = process.env.BLITZDIC_TEST_RENAME === '1';
+    const sourceTranscript = await page.locator('#meeting-transcript').inputValue();
+    if (rename) {
+      await page.locator('#meeting-speaker-fields input[data-section="1"][data-speaker="1"]').fill('Anna Grüße 🌍');
+      await page.locator('#meeting-speaker-apply').click();
+      assert.match(await page.locator('#meeting-transcript').inputValue(), /Anna Grüße 🌍:/);
+    }
     const original = await page.locator('#meeting-transcript').inputValue();
     await page.locator('#meeting-save').click();
     await page.waitForFunction(() => document.querySelector('#status').textContent === 'Transkript lokal verschlüsselt gespeichert.');
@@ -80,6 +87,13 @@ try {
     await page.locator('nav button[data-page="meetings"]').click();
     await page.locator('#meeting-list button').first().click();
     assert.equal(await page.locator('#meeting-transcript').inputValue(), original);
+    if (rename) {
+      const records = await page.evaluate(() => window.blitz.meetings());
+      assert.equal(records[0].transcript, sourceTranscript);
+      assert.deepEqual(records[0].speakerNames, [{section: 1, speaker: 1, name: 'Anna Grüße 🌍'}]);
+      assert.equal(await page.locator('#meeting-speaker-fields input[data-section="1"][data-speaker="1"]').inputValue(), 'Anna Grüße 🌍');
+      console.log('PASS: actual diarized speaker can be named; original IDs and names survive encrypted reload');
+    }
     console.log('PASS: speaker-labeled meeting persists through encrypted save and reload');
   }
 } catch (error) {

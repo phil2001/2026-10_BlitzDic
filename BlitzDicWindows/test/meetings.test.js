@@ -2,6 +2,33 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Meetings } from '../src/meetings.js';
 
+test('speaker aliases reach summaries while original IDs and scoped names stay in the saved record', async () => {
+  const saved = [], requests = [];
+  const service = new Meetings({store: {settings: async () => ({provider: {}}), appendMeeting: async entry => saved.push(entry)},
+    generate: async (_config, _prompt, text) => {requests.push(text); return 'Anna übernimmt die Prüfung.';}});
+  const source = 'Sprecher 1: Ich übernehme die Prüfung.', names = [{section: 0, speaker: 1, name: 'Anna'}];
+  await service.saveTranscript(source, 'Offline', names);
+  await service.summarize(source, 'Summary', names);
+  assert.deepEqual(requests, ['Anna: Ich übernehme die Prüfung.']);
+  assert.ok(saved.every(entry => entry.transcript === source && entry.speakerNames[0].name === 'Anna'));
+  names[0].name = 'Changed'; assert.equal(saved[1].speakerNames[0].name, 'Anna');
+  await assert.rejects(service.saveTranscript(source, '', [{section: 1, speaker: 1, name: 'Wrong section'}]), /Sprecherzuordnung/);
+  assert.equal(saved.length, 2);
+});
+
+test('renaming an archived meeting preserves its identity, source and old summary with a stale marker', async () => {
+  let stored = {id: 'saved', transcript: 'Sprecher 1: Hallo.', summary: 'Sprecher 1 begrüßt.'};
+  const service = new Meetings({store: {updateMeeting: async (_id, change) => (stored = change(stored))}});
+  const names = [{section: 0, speaker: 1, name: 'Anna'}];
+  const entry = await service.renameSpeakers('saved', stored.transcript, names);
+  assert.equal(entry.id, 'saved'); assert.equal(entry.transcript, 'Sprecher 1: Hallo.');
+  assert.equal(entry.summary, 'Sprecher 1 begrüßt.'); assert.equal(entry.summaryStale, true);
+  assert.equal(entry.speakerNames[0].name, 'Anna');
+  await assert.rejects(service.renameSpeakers('saved', 'Sprecher 1: Anderer Text.', names), /geändert/);
+  await assert.rejects(service.renameSpeakers('saved', stored.transcript, undefined), /Sprecherzuordnung/);
+  assert.equal(stored.transcript, 'Sprecher 1: Hallo.');
+});
+
 test('transcripts save offline without loading provider settings or invoking a model', async () => {
   const saved = [];
   const service = new Meetings({store: {appendMeeting: async entry => saved.push(entry)},

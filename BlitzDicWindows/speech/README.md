@@ -78,6 +78,13 @@ after recording stops. This opt-in check requires source/packaged 0.3.8 or later
 the older installed 0.3.6 has no recording indicator. `BLITZDIC_TEST_FIT=1` also
 checks the lowercase sentence continuation in the English test fixture.
 
+For real speaker naming and encrypted reload, run `scripts/verify-meeting-audio.mjs`
+with `BLITZDIC_TEST_DIARIZE=1` and `BLITZDIC_TEST_RENAME=1`. It exercises both
+bundled ASR engines unless `BLITZDIC_TEST_PRESET` selects one, names the detected
+speaker in the last section and verifies both the original IDs and the separately
+stored name after reopening the saved meeting. This requires source/packaged 0.3.9
+or later; use `BLITZDIC_TEST_EXECUTABLE` for the packaged executable.
+
 ## Attribution
 
 Whisper: OpenAI (MIT), CTranslate2 export by Systran, faster-whisper runtime.
