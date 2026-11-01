@@ -9,8 +9,20 @@ let dictationSourceEnded = false, meetingSourceEnded = false;
 let speakerOptions = {enabled: false, speakerCount: -1};
 let speakerModelsAvailable = false;
 let heldGesture = null;
+let dictationStartup = null, meetingStartup = null;
+const cancelStartup = () => {
+  if (dictationStartup) dictationStartup.cancelled = true;
+  if (meetingStartup) meetingStartup.cancelled = true;
+  dictationStartup = null; meetingStartup = null;
+};
 const status = text => { $('status').textContent = text; };
-const attempt = fn => async () => { try { await fn(); } catch (error) { status(error.message); } };
+const attempt = fn => async () => {
+  try { await fn(); }
+  catch (error) {
+    const message = error.message.replace(/^Error invoking remote method '[^']+': (?:Error|AbortError): /, '');
+    status(error.name === 'AbortError' || /\bAbortError:/.test(error.message) || message === 'Spracherkennung abgebrochen.' ? 'Abgebrochen.' : message);
+  }
+};
 let speakerDraft = {source: '', names: [], rendered: ''};
 let loadedMeetingId = null;
 const summaryWarning = document.createElement('p'); summaryWarning.id = 'meeting-summary-warning'; summaryWarning.hidden = true;
@@ -92,9 +104,9 @@ const recorder = new Recorder({ onLevel: value => { $('level').value = value; le
   onEnded: () => {dictationSourceEnded = true; $('record').click();} });
 const meetingRecorder = new Recorder({onLevel: value => { $('meeting-level').value = value; level(value); }, onLimit: () => $('meeting-record').click(),
   onEnded: () => {meetingSourceEnded = true; $('meeting-record').click();}});
-function meetingRecordingUI(active) {
+function meetingRecordingUI(active, processing = false) {
   meetingEditingUI(meetingBusy);
-  api['recording-state'](active).catch(error => status(error.message));
+  api['recording-state'](active, processing).catch(error => status(error.message));
   $('meeting-record').textContent = active ? 'Aufnahme beenden und transkribieren' : 'Meeting aufnehmen';
   $('meeting-level').hidden = !active;
   $('meeting-cancel').hidden = !active && !meetingBusy;
@@ -102,9 +114,9 @@ function meetingRecordingUI(active) {
   $('meeting-speaker-count').disabled = active || meetingBusy || !speakerModelsAvailable;
 }
 $('meeting-record').onclick = attempt(async () => {
-  if (busy || meetingBusy || recorder.state !== 'idle' || meetingRecorder.state === 'starting') return;
+  if (busy || meetingBusy || dictationStartup || meetingStartup || recorder.state !== 'idle' || meetingRecorder.state === 'starting') return;
   if (['recording', 'limit'].includes(meetingRecorder.state)) {
-    const wav = meetingRecorder.stop(); meetingBusy = true; meetingRecordingUI(false);
+    const wav = meetingRecorder.stop(); meetingBusy = true; meetingRecordingUI(false, true);
     try {
       const entry = await api['meeting-audio'](wav, speakerOptions);
       const draft = currentMeetingDraft();
@@ -129,13 +141,22 @@ $('meeting-record').onclick = attempt(async () => {
     meetingSourceEnded = false;
     speakerOptions = {enabled: $('meeting-diarize').checked, speakerCount: Number($('meeting-speaker-count').value)};
     $('meeting-cancel').hidden = false; status('Mikrofon wird gestartet …');
-    try { if (!await meetingRecorder.start($('microphone').value, {source: $('meeting-source').value})) return; }
-    catch (error) { await api.cancel(); meetingRecordingUI(false); throw error; }
+    const startup = {cancelled: false}; meetingStartup = startup;
+    try {
+      await api['recording-starting']();
+      if (startup.cancelled) return;
+      if (!await meetingRecorder.start($('microphone').value, {source: $('meeting-source').value})) return;
+    }
+    catch (error) {
+      if (startup.cancelled) return;
+      await api.cancel(); meetingRecordingUI(false); throw error;
+    }
+    finally {if (meetingStartup === startup) meetingStartup = null;}
     meetingRecordingUI(true); status('Meeting-Aufnahme läuft …');
   }
 });
-function recordingUI(active) {
-  api['recording-state'](active).catch(error => status(error.message));
+function recordingUI(active, processing = false) {
+  api['recording-state'](active, processing).catch(error => status(error.message));
   $('record').textContent = active ? 'Aufnahme beenden' : 'Aufnahme starten';
   $('recording-label').textContent = active ? 'Ich höre zu …' : 'Bereit für dein Diktat.';
   $('level').hidden = !active; $('cancel').hidden = !active && !busy;
@@ -201,7 +222,7 @@ $('meeting-summarize').onclick = attempt(async () => {
     await refreshMeetings(); status('Meeting verschlüsselt gespeichert.');
   } finally { meetingBusy = false; $('meeting-summarize').disabled = false; $('meeting-cancel').hidden = true; meetingEditingUI(false); }
 });
-$('meeting-cancel').onclick = attempt(async () => { meetingRecorder.cancel(); await api.cancel(); meetingRecordingUI(false); status('Abgebrochen.'); });
+$('meeting-cancel').onclick = attempt(async () => { cancelStartup(); meetingRecorder.cancel(); await api.cancel(); meetingRecordingUI(false); status('Abgebrochen.'); });
 $('meeting-copy').onclick = attempt(async () => { await api.copy($('meeting-result').value); status('Zusammenfassung kopiert.'); });
 $('meetings-clear').onclick = attempt(async () => {
   if (confirm('Alle gespeicherten Meetings leeren?')) { await api['meetings-clear'](); await refreshMeetings(); }
@@ -212,10 +233,10 @@ document.querySelectorAll('nav button').forEach(button => button.onclick = () =>
   document.querySelectorAll('nav button').forEach(b => b.classList.toggle('selected', b === button));
 });
 $('record').onclick = attempt(async () => {
-  if (busy || meetingBusy || meetingRecorder.state !== 'idle' || recorder.state === 'starting') return;
+  if (busy || meetingBusy || dictationStartup || meetingStartup || meetingRecorder.state !== 'idle' || recorder.state === 'starting') return;
   if (['recording', 'limit'].includes(recorder.state)) {
     heldGesture = null;
-    const wav = recorder.stop(); recordingUI(false);
+    const wav = recorder.stop(); recordingUI(false, true);
     const entry = await api.audio(wav, $('mode').value);
     if (dictationSourceEnded) entry.warning = [entry.warning, 'Die Audioquelle wurde beendet; der vorhandene Abschnitt wurde verarbeitet.'].filter(Boolean).join('\n');
     await result(entry);
@@ -223,12 +244,17 @@ $('record').onclick = attempt(async () => {
     dictationSourceEnded = false;
     $('cancel').hidden = false; status('Mikrofon wird gestartet …');
     const startingGesture = heldGesture;
+    const startup = {cancelled: false}; dictationStartup = startup;
     try {
+      await api['recording-starting']();
+      if (startup.cancelled) return;
       if (!await recorder.start($('microphone').value)) return;
     } catch (error) {
+      if (startup.cancelled) return;
       if (heldGesture === startingGesture) heldGesture = null;
       await api.cancel(); recordingUI(false); throw error;
     }
+    finally {if (dictationStartup === startup) dictationStartup = null;}
     recordingUI(true); status('');
     const devices = await navigator.mediaDevices.enumerateDevices();
     const selected = $('microphone').value;
@@ -238,7 +264,7 @@ $('record').onclick = attempt(async () => {
   }
 });
 $('import').onclick = attempt(async () => { if (!busy && !meetingBusy && meetingRecorder.state === 'idle' && recorder.state === 'idle') await result(await api.import($('mode').value)); });
-$('cancel').onclick = attempt(async () => { heldGesture = null; recorder.cancel(); meetingRecorder.cancel(); await api.cancel(); recordingUI(false); meetingRecordingUI(false); status('Abgebrochen.'); });
+$('cancel').onclick = attempt(async () => { cancelStartup(); heldGesture = null; recorder.cancel(); meetingRecorder.cancel(); await api.cancel(); recordingUI(false); meetingRecordingUI(false); status('Abgebrochen.'); });
 $('copy').onclick = attempt(async () => { await api.copy($('result').value); status('Text kopiert.'); });
 $('mode').onchange = attempt(async () => { settings.mode = $('mode').value; await save(); });
 $('speech-model').onchange = attempt(async () => { settings.speech.preset = $('speech-model').value; await save(); updateLocation(); });
@@ -266,7 +292,7 @@ api.onState(state => {
   if (busy) status({ transcribing: 'Sprache wird erkannt …', rewriting: 'Text wird überarbeitet …', saving: 'Verlauf wird gespeichert …' }[state]);
 });
 api.onShortcut(mode => {
-  if (busy || meetingBusy || meetingRecorder.state !== 'idle' || !settings || recorder.state === 'starting') return;
+  if (busy || meetingBusy || dictationStartup || meetingStartup || meetingRecorder.state !== 'idle' || !settings || recorder.state === 'starting') return;
   if (recorder.state === 'idle') $('mode').value = mode;
   $('record').click();
 });
@@ -275,7 +301,7 @@ api.onCancelRecording(() => $('cancel').click());
 const shortHold = () => status('Kürzel vor Aufnahmebereitschaft losgelassen. Zum Diktieren länger halten.');
 api.onHoldTooShort(shortHold);
 api.onHoldStart(({token, mode}) => {
-  if (busy || meetingBusy || !settings || recorder.state !== 'idle' || meetingRecorder.state !== 'idle') {
+  if (busy || meetingBusy || dictationStartup || meetingStartup || !settings || recorder.state !== 'idle' || meetingRecorder.state !== 'idle') {
     api['hold-rejected'](token).catch(() => {}); return;
   }
   heldGesture = token; $('mode').value = mode; $('record').click();
@@ -283,12 +309,13 @@ api.onHoldStart(({token, mode}) => {
 api.onHoldStop(token => {
   if (heldGesture !== token) return;
   heldGesture = null;
-  if (recorder.state === 'starting') {
+  if (dictationStartup || recorder.state === 'starting') {
+    cancelStartup();
     recorder.cancel(); api.cancel().catch(() => {}); recordingUI(false); shortHold();
   } else if (['recording', 'limit'].includes(recorder.state)) $('record').click();
 });
 api.onHoldFailed(({token, message}) => {
-  if (heldGesture === token) {heldGesture = null; recorder.cancel(); recordingUI(false);}
+  if (heldGesture === token) {cancelStartup(); heldGesture = null; recorder.cancel(); recordingUI(false);}
   else if (heldGesture !== null || recorder.state !== 'idle') return;
   status(`Haltemodus nicht verfügbar: ${message}`);
 });
@@ -343,6 +370,9 @@ try {
   const shortcutsTitle = document.createElement('h3'); shortcutsTitle.textContent = 'Globale Tastenkürzel';
   const shortcutsNote = document.createElement('p'); shortcutsNote.textContent = 'Einmal drücken startet, erneut drücken beendet die Aufnahme. Beim Schließen bleibt BlitzDic im Infobereich aktiv.';
   $('settings').append(shortcutsTitle, shortcutsNote);
+  const escapeNote = document.createElement('p');
+  escapeNote.textContent = 'Escape beendet eine laufende Aufnahme und transkribiert sie. Während der Verarbeitung bricht Escape den Vorgang ab. Außerhalb eines Vorgangs bleibt Escape für andere Programme verfügbar.';
+  $('settings').append(escapeNote);
   const behaviorLabel = document.createElement('label'); behaviorLabel.textContent = 'Kürzelbedienung';
   const behavior = document.createElement('select'); behavior.id = 'shortcut-behavior';
   behavior.add(new Option('Drücken: starten / erneut drücken: beenden', 'toggle'));

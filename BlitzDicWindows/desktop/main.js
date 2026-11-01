@@ -12,10 +12,12 @@ import { Meetings } from '../src/meetings.js';
 import { fitInsertion } from '../src/insertion-fit.js';
 import { RecordingIndicator } from './recording-indicator.js';
 import { HoldShortcuts } from '../src/hold-shortcuts.js';
+import { EscapeControl } from '../src/escape-control.js';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 let window, flow, store, tray, meetings, indicator, quitting = false;
 let holdShortcuts;
+let escapeControl;
 const uiURL = pathToFileURL(join(root, 'ui/index.html')).href;
 app.setName('BlitzDic');
 if (!app.requestSingleInstanceLock()) app.quit();
@@ -32,7 +34,41 @@ else app.whenReady().then(async () => {
   let insertionTarget = null, recording = false, capturePending = false, captureEpoch = 0;
   let insertionRequested = false, insertionProblem = '';
   let shortcutBehavior = 'toggle';
-  const clearInsertion = () => { insertionTarget = null; insertionRequested = false; insertionProblem = ''; };
+  let recordingStarting = false, processingPending = false;
+  const escapeJobs = new Set();
+  const escapeError = error => { if (window && !window.isDestroyed()) window.webContents.send('shortcut-error', error.message); };
+  const syncEscape = () => escapeControl.setActive(!!(recordingStarting || recording || processingPending || insertionRequested || capturePending || escapeJobs.size));
+  const clearInsertion = () => { insertionTarget = null; insertionRequested = false; insertionProblem = ''; syncEscape().catch(escapeError); };
+  const cancelWorkflow = () => {
+    captureEpoch++; recordingStarting = false; processingPending = false;
+    for (const controller of escapeJobs) controller.abort();
+    holdShortcuts?.cancel(); flow.cancel(); meetings.cancel(); clearInsertion();
+  };
+  escapeControl = new EscapeControl({pythonPath,
+    onEscape: () => {
+      if (recording) {
+        holdShortcuts.cancel(); window.webContents.send('stop-recording');
+      } else {
+        cancelWorkflow(); window.webContents.send('cancel-recording');
+      }
+    },
+    onError: error => {
+      cancelWorkflow();
+      if (window && !window.isDestroyed()) window.webContents.send('cancel-recording');
+      escapeError(error);
+    },
+  });
+  escapeControl.start().catch(() => {});
+  async function escapeJob(work) {
+    const epoch = captureEpoch, controller = new AbortController(); escapeJobs.add(controller);
+    try {
+      await syncEscape();
+      if (epoch !== captureEpoch) throw new Error('Abgebrochen.');
+      const result = await work(controller.signal);
+      controller.signal.throwIfAborted();
+      return result;
+    } finally {escapeJobs.delete(controller); processingPending = false; await syncEscape().catch(escapeError);}
+  }
   holdShortcuts = new HoldShortcuts({
     wait: (shortcut, signal) => runSpeech({action: 'wait-shortcut-release', shortcut}, {pythonPath, signal, timeoutMs: 1805000}),
     start: (token, mode) => window.webContents.send('hold-start', {token, mode}),
@@ -49,6 +85,8 @@ else app.whenReady().then(async () => {
       insertionRequested = true; insertionProblem = '';
       const epoch = captureEpoch;
       try {
+        await syncEscape();
+        if (epoch !== captureEpoch) return null;
         const {target: captured, reason, executable} = await runSpeech({ action: 'capture-target' }, { pythonPath, timeoutMs: 5000 });
         if (epoch === captureEpoch) {
           insertionTarget = captured;
@@ -57,7 +95,7 @@ else app.whenReady().then(async () => {
         }
       }
       catch (error) { insertionTarget = null; insertionProblem = `Eingabefeld konnte nicht erfasst werden: ${error.message}`; }
-      finally { capturePending = false; }
+      finally { capturePending = false; syncEscape().catch(escapeError); }
       return epoch === captureEpoch ? mode : null;
   }
   async function triggerShortcut(mode, shortcut) {
@@ -84,7 +122,7 @@ else app.whenReady().then(async () => {
   tray.setContextMenu(Menu.buildFromTemplate([
     { label: 'BlitzDic öffnen', click: () => { window.show(); window.focus(); } },
     { label: 'Wortgenau diktieren / beenden', click: () => window.webContents.send('shortcut', 'verbatim') },
-    { label: 'Abbrechen', click: () => { flow.cancel(); window.webContents.send('cancel-recording'); } },
+    { label: 'Abbrechen', click: () => { cancelWorkflow(); window.webContents.send('cancel-recording'); } },
     { type: 'separator' }, { label: 'Beenden', click: () => { quitting = true; app.quit(); } },
   ]));
   tray.on('double-click', () => { window.show(); window.focus(); });
@@ -114,6 +152,7 @@ else app.whenReady().then(async () => {
     globalShortcut.unregisterAll();
     const failed = [];
     for (const [mode, shortcut] of Object.entries(settings.shortcuts || {})) {
+      if (/(?:^|\+)esc(?:ape)?$/i.test(shortcut)) {failed.push(shortcut); continue;}
       try {
         if (!globalShortcut.register(shortcut, () => triggerShortcut(mode, shortcut))) failed.push(shortcut);
       } catch { failed.push(shortcut); }
@@ -125,6 +164,8 @@ else app.whenReady().then(async () => {
     // Include asynchronous key validation in ordering: a slower earlier save
     // must not overwrite a newer choice of hold/toggle behavior.
     const operation = settingsQueue.then(async () => {
+      if (Object.values(settings.shortcuts ?? {}).some(value => /(?:^|\+)esc(?:ape)?$/i.test(value)))
+        throw new Error('Escape ist zum Beenden einer Aufnahme und Abbrechen der Verarbeitung reserviert.');
       if (settings.shortcutBehavior !== undefined && !['hold', 'toggle'].includes(settings.shortcutBehavior))
         throw new Error('Unbekannte Kürzelbedienung.');
       if (settings.shortcutBehavior === 'hold') await runSpeech({action: 'validate-hold-shortcuts',
@@ -152,29 +193,31 @@ else app.whenReady().then(async () => {
   handle('import', async mode => {
     if (meetings.active) throw new Error('Bitte die Meeting-Zusammenfassung abwarten oder abbrechen.');
     const selected = await dialog.showOpenDialog(window, { properties: ['openFile'], filters: [{ name: 'Audio', extensions: ['wav', 'mp3', 'm4a', 'ogg', 'flac', 'webm'] }] });
-    return selected.canceled ? null : flow.process(selected.filePaths[0], mode);
+    return selected.canceled ? null : escapeJob(() => flow.process(selected.filePaths[0], mode));
   });
   handle('audio', async (bytes, mode) => {
     if (meetings.active) throw new Error('Bitte die Meeting-Zusammenfassung abwarten oder abbrechen.');
     if (!(bytes instanceof ArrayBuffer) || bytes.byteLength > 350 * 1024 * 1024) throw new Error('Ungültige Aufnahme.');
-    const target = insertionTarget; insertionTarget = null;
-    const requested = insertionRequested, problem = insertionProblem;
-    insertionRequested = false; insertionProblem = '';
-    const entry = await flow.process(Buffer.from(bytes), mode);
-    if (requested && !target) entry.warning = [entry.warning, problem].filter(Boolean).join('\n');
-    if (target && entry.text.trim()) {
-      try {
-        const text = fitInsertion(entry.text, target.before ?? null, target.after ?? null);
-        const insertion = await runSpeech({ action: 'insert-text', target, text }, { pythonPath, timeoutMs: 5000 });
-        if (!insertion.inserted) entry.warning = [entry.warning, insertion.reason].filter(Boolean).join('\n');
-      } catch (error) { entry.warning = [entry.warning, `Automatisches Einfügen fehlgeschlagen: ${error.message}`].filter(Boolean).join('\n'); }
-    }
-    return entry;
+    return escapeJob(async signal => {
+      processingPending = false;
+      const target = insertionTarget; insertionTarget = null;
+      const requested = insertionRequested, problem = insertionProblem;
+      insertionRequested = false; insertionProblem = '';
+      const entry = await flow.process(Buffer.from(bytes), mode);
+      signal.throwIfAborted();
+      if (requested && !target) entry.warning = [entry.warning, problem].filter(Boolean).join('\n');
+      if (target && entry.text.trim()) {
+        try {
+          const text = fitInsertion(entry.text, target.before ?? null, target.after ?? null);
+          const insertion = await runSpeech({ action: 'insert-text', target, text }, { pythonPath, signal, timeoutMs: 5000 });
+          if (!insertion.inserted) entry.warning = [entry.warning, insertion.reason].filter(Boolean).join('\n');
+        } catch (error) { entry.warning = [entry.warning, `Automatisches Einfügen fehlgeschlagen: ${error.message}`].filter(Boolean).join('\n'); }
+      }
+      return entry;
+    });
   });
   handle('cancel', () => {
-    captureEpoch++; clearInsertion();
-    holdShortcuts.cancel();
-    flow.cancel(); meetings.cancel();
+    cancelWorkflow();
   });
   handle('hold-rejected', token => {
     if (!holdShortcuts.active || holdShortcuts.active.token !== token) return;
@@ -184,6 +227,7 @@ else app.whenReady().then(async () => {
   handle('meeting-save', (transcript, title, names) => meetings.saveTranscript(transcript, title, names));
   handle('meeting-rename', (id, transcript, names) => meetings.renameSpeakers(id, transcript, names));
   handle('meeting-audio', async (bytes, options = {}) => {
+    const epoch = captureEpoch;
     if (meetings.active) throw new Error('Eine Meeting-Zusammenfassung läuft bereits.');
     if (!(bytes instanceof ArrayBuffer) || bytes.byteLength > 350 * 1024 * 1024) throw new Error('Ungültige Aufnahme.');
     if (!options || typeof options !== 'object') throw new Error('Ungültige Sprecheroptionen.');
@@ -191,18 +235,30 @@ else app.whenReady().then(async () => {
     if (!Number.isInteger(speakerCount) || (speakerCount !== -1 && (speakerCount < 1 || speakerCount > 20)))
       throw new Error('Sprecherzahl muss automatisch oder zwischen 1 und 20 sein.');
     if (diarize && !await speakerModelsAvailable()) throw new Error('Dieses Paket enthält keine lokalen Sprecherzuordnungsmodelle.');
+    if (epoch !== captureEpoch) throw new Error('Abgebrochen.');
     insertionTarget = null; insertionRequested = false;
-    return flow.process(Buffer.from(bytes), 'verbatim', {saveHistory: false, diarize, speakerCount});
+    return escapeJob(() => {
+      processingPending = false;
+      return flow.process(Buffer.from(bytes), 'verbatim', {saveHistory: false, diarize, speakerCount});
+    });
   });
   handle('meeting-summary', (transcript, title, names) => {
     if (flow.active || recording || capturePending) throw new Error('Bitte das Diktat zuerst beenden.');
-    return meetings.summarize(transcript, title, names);
+    return escapeJob(() => meetings.summarize(transcript, title, names));
   });
   handle('meetings-clear', () => store.clearMeetings());
-  handle('recording-state', async active => {
-    if (typeof active !== 'boolean') throw new Error('Ungültiger Aufnahmestatus.');
+  handle('recording-starting', async () => {
+    const epoch = captureEpoch;
+    recordingStarting = true;
+    await syncEscape();
+    if (epoch !== captureEpoch) throw new Error('Abgebrochen.');
+  });
+  handle('recording-state', async (active, processing = false) => {
+    if (typeof active !== 'boolean' || typeof processing !== 'boolean') throw new Error('Ungültiger Aufnahmestatus.');
+    recordingStarting = false; processingPending = !active && processing;
     recording = active; tray.setToolTip(active ? 'BlitzDic · Aufnahme läuft' : 'BlitzDic · Bereit');
     if (!active && holdShortcuts.active?.started) holdShortcuts.cancel();
+    syncEscape().catch(escapeError);
     await indicator.setActive(active);
   });
   handle('recording-level', value => {
@@ -224,5 +280,5 @@ else app.whenReady().then(async () => {
 }).catch(error => { dialog.showErrorBox('BlitzDic konnte nicht starten', error.message); app.quit(); });
 app.on('second-instance', () => { window?.show(); window?.focus(); });
 app.on('window-all-closed', () => { flow?.cancel(); app.quit(); });
-app.on('before-quit', () => { quitting = true; holdShortcuts?.destroy(); flow?.cancel(); meetings?.cancel(); indicator?.destroy(); });
+app.on('before-quit', () => { quitting = true; escapeControl?.destroy(); holdShortcuts?.destroy(); flow?.cancel(); meetings?.cancel(); indicator?.destroy(); });
 app.on('will-quit', () => { globalShortcut.unregisterAll(); tray?.destroy(); });

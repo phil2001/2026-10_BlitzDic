@@ -4,7 +4,6 @@
 - Echte LAN- und Cloud-Anbieter zusätzlich zu lokalen Servern und Protokoll-Fixtures prüfen.
 - Verbleibende Originalfunktionen portieren: Website-Regeln,
   optionales Stummschalten und Live-Meeting-Notizen.
-- Escape-Steuerung noch portieren.
 - Weitere Meeting-Funktionen des Originals prüfen: Echo-Unterdrückung.
 - Oberfläche visuell abschließen und Zugänglichkeit prüfen.
 - Vollständige Drittanbieter-Lizenzen bündeln und Installer auf sauberem Windows testen.
@@ -27,5 +26,9 @@ Version 0.3.10-dev.0 ergänzt Halten-zum-Diktieren. Native Windows-Tastenereigni
 Aufnahmeanzeige und Einfügen im externen Chromium-Editor sind für Halten und
 Start/Stopp mit beiden gebündelten Modellen geprüft. Die Audioquelle war dabei
 eine Testdatei; dies ersetzt keinen Test mit einem physischen Mikrofon.
+Version 0.3.10-dev.1 ergänzt Escape: Aufnahme beenden und transkribieren,
+Verarbeitung abbrechen, außerhalb eines Vorgangs an andere Programme weitergeben.
+Native Diktat- und Meeting-Abläufe sowie Abbrüche von ASR, Überarbeitung und
+Meeting-Zusammenfassung sind mit der gepackten App geprüft.
 Der Installationsablauf 0.1.0 → 0.3.6 wurde auf dem Entwicklungs-PC geprüft.
 Details, Grenzen und Nachweise: [WINDOWS_PORT.md](WINDOWS_PORT.md).

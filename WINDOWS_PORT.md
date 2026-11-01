@@ -1003,3 +1003,85 @@ target as changed; the text remained available in BlitzDic and the editor was
 unchanged. An isolated repeat passed. The precise cause of that rejection was
 not established; it is retained here rather than counted as a passing insertion.
 Earlier failed activation attempts did not demonstrate a locked desktop.
+
+## Scoped Escape control, 2026-11-01
+
+Source 0.3.10-dev.1 stops and transcribes a recording on Escape; during processing
+Escape cancels. A registration probe on this Windows host rejected Control+Escape
+and Control+Shift+Escape. Registering only bare Escape would therefore miss the
+default hold gesture while Control+Shift remain down. A dedicated windowless
+worker now installs a WH_KEYBOARD_LL hook only for an active workflow. It examines
+the virtual key code, passes every non-Escape key through and stores no text or
+general key log. Its callback enqueues Escape notifications without pipe I/O;
+separate threads handle stdin commands and stdout responses. Source/API references:
+https://learn.microsoft.com/en-us/windows/win32/winmsg/lowlevelkeyboardproc,
+https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setwindowshookexw,
+https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-postthreadmessagew.
+
+The parent waits for native arm acknowledgements before microphone startup or
+target capture. Command generations reject late notifications after cancellation.
+Escape repeats do not emit another stop/cancel. A key already held before arming
+passes through until released. An owned Escape key-up is consumed even if the
+workflow finishes mid-press, then the idle hook is removed. Worker EOF, parent
+shutdown and worker failure all remove the hook. Lost worker/acknowledgement has
+a bounded error path; active recordings are cancelled rather than left running.
+
+Processing ownership spans the recording-to-ASR handoff and native insertion.
+Cancellation aborts active jobs and invalidates pending capture. Meeting model
+availability checks revalidate the cancellation epoch. Renderer startup tokens
+prevent a delayed microphone grant or earlier error from cancelling a newer
+recording. An initial UI regression blocked a new recording until an old grant
+resolved; releasing cancelled startup ownership fixed it. The same lifecycle QA
+then passed. Cancellation errors now display “Abgebrochen.” rather than Electron
+IPC implementation details. Escape cannot be saved as a dictation shortcut.
+
+Validation completed:
+
+- Node: 51 passed, two optional actual-ASR unit tests skipped. Actual models were
+  exercised separately below. The initial sandboxed suite could not reach its
+  loopback HTTP fixtures; the suite passed with local networking permitted.
+- Python: four Escape tests (including real hook arm/disarm and EOF), two hold-key
+  tests and two WAV tests passed. The Escape lifecycle also passed in the newly
+  frozen worker. CI includes the new Escape tests.
+- Source hold/IPC QA with actual Whisper passed preference persistence, delayed
+  microphone grants, repeat/stale-event isolation, cancellation and ordered saves.
+- Source and packaged UI QA passed page identity/content, visible Escape guidance,
+  1200×820 and 760×620 screenshots, no horizontal overflow and no relevant page or
+  console errors. Killing only the owned Escape helper cancelled the microphone
+  and released its tracks. Browser plugin not available; Electron Playwright used.
+- On the final -verified package, native Windows Escape stopped Whisper toggle
+  dictation and Parakeet held dictation while Control+Shift were still down. Both
+  transcribed and inserted into the external Chromium editor. Active Escape was
+  consumed; idle Escape reached that editor. Foreground HWND and indicator behavior
+  remained correct. Ordinary native hold/release with Whisper also passed cursor
+  fitting and insertion, without Escape.
+- The same final package passed native Escape cancellation during actual Whisper
+  ASR and during an intentionally pending loopback rewrite request. Both displayed
+  “Abgebrochen.”, inserted nothing and saved no history; idle Escape passed through.
+- Packaged meeting recording stopped on native Escape and produced a real bundled
+  Whisper transcript. Native Escape then cancelled a pending summary: original
+  transcript unchanged, no summary or archive entry saved, idle Escape restored.
+  The first meeting attempt refused input because its target was not foreground;
+  Computer Use app approval expired. A subsequent run used the same owned external
+  editor as dictation tests and passed. A Computer Use refresh reported no foreground
+  process as the successful fixture closed; the test's own assertions completed.
+- Both ASR engines and speaker diarization passed with the frozen worker and a
+  system-only PATH. Seven runtime/UI files in app.asar matched current source bytes.
+  Production package name/version/main/type and metadata matched; electron-builder
+  intentionally removed development scripts/dependencies and normalized JSON.
+- All 111 mapped native-file hashes and 88 package-notice hashes matched. Extended
+  Windows paths were needed to read deeply nested notice files. This hash check
+  does not resolve the remaining native redistribution review.
+
+The full build created a new frozen runtime and inventory. Subsequent packages
+reused those unchanged resources while correcting the meeting epoch check and
+German cancellation display. Intermediate outputs remain retained. The final
+development installer is:
+BlitzDicWindows/dist/windows-2026-11-01T06-58-02-880Z-ac79d7-verified/BlitzDic Setup 0.3.10-dev.1.exe;
+1,148,478,969 bytes; SHA-256
+21BACC3930C3C60681E5136117B5726BA85B382B4ABB414209AD442878F098BF.
+
+This unsigned development package has not replaced installed 0.3.6 and is not a
+public release. Synthetic microphone input and injected Windows keys do not prove
+physical-device behavior. Other original features, broader application coverage,
+clean Windows installation, licensing review and release gates remain open.

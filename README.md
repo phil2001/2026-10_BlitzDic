@@ -113,13 +113,21 @@ müssen auf Zuordnung von Aufgaben, Zahlen und offenen Fragen geprüft werden.
 
 ## Entwicklung unter Windows 11
 
-Der Quellstand **0.3.10-dev.0** ergänzt unter Einstellungen die Wahl zwischen
+Der Quellstand **0.3.10-dev.1** ergänzt unter Einstellungen die Wahl zwischen
 Drücken und Halten eines Kürzels. Zustands-, Mikrofonstart-/Abbruch- und IPC-Tests
 sowie der native Windows-Tastenablauf sind bestanden: Halten und Start/Stopp
 wurden mit beiden gebündelten Sprachmodellen bis zum Einfügen in einen externen
 Editor geprüft. Die Aufnahme verwendete eine Audio-Testdatei. Physische Mikrofone
 und weitere Zielprogramme bleiben separat zu prüfen. Der Vorabstand bleibt eine
 Entwicklungsfassung; die übrigen Fertigstellungsschritte stehen unten.
+Escape beendet eine laufende Aufnahme und transkribiert sie. Während der
+Verarbeitung bricht Escape ab. Außerhalb eines Vorgangs bleibt Escape für andere
+Programme verfügbar. Auch das Beenden bei noch gehaltenem Diktierkürzel ist
+im Windows-Quellstand geprüft.
+Der zugehörige lokale Entwicklungsinstaller liegt unter
+`BlitzDicWindows/dist/windows-2026-11-01T06-58-02-880Z-ac79d7-verified/BlitzDic Setup 0.3.10-dev.1.exe`.
+Auch im Paket sind die Escape-Abläufe für Diktat, Meeting-Aufnahme und Abbruch
+geprüft. Die installierte Testversion 0.3.6 wurde dabei nicht ersetzt.
 
 Benötigt: Node.js 22 oder neuer, npm und uv. PowerShell im Projektordner:
 

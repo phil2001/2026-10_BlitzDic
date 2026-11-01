@@ -20,12 +20,12 @@ print('ready', flush=True)
 try:
   for command in sys.stdin:
     parts = command.split()
-    if len(parts) != 3 or parts[0] not in ('toggle', 'down', 'up') or not parts[1].isdigit() or parts[2] not in ('1', '2', '3', '4'):
+    if len(parts) != 3 or parts[0] not in ('toggle', 'down', 'up', 'escape') or not parts[1].isdigit() or parts[2] not in ('1', '2', '3', '4'):
         print('refused: expected action, target window and shortcut number', flush=True); continue
     # Always release our own injected keys, even if focus changed during a test.
     if parts[0] == 'up':
         release(); print('sent', flush=True); continue
-    if held:
+    if held and parts[0] != 'escape':
         print('refused: test keys already held', flush=True); continue
     expected = int(parts[1])
     if user32.GetForegroundWindow() != expected:
@@ -39,6 +39,18 @@ try:
     window = user32.GetForegroundWindow()
     if window != expected:
         print(f'refused: foreground window {window} differs from owned test window {parts[1]}', flush=True); continue
+    if parts[0] == 'escape':
+        if any(user32.GetAsyncKeyState(key) & 0x8000 and key not in held
+               for key in (0x11, 0x10, 0x12, 0x5B, 0x5C)):
+            print('refused: modifier pressed outside this helper', flush=True); continue
+        if user32.GetAsyncKeyState(0x1B) & 0x8000:
+            print('refused: Escape is already pressed outside this helper', flush=True); continue
+        try:
+            user32.keybd_event(0x1B, 0, 0, 0)
+            time.sleep(.05)
+        finally:
+            user32.keybd_event(0x1B, 0, 2, 0)
+        print('sent', flush=True); continue
     keys = [0x11, 0x10, 0x30 + int(parts[2])]
     if any(user32.GetAsyncKeyState(key) & 0x8000 for key in keys):
         print('refused: shortcut keys already pressed outside this helper', flush=True); continue

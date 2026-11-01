@@ -102,6 +102,10 @@ def run(request):
 
 if __name__ == "__main__":
     try:
+        if sys.argv[1:] == ['--escape-control']:
+            from escape_control import serve
+            serve()
+            sys.exit(0)
         # PyInstaller can ignore PYTHONIOENCODING and inherit a Windows code
         # page. Electron always sends UTF-8 JSON, including paths and dictation.
         request = json.loads(sys.stdin.buffer.read().decode('utf-8'))

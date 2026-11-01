@@ -92,8 +92,9 @@ test helper holds only its own injected Ctrl+Shift+number chord until release;
 it refuses to press keys unless the exact owned test editor is foreground or if
 those keys were already pressed. It always releases its own keys at EOF/cleanup.
 Use `BLITZDIC_TEST_EXTERNAL_INPUT=1` for actual manually supplied hold/release input.
-This full native-key check is still pending on the current development desktop;
-do not infer its success from the passing IPC lifecycle and real-ASR checks.
+The packaged native hold and toggle flows passed with both bundled engines on
+2026-11-01 using Windows keydown/up injection and a synthetic microphone. This
+does not replace hardware-keyboard, physical-microphone or clean-VM testing.
 
 `node --test test/hold-shortcuts.test.js` covers repeat, early release, cancellation,
 stale workers and shutdown with controlled promises. `scripts/test-hold-keys.py`
@@ -101,6 +102,30 @@ checks Windows accelerator parsing and simulated key-state transitions using onl
 the standard library; CI runs it on Windows. The frozen worker actions
 `validate-hold-shortcuts` and `wait-shortcut-release` are bundled. A non-held chord
 query proves packaging and API availability, not physical key delivery.
+
+## Escape development checks
+
+Source 0.3.10-dev.1 adds scoped Escape control. Escape stops a recording and
+transcribes it; during ASR or rewriting it cancels the operation. The separate
+`--escape-control` worker accepts JSON-line `{id, active}` commands and acknowledges
+hook state. Only Escape is consumed while a workflow is active; other keys are
+passed through without recording them. An owned Escape key-up is completed even
+if the workflow ends while that key is held. Pipe closure/app shutdown removes
+the hook. Hook callbacks enqueue events; stdin/stdout I/O runs on other threads.
+
+`scripts/test-escape-control.py` covers repeat/preheld/key-up ownership and actual
+native arm/disarm/EOF. Set `BLITZDIC_TEST_RUNTIME` to a frozen worker executable to
+repeat the native lifecycle check there. Node tests additionally cover generations,
+worker failure and shutdown. CI runs both sets.
+
+Set `BLITZDIC_TEST_ESCAPE=1` for the guarded hotkey test to stop with native Escape
+and verify that idle Escape reaches the external editor again. Combine it with
+`BLITZDIC_TEST_HOLD=1` to press Escape while the helper still holds its shortcut.
+`BLITZDIC_TEST_ESCAPE_CANCEL=1` adds an intentionally pending loopback rewrite and
+cancels it with a second Escape; history and editor must stay empty/unchanged.
+Use `BLITZDIC_TEST_ESCAPE_CANCEL_ASR=1` instead to cancel during actual local ASR.
+`BLITZDIC_TEST_WAIT_FOR_FOCUS=1` optionally waits up to ten minutes for the exact
+owned foreground editor. It does not relax any foreground or preheld-key guard.
 
 ## Attribution
 

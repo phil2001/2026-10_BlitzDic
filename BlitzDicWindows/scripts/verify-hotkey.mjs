@@ -12,16 +12,25 @@ const preset = process.env.BLITZDIC_TEST_PRESET || 'whisper';
 const executablePath = process.env.BLITZDIC_TEST_EXECUTABLE;
 const externalInput = process.env.BLITZDIC_TEST_EXTERNAL_INPUT === '1';
 const hold = process.env.BLITZDIC_TEST_HOLD === '1';
+const escape = process.env.BLITZDIC_TEST_ESCAPE === '1';
+const cancelRewrite = process.env.BLITZDIC_TEST_ESCAPE_CANCEL === '1';
+const cancelSpeech = process.env.BLITZDIC_TEST_ESCAPE_CANCEL_ASR === '1';
+assert.ok(!cancelRewrite || escape, 'Cancellation fixture requires Escape control');
+assert.ok(!cancelSpeech || (escape && !cancelRewrite), 'ASR cancellation requires Escape without the rewrite fixture');
 assert.ok(['whisper', 'parakeet-ultra'].includes(preset));
 const appRule = process.env.BLITZDIC_TEST_APP_RULE === '1';
 const explicitMode = process.env.BLITZDIC_TEST_EXPLICIT_MODE || '';
 assert.ok(!explicitMode || (appRule && ['clean', 'calm', 'emoji'].includes(explicitMode)));
 const expectedMode = explicitMode || 'clean';
-const shortcutNumber = {clean: 2, calm: 3, emoji: 4}[explicitMode] || 1;
+const shortcutNumber = cancelRewrite ? 2 : {clean: 2, calm: 3, emoji: 4}[explicitMode] || 1;
 const requests = [];
-const server = appRule ? createServer(async (request, response) => {
+let acceptRequest;
+const requestReady = new Promise(accept => {acceptRequest = accept;});
+const server = appRule || cancelRewrite ? createServer(async (request, response) => {
   let body = ''; for await (const part of request) body += part;
-  requests.push(JSON.parse(body)); response.setHeader('Content-Type', 'application/json');
+  requests.push(JSON.parse(body)); acceptRequest();
+  if (cancelRewrite) return; // Deliberately pending until Escape cancels the request.
+  response.setHeader('Content-Type', 'application/json');
   response.end(JSON.stringify({choices: [{message: {content: 'Programmregel bestätigt: This is a local speech recognition test.'}, finish_reason: 'stop'}]}));
 }) : null;
 if (server) { server.listen(0, '127.0.0.1'); await once(server, 'listening'); }
@@ -43,19 +52,23 @@ try {
     `--use-file-for-fake-audio-capture=${root}/.runtime/test-speech.wav`], env});
   page = await dictation.firstWindow();
   await page.waitForSelector('#provider option', {state: 'attached'});
-  await page.evaluate(async ({preset, appRule, baseURL, hold}) => {
+  await page.evaluate(async ({preset, appRule, cancelRewrite, baseURL, hold}) => {
     const {settings} = await window.blitz.load(); settings.speech.preset = preset;
     settings.shortcutBehavior = hold ? 'hold' : 'toggle';
-    if (appRule) {
-      settings.appModes = [{executable: 'electron.exe', mode: 'clean'}];
+    if (appRule || cancelRewrite) {
+      if (appRule) settings.appModes = [{executable: 'electron.exe', mode: 'clean'}];
       settings.provider = {provider: 'custom', location: 'local', baseURL, model: 'rule-fixture', apiKey: ''};
     }
     await window.blitz.settings(settings);
-  }, {preset, appRule, baseURL, hold});
+  }, {preset, appRule, cancelRewrite, baseURL, hold});
   assert.equal(await dictation.evaluate(({globalShortcut}) => globalShortcut.isRegistered('Control+Shift+1')), true);
   target = await electron.launch({args: [resolve(import.meta.dirname, 'uia-test-app.cjs'),
     `--user-data-dir=${root}/.runtime/hotkey-target-${runId}`], env});
   editor = await target.firstWindow();
+  if (escape) await editor.evaluate(() => {
+    window.testEscapeKeys = 0;
+    window.addEventListener('keydown', event => {if (event.key === 'Escape') window.testEscapeKeys++;});
+  });
   targetWindow = await target.evaluate(({BrowserWindow}) => {
     const handle = BrowserWindow.getAllWindows()[0].getNativeWindowHandle();
     return handle.length === 8 ? handle.readBigUInt64LE().toString() : handle.readUInt32LE().toString();
@@ -87,7 +100,26 @@ try {
     await editor.locator('#editor').evaluate(element => element.setSelectionRange(0, 0));
   await new Promise(resolve => setTimeout(resolve, 6200));
   if (externalInput) console.log(`READY: ${hold ? 'release' : 'press'} the same shortcut in the owned test window to stop.`);
-  else { await shortcut(hold ? 'up' : 'toggle'); console.log(hold ? 'Held keys released.' : 'Stop shortcut sent.'); }
+  else {
+    await shortcut(escape ? 'escape' : hold ? 'up' : 'toggle');
+    if (escape && hold) await shortcut('up');
+    console.log(escape ? 'Escape sent; held shortcut keys released.' : hold ? 'Held keys released.' : 'Stop shortcut sent.');
+  }
+  if (cancelRewrite || cancelSpeech) {
+    let timer;
+    try {
+      if (cancelSpeech) await page.waitForFunction(() => document.querySelector('#status').textContent === 'Sprache wird erkannt …');
+      else await Promise.race([requestReady, new Promise((_, reject) => {timer = setTimeout(() => reject(new Error('Rewrite fixture not reached')), 60000);})]);
+    }
+    finally {clearTimeout(timer);}
+    await shortcut('escape');
+    await page.waitForFunction(() => !document.querySelector('#record').disabled && /abgebrochen|aborted/i.test(document.querySelector('#status').textContent));
+    assert.equal(await page.locator('#status').textContent(), 'Abgebrochen.');
+    assert.equal(await editor.locator('#editor').inputValue(), 'Before ');
+    assert.equal(await page.locator('#result').inputValue(), '');
+    assert.deepEqual((await page.evaluate(() => window.blitz.load())).history, []);
+    console.log(`PASS: native Escape cancels ${cancelSpeech ? 'local ASR' : 'a pending rewrite'}, saves no history and inserts no text`);
+  } else {
   await page.waitForFunction(() => document.querySelector('#status').textContent === 'Transkription abgeschlossen.' ||
     /geändert|fehlgeschlagen|Zeitüberschreitung|Zusatztaste|Eingabefeld/.test(document.querySelector('#status').textContent), {}, {timeout: 60000});
   console.log('Transcription status:', await page.locator('#status').textContent());
@@ -117,8 +149,15 @@ try {
     console.log(`PASS: foreground app rule ${explicitMode ? 'preserves explicit ' : 'selects '}${expectedMode}, rewrite and encrypted history`);
   }
   console.log(`PASS: real global ${hold ? 'hold/release' : 'toggle'} shortcut -> synthetic microphone -> local ${preset} -> external Chromium insertion`);
-  console.log('Status:', await page.locator('#status').textContent());
   }
+  }
+  if (escape) {
+    assert.equal(await editor.evaluate(() => window.testEscapeKeys), 0, 'Active Escape must be consumed');
+    await shortcut('escape');
+    await editor.waitForFunction(() => window.testEscapeKeys === 1);
+    console.log('PASS: active Escape stops/transcribes and is consumed; idle Escape reaches the external editor');
+  }
+  console.log('Status:', await page.locator('#status').textContent());
 } catch (error) {
   if (page) console.error('Dictation state:', await page.evaluate(() => ({status: document.querySelector('#status').textContent,
     button: document.querySelector('#record').textContent, result: document.querySelector('#result').value})));
