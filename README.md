@@ -132,6 +132,8 @@ Physische Mikrofontests, weitere Office-/Browser-Versionen, abschließender
 Designabgleich, vollständige Prüfung der nativen Lizenzpflichten, Signierung und
 der Test in einer frischen Windows-VM bleiben offen. Beide enthaltenen Sprachmodelle
 und die gepackte App wurden auf dem Entwicklungs-PC mit frischem App-Profil geprüft.
+Auch das Installer-Upgrade von 0.1.0 auf 0.3.6 mit beiden Modellen wurde dort
+erfolgreich getestet, einschließlich eines Installationspfads mit Umlauten und Emoji.
 Der verfügbare Installer ist daher kein Nachweis der Fertigstellung.
 
 [Arbeitsstand](WINDOWS_PORT.md) · [Datenschutz](PRIVACY.md) · [Mitwirken](CONTRIBUTING.md)

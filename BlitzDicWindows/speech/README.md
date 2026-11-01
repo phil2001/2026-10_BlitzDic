@@ -54,6 +54,23 @@ npm.cmd test
 Both actual-model tests passed. Without the environment
 variable, those two tests are explicitly skipped. Synthetic microphone capture and bundled packaged inference have since passed. Physical microphone tests, German accuracy evaluation, GPU operation and a clean installation test remain pending.
 
+## Installed-app hotkey checks
+
+`scripts/verify-hotkey.mjs` can target the installed app through
+`BLITZDIC_TEST_EXECUTABLE`. Set `BLITZDIC_TEST_APP_RULE=1` to check that the
+foreground editor's `electron.exe` rule selects the clean mode, sends the expected
+rewrite prompt to an isolated loopback fixture, inserts its response and records
+the chosen mode in encrypted history. Set `BLITZDIC_TEST_EXPLICIT_MODE=calm` to
+check that Ctrl+Shift+3 preserves an explicit choice over that rule. This fixture
+tests routing and insertion, not the quality of a real LLM.
+
+The default resident key helper refuses input unless the exact owned test window
+is foreground. `BLITZDIC_TEST_EXTERNAL_INPUT=1` instead waits for actual shortcut
+input in that editor and prints the required chord. Focus the test textarea at its
+end before starting; the synthetic microphone is supplied by the test fixture.
+Both the Whisper/rule-selected mode and Parakeet/explicit-mode checks passed on
+2026-11-01 against installed 0.3.6, with Windows input supplied through Computer Use.
+
 ## Attribution
 
 Whisper: OpenAI (MIT), CTranslate2 export by Systran, faster-whisper runtime.

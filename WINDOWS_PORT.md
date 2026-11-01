@@ -725,3 +725,40 @@ The first added Python CI step requested 3.12.12, which GitHub does not provide
 as a Windows binary. The workflow now selects its available 3.12 Windows line;
 the app's separately bundled Python 3.12.12 runtime is unchanged. This distinction
 does not turn a CI interpreter check into a test of the packaged interpreter.
+
+## Actual installer upgrade and foreground mode rules, 2026-11-01
+
+The user explicitly approved replacing the old 0.1.0 test installation and its
+Desktop/Start Menu shortcuts. The exact 0.3.6 installer above was checked against
+its SHA-256 and executed silently for the current user. It returned exit code 0,
+removed the old project-local installation and installed into the new path
+`BlitzDicWindows/.runtime/Installiert Grüße 🌍 0.3.6`. The uninstall registry now
+reports version 0.3.6 and its new Unicode path; both shortcuts exist. No unrelated
+directories or files were deleted by the test scripts.
+
+The installed executable passed verify-installed.mjs with a fresh app profile:
+both actual bundled models recognized the expected English fixture; all 111
+native file origins, collected package notices and corresponding FFmpeg source
+passed the artifact checks. The unpacked app had also passed from a separate
+Unicode root, including its model and speech runtime paths. This is an actual
+NSIS upgrade on the Windows 11 development PC (build 26200), not a clean-PC test.
+Windows Sandbox is absent and this session cannot query/manage Hyper-V without
+administrator access, so no isolated Windows installation is claimed.
+
+verify-hotkey.mjs now tests foreground app rules against an isolated loopback
+rewrite fixture. In the installed app, a real Ctrl+Shift+1 selected the clean mode
+for the external Chromium editor's electron.exe rule, processed synthetic
+microphone audio through actual Whisper, checked the rewrite request and inserted
+the response into that editor. A second run used actual Parakeet Ultra and
+Ctrl+Shift+3: the explicit calm mode prevailed over the clean app rule. Both runs
+also checked the selected prompt, single rewrite request and encrypted history.
+The fixture response is controlled, so these are not real-LLM quality tests.
+
+The resident keyboard helper now requires the exact owned window handle and
+refuses to emit keys when Windows foreground activation fails. After such a
+refusal, the successful checks used the external-input test mode and Computer
+Use to focus only the owned test editor and send Windows shortcuts. An initial
+Computer Use app-approval timeout cleared on a fresh window selection. The first
+completed app-rule run revealed a case-sensitive test assertion against Whisper's
+variable capitalization; the assertion now ignores case and the rerun passed.
+Physical microphone, clean-PC and the other overall release gates remain open.
