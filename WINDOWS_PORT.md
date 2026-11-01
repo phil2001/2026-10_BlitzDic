@@ -803,3 +803,57 @@ The revised roadmap explicitly records additional missing upstream functions,
 including website rules, a movable recording indicator, hold-to-dictate, audio
 muting, live notes, speaker renaming and echo filtering. No full-parity or finished
 release claim is made. The hardware/clean-PC and redistribution gates remain open.
+
+## Non-activating recording indicator, 2026-11-01
+
+The upstream recording pill is now represented by an independently branded,
+sandboxed Electron window. It shows a live level and elapsed time, offers a native
+drag grip and stop control, and can be hidden for the current recording with × or
+right click. The encrypted recordingIndicator preference disables it globally.
+Stopping routes to the active dictation or meeting recorder without focusing the
+main window. The level is throttled to at most one IPC call per 80 ms; no audio,
+transcript, cursor context, settings or provider credentials enter this surface.
+
+Its preload exposes only stop/hide and display events. Main-process commands
+require the exact indicator sender/frame/URL; the general application IPC remains
+restricted to the main renderer. Navigation and new windows are denied. The window
+uses focusable:false and showInactive, with stale-load protection on stop/cancel.
+Bounds are clamped to a current work area after display-layout changes. This
+implementation follows Electron's BrowserWindow and custom-window interactions
+documentation:
+https://www.electronjs.org/docs/latest/api/browser-window and
+https://www.electronjs.org/docs/latest/tutorial/custom-window-interactions.
+
+Browser plugin not available. Electron/Playwright UI validation used Windows 11,
+a 1200×820 main window and the 284×68 indicator. Source and packaged 0.3.8 checks
+passed page identity, meaningful rendering, no framework error surface, observed
+console/page-error checks, screenshot review and interaction/state checks. The
+synthetic microphone moved the bars and advanced the clock; hide kept recording,
+the next recording restored the indicator, clicking stop produced actual local
+dictation and meeting transcripts, the disabled setting survived restart, and a
+stop during initial window loading did not leave a stale visible indicator.
+The first UI test stopped after one second and only recognized a sentence fragment;
+waiting for the full six-second fixture corrected that test assumption.
+
+Native read-only checks verified WS_EX_NOACTIVATE and HTCAPTION at the grip,
+against the actual Electron main-process ID (rather than its launcher PID).
+The source Whisper global-hotkey flow proved the exact external Windows foreground
+handle remained unchanged while the indicator was visible and text subsequently
+inserted at its original cursor. The regular suite passed 37 tests, with two
+optional real-model unit tests skipped. A full physical mouse-drag, multi-monitor
+movement and physical microphone capture remain unverified. Screenshots and the
+temporary detailed UI script are outside the repository in the task's visualization
+folder; no separate HTML report was generated.
+
+The packaged Parakeet Ultra hotkey flow likewise passed the exact external
+foreground-handle assertion, visible/hidden indicator state, real synthetic-mic
+recognition, cursor fitting and external insertion. Fresh-profile packaged imports
+passed both actual ASR models, the 111 native origin mappings, collected package
+notice hashes and bundled corresponding FFmpeg source checks.
+
+Installer: BlitzDicWindows/dist/windows-2026-11-01T00-40-31-732Z-e9c39c/BlitzDic Setup 0.3.8.exe;
+1,148,461,478 bytes; SHA-256
+30BFC66659733CEDE0C6B921BE959B56B7F858F6749D5875EC0750F26D1BB083.
+Unsigned local development artifact. It does not replace the installed 0.3.6
+test installation. Other upstream-parity, hardware, clean-PC and native-library
+redistribution gates remain open.

@@ -4,6 +4,7 @@ import { spawn } from 'node:child_process';
 import { once } from 'node:events';
 import assert from 'node:assert/strict';
 import {createServer} from 'node:http';
+import {runSpeech} from '../src/speech.js';
 
 const root = resolve(import.meta.dirname, '..');
 const env = {...process.env}; delete env.ELECTRON_RUN_AS_NODE;
@@ -57,6 +58,7 @@ try {
     const handle = BrowserWindow.getAllWindows()[0].getNativeWindowHandle();
     return handle.length === 8 ? handle.readBigUInt64LE().toString() : handle.readUInt32LE().toString();
   });
+  const indicatorReady = process.env.BLITZDIC_TEST_INDICATOR === '1' ? dictation.waitForEvent('window') : null;
   if (!externalInput) {
     await target.evaluate(({app, BrowserWindow}) => { app.focus({steal: true}); BrowserWindow.getAllWindows()[0].focus(); });
     await editor.locator('#editor').click();
@@ -65,6 +67,17 @@ try {
   } else console.log(`READY: focus the owned test editor, place cursor at end, then press Ctrl+Shift+${shortcutNumber}.`);
   await page.waitForFunction(() => document.querySelector('#record').textContent === 'Aufnahme beenden', {}, {timeout: externalInput ? 180000 : 15000});
   console.log('Global shortcut started recording.');
+  if (indicatorReady) {
+    const pill = await indicatorReady;
+    await pill.waitForURL(/recording-indicator.html$/);
+    await pill.waitForFunction(() => document.querySelector('#elapsed').textContent !== '00:00');
+    const runtime = await dictation.evaluate(({app}) => app.isPackaged ?
+      `${process.resourcesPath}/speech-runtime/blitzdic-speech.exe` : `${app.getAppPath()}/.runtime/venv/Scripts/python.exe`);
+    const captured = await runSpeech({action: 'capture-target'}, {pythonPath: runtime, timeoutMs: 10000});
+    assert.equal(captured.target?.signature?.split(':')[0], targetWindow, 'Indicator must preserve the original Windows foreground window');
+    assert.equal(await dictation.evaluate(({BrowserWindow}) => BrowserWindow.getAllWindows().find(w => w.getTitle() === 'BlitzDic · Aufnahme').isFocusable()), false);
+    console.log('PASS: visible recording indicator preserves the exact external foreground window');
+  }
   if (appRule) assert.equal(await page.locator('#mode').inputValue(), expectedMode);
   if (process.env.BLITZDIC_TEST_MOVE_CURSOR === '1')
     await editor.locator('#editor').evaluate(element => element.setSelectionRange(0, 0));
@@ -74,6 +87,7 @@ try {
   await page.waitForFunction(() => document.querySelector('#status').textContent === 'Transkription abgeschlossen.' ||
     /geändert|fehlgeschlagen|Zeitüberschreitung|Zusatztaste|Eingabefeld/.test(document.querySelector('#status').textContent), {}, {timeout: 60000});
   console.log('Transcription status:', await page.locator('#status').textContent());
+  if (indicatorReady) assert.equal(await dictation.evaluate(({BrowserWindow}) => BrowserWindow.getAllWindows().find(w => w.getTitle() === 'BlitzDic · Aufnahme').isVisible()), false);
   if (process.env.BLITZDIC_TEST_MOVE_CURSOR === '1') {
     assert.equal(await editor.locator('#editor').inputValue(), 'Before ');
     assert.match(await page.locator('#status').textContent(), /geändert/);

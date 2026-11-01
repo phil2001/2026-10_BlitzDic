@@ -1,0 +1,15 @@
+* {box-sizing: border-box}
+html, body {margin: 0; background: transparent; overflow: hidden; user-select: none; font: 13px 'Segoe UI', sans-serif; color: #332456}
+.pill {height: 52px; margin: 6px; display: flex; align-items: stretch; border: 1px solid #bfa9ec; border-radius: 26px; background: #f0e9ff; box-shadow: 0 3px 7px #1f123229}
+button {font: inherit; color: inherit; background: transparent; border: 0; cursor: pointer; padding: 0; -webkit-app-region: no-drag}
+button:hover {background: #dfd1f7}
+#stop {display: flex; align-items: center; gap: 12px; flex: 1; text-align: left; border-radius: 20px}
+.grip {width: 24px; flex: 0 0 24px; display: grid; place-items: center; color: #8d74b5; cursor: move; -webkit-app-region: drag}
+.label {font-weight: 600; flex: 1; white-space: nowrap}
+#elapsed {display: block; font-size: 11px; font-weight: 400; color: #685480; font-variant-numeric: tabular-nums}
+.wave {height: 30px; width: 33px; display: flex; align-items: center; gap: 3px}
+.wave i {width: 4px; height: 5px; border-radius: 3px; background: #7952b3; transition: height 80ms linear}
+.stop {width: 11px; height: 11px; border-radius: 2px; background: #684294; margin-right: 9px}
+#hide {width: 29px; font-size: 21px; color: #81659f; border-radius: 0 26px 26px 0}
+@media (prefers-reduced-motion: reduce) {.wave i {transition: none}}
+@media (forced-colors: active) {.pill {background: Canvas; color: CanvasText; border: 2px solid CanvasText} .wave i, .stop {background: CanvasText}}

@@ -17,6 +17,7 @@ Keine separate Python-Installation, kein LM Studio und kein nachträglicher Mode
 - Eigene kompatible Sprachmodelle über lokale Modellordner.
 - Windows-Infobereich, einstellbare globale Tastenkürzel, Wörterbuch-Ersetzungen
   und Schreibmodus-Regeln je Programm.
+- Abschaltbare Aufnahmeanzeige mit Pegel, Laufzeit, Ziehgriff und Stopp-Knopf.
 - Meetings mit Mikrofon, Systemaudio oder beiden Quellen; optionale Sprecherzuordnung,
   lokales Speichern von Transkripten und Zusammenfassungen über den gewählten LLM-Anbieter.
 - Verschlüsselte Einstellungen, API-Schlüssel und Verlauf über Windows-DPAPI.
@@ -34,8 +35,8 @@ Ein zusätzliches lokales LLM hat eigene RAM-/VRAM-Anforderungen.
 
 ## Installation und Bedienung
 
-Der aktuelle lokal gebaute Entwicklungsinstaller ist **0.3.7** unter
-`BlitzDicWindows/dist/windows-2026-11-01T00-25-55-013Z-008cc0/BlitzDic Setup 0.3.7.exe`
+Der aktuelle lokal gebaute Entwicklungsinstaller ist **0.3.8** unter
+`BlitzDicWindows/dist/windows-2026-11-01T00-40-31-732Z-e9c39c/BlitzDic Setup 0.3.8.exe`
 (etwa 1,15 GB). Er ist nicht signiert. Eine fertige Release-Datei ist noch nicht
 veröffentlicht. Ältere Testbuilds bitte durch diesen Stand ersetzen: 0.3.4 behebt
 die UTF-8-Verarbeitung von Umlauten und Emoji in der gebündelten Sprachlaufzeit.
@@ -49,6 +50,11 @@ bleiben verfügbar; die gepackte Meeting-Sprechertranskription wurde geprüft.
 um den Cursor an. Diese Regeln arbeiten lokal, auch ohne LLM. Das Transkript im
 Ergebnis und Verlauf bleibt erhalten. Die installierte Testversion ist weiterhin
 0.3.6; der neue Installer wurde noch nicht als Upgrade ausgeführt.
+0.3.8 ergänzt eine kleine Aufnahmeanzeige über den übrigen Fenstern. Sie zeigt
+Pegel und Laufzeit, ohne den Fokus des Zielprogramms zu übernehmen. Am linken
+Griff lässt sie sich verschieben, ein Klick auf die Anzeige beendet das Diktat
+oder den Meeting-Abschnitt. × oder Rechtsklick blendet sie für die laufende
+Aufnahme aus; unter **Einstellungen** ist sie dauerhaft abschaltbar.
 
 1. Nach Installation BlitzDic öffnen und unter **Modelle** Whisper oder Parakeet wählen.
 2. Unter **Diktat** Mikrofon und Schreibmodus wählen, Aufnahme starten und beenden.

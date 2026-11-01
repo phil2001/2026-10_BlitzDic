@@ -71,6 +71,13 @@ end before starting; the synthetic microphone is supplied by the test fixture.
 Both the Whisper/rule-selected mode and Parakeet/explicit-mode checks passed on
 2026-11-01 against installed 0.3.6, with Windows input supplied through Computer Use.
 
+`BLITZDIC_TEST_INDICATOR=1` additionally checks the visible recording indicator
+and captures the actual Windows foreground handle while it is displayed. The
+handle must still match the owned external editor. The indicator must disappear
+after recording stops. This opt-in check requires source/packaged 0.3.8 or later;
+the older installed 0.3.6 has no recording indicator. `BLITZDIC_TEST_FIT=1` also
+checks the lowercase sentence continuation in the English test fixture.
+
 ## Attribution
 
 Whisper: OpenAI (MIT), CTranslate2 export by Systran, faster-whisper runtime.

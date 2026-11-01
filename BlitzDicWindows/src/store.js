@@ -9,6 +9,7 @@ export const defaultSettings = () => ({
   appModes: [],
   shortcuts: { verbatim: 'CommandOrControl+Shift+1', clean: 'CommandOrControl+Shift+2', calm: 'CommandOrControl+Shift+3', emoji: 'CommandOrControl+Shift+4' },
   historyEnabled: true, historyLimit: 100,
+  recordingIndicator: true,
 });
 
 // Entire settings/history payload is encrypted by the operating system adapter.

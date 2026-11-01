@@ -9,9 +9,16 @@ let speakerOptions = {enabled: false, speakerCount: -1};
 let speakerModelsAvailable = false;
 const status = text => { $('status').textContent = text; };
 const attempt = fn => async () => { try { await fn(); } catch (error) { status(error.message); } };
-const recorder = new Recorder({ onLevel: level => { $('level').value = level; }, onLimit: () => $('record').click(),
+let lastLevelSent = 0;
+function level(value) {
+  const now = performance.now();
+  if (now - lastLevelSent < 80) return;
+  lastLevelSent = now;
+  api['recording-level'](value).catch(() => {});
+}
+const recorder = new Recorder({ onLevel: value => { $('level').value = value; level(value); }, onLimit: () => $('record').click(),
   onEnded: () => {dictationSourceEnded = true; $('record').click();} });
-const meetingRecorder = new Recorder({onLevel: level => { $('meeting-level').value = level; }, onLimit: () => $('meeting-record').click(),
+const meetingRecorder = new Recorder({onLevel: value => { $('meeting-level').value = value; level(value); }, onLimit: () => $('meeting-record').click(),
   onEnded: () => {meetingSourceEnded = true; $('meeting-record').click();}});
 function meetingRecordingUI(active) {
   api['recording-state'](active).catch(error => status(error.message));
@@ -147,6 +154,7 @@ $('discover').onclick = attempt(async () => {
 $('test').onclick = attempt(async () => { status('Verbindung wird geprüft …'); await api.connection(providerConfig()); status('Verbindung funktioniert.'); });
 $('save-settings').onclick = attempt(async () => {
   settings.historyEnabled = $('history-enabled').checked;
+  settings.recordingIndicator = $('recording-indicator-enabled').checked;
   settings.modeSettings.customTerms = $('terms').value.split('\n').map(s => s.trim()).filter(Boolean);
   settings.modeSettings.systemPrompt = $('instruction').value; await save(); status('Einstellungen gespeichert.');
 });
@@ -163,6 +171,10 @@ api.onShortcut(mode => {
 });
 api.onShortcutError(text => status(`Tastenkürzel nicht verfügbar: ${text}`));
 api.onCancelRecording(() => $('cancel').click());
+api.onStopRecording(() => {
+  if (['recording', 'limit'].includes(meetingRecorder.state)) $('meeting-record').click();
+  else if (['recording', 'limit'].includes(recorder.state)) $('record').click();
+});
 try {
   const data = await api.load(); settings = data.settings; catalog = data.providers;
   const aboutTitle = document.createElement('h2'); aboutTitle.textContent = 'Über BlitzDic';
@@ -241,6 +253,7 @@ try {
   $('mode').value = settings.mode; $('speech-model').value = settings.speech.preset;
   customVisibility();
   $('history-enabled').checked = settings.historyEnabled;
+  $('recording-indicator-enabled').checked = settings.recordingIndicator !== false;
   $('terms').value = settings.modeSettings.customTerms.join('\n'); $('instruction').value = settings.modeSettings.systemPrompt || '';
   updateLocation(); await refreshHistory(); await refreshMeetings();
 } catch (error) { status(error.message); }

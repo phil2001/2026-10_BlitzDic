@@ -10,9 +10,10 @@ import { providers, listModels, testConnection } from '../src/providers.js';
 import { modeForApp } from '../src/app-modes.js';
 import { Meetings } from '../src/meetings.js';
 import { fitInsertion } from '../src/insertion-fit.js';
+import { RecordingIndicator } from './recording-indicator.js';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-let window, flow, store, tray, meetings, quitting = false;
+let window, flow, store, tray, meetings, indicator, quitting = false;
 const uiURL = pathToFileURL(join(root, 'ui/index.html')).href;
 app.setName('BlitzDic');
 if (!app.requestSingleInstanceLock()) app.quit();
@@ -24,6 +25,8 @@ else app.whenReady().then(async () => {
     .map(file => access(join(modelRoot, 'diarization', file)))).then(() => true, () => false);
   flow = new Dictation({ store, modelRoot, pythonPath });
   meetings = new Meetings({store});
+  indicator = new RecordingIndicator(() => { if (!window.isDestroyed()) window.webContents.send('stop-recording'); });
+  await indicator.setEnabled((await store.settings()).recordingIndicator !== false);
   let insertionTarget = null, recording = false, capturePending = false, captureEpoch = 0;
   let insertionRequested = false, insertionProblem = '';
   async function triggerShortcut(mode) {
@@ -97,6 +100,7 @@ else app.whenReady().then(async () => {
   }
   handle('settings', async settings => {
     await store.saveSettings(settings);
+    await indicator.setEnabled(settings.recordingIndicator !== false);
     const failed = registerShortcuts(settings);
     if (failed.length) throw new Error(`Einstellungen gespeichert, aber Tastenkürzel nicht verfügbar: ${failed.join(', ')}`);
     return settings;
@@ -153,7 +157,15 @@ else app.whenReady().then(async () => {
     return meetings.summarize(transcript, title);
   });
   handle('meetings-clear', () => store.clearMeetings());
-  handle('recording-state', active => { recording = !!active; tray.setToolTip(active ? 'BlitzDic · Aufnahme läuft' : 'BlitzDic · Bereit'); });
+  handle('recording-state', async active => {
+    if (typeof active !== 'boolean') throw new Error('Ungültiger Aufnahmestatus.');
+    recording = active; tray.setToolTip(active ? 'BlitzDic · Aufnahme läuft' : 'BlitzDic · Bereit');
+    await indicator.setActive(active);
+  });
+  handle('recording-level', value => {
+    if (typeof value !== 'number' || !Number.isFinite(value)) throw new Error('Ungültiger Aufnahmepegel.');
+    indicator.level(value);
+  });
   handle('copy', text => { if (typeof text !== 'string') throw new Error('Ungültiger Text.'); clipboard.writeText(text); });
   handle('history-clear', () => store.clearHistory());
   handle('licenses-open', async () => {
@@ -169,5 +181,5 @@ else app.whenReady().then(async () => {
 }).catch(error => { dialog.showErrorBox('BlitzDic konnte nicht starten', error.message); app.quit(); });
 app.on('second-instance', () => { window?.show(); window?.focus(); });
 app.on('window-all-closed', () => { flow?.cancel(); app.quit(); });
-app.on('before-quit', () => { quitting = true; flow?.cancel(); meetings?.cancel(); });
+app.on('before-quit', () => { quitting = true; flow?.cancel(); meetings?.cancel(); indicator?.destroy(); });
 app.on('will-quit', () => { globalShortcut.unregisterAll(); tray?.destroy(); });
