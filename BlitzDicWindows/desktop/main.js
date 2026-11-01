@@ -9,6 +9,7 @@ import { runSpeech, speechPresets } from '../src/speech.js';
 import { providers, listModels, testConnection } from '../src/providers.js';
 import { modeForApp } from '../src/app-modes.js';
 import { Meetings } from '../src/meetings.js';
+import { fitInsertion } from '../src/insertion-fit.js';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 let window, flow, store, tray, meetings, quitting = false;
@@ -126,7 +127,8 @@ else app.whenReady().then(async () => {
     if (requested && !target) entry.warning = [entry.warning, problem].filter(Boolean).join('\n');
     if (target && entry.text.trim()) {
       try {
-        const insertion = await runSpeech({ action: 'insert-text', target, text: entry.text }, { pythonPath, timeoutMs: 5000 });
+        const text = fitInsertion(entry.text, target.before ?? null, target.after ?? null);
+        const insertion = await runSpeech({ action: 'insert-text', target, text }, { pythonPath, timeoutMs: 5000 });
         if (!insertion.inserted) entry.warning = [entry.warning, insertion.reason].filter(Boolean).join('\n');
       } catch (error) { entry.warning = [entry.warning, `Automatisches Einfügen fehlgeschlagen: ${error.message}`].filter(Boolean).join('\n'); }
     }

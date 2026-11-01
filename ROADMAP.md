@@ -1,13 +1,20 @@
 # Roadmap für Windows 11
 
-- Automatisches Einfügen mit Fokus- und Cursorprüfung, einschließlich Browser und Office.
-- Physische Mikrofontests und globale Tastenkürzel end-to-end prüfen.
-- Meeting-Transkription, Sprecherzuordnung und Zusammenfassungen portieren.
-- App-bezogene Modi, Kontextanpassung und Aufnahmeanzeige vervollständigen.
+- Physische Mikrofontests, weitere Office-/Browser-Versionen und ein frisches Windows 11 prüfen.
+- Echte LAN- und Cloud-Anbieter zusätzlich zu lokalen Servern und Protokoll-Fixtures prüfen.
+- Verbleibende Originalfunktionen portieren: Website-Regeln, verschiebbare Aufnahmeanzeige,
+  Halten-zum-Diktieren, optionales Stummschalten und Live-Meeting-Notizen.
+- Weitere Meeting-Funktionen des Originals prüfen: Sprecher umbenennen und Echo-Unterdrückung.
 - Oberfläche visuell abschließen und Zugänglichkeit prüfen.
 - Vollständige Drittanbieter-Lizenzen bündeln und Installer auf sauberem Windows testen.
 - Aktuellen Windows-Build im Zielrepository veröffentlichen.
 
-Bereits vorhanden: beide gebündelten Sprachmodelle, lokale CPU-Erkennung,
+Bereits vorhanden und mit begrenzter Testabdeckung belegt: beide gebündelten
+Sprachmodelle, lokale CPU-Erkennung, konfigurierbare globale Tastenkürzel,
 LLM-Anbieter einschließlich lokaler und Netzwerkserver, Schreibmodi, Wörterbuch,
-verschlüsselter Verlauf und Windows-Infobereich. Dies ist weiterhin Entwicklung.
+verschlüsselter Verlauf, Windows-Infobereich und Programmregeln. Meetings bieten
+Audioaufnahme, experimentelle Sprecherzuordnung, verschlüssertes Speichern und
+Zusammenfassungen. Version 0.3.7 ergänzt die lokale Anpassung von Abständen und
+Satzanfängen beim geschützten Einfügen in native Felder, Chromium und Word.
+Der Installationsablauf 0.1.0 → 0.3.6 wurde auf dem Entwicklungs-PC geprüft.
+Details, Grenzen und Nachweise: [WINDOWS_PORT.md](WINDOWS_PORT.md).

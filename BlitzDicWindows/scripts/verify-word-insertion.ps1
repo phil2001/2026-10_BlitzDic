@@ -64,6 +64,8 @@ try {
     $captured = Invoke-Speech @{action='capture-target'}
     Assert-True ($captured.executable -eq 'winword.exe') 'Captured process is not the owned Word instance'
     Assert-True ($captured.target.kind -eq 'uia') ('Word target unavailable: ' + $captured.reason)
+    Assert-True ($captured.target.before -ceq 'Before ') 'Word cursor prefix mismatch'
+    Assert-True ([string]::IsNullOrWhiteSpace($captured.target.after)) 'Word cursor suffix mismatch'
     $unicode = 'Gr' + [char]0xFC + [char]0xDF + 'e! ' + [char]::ConvertFromUtf32(0x1F30D)
     $result = Invoke-Speech @{action='insert-text'; target=$captured.target; text=$unicode}
     Assert-True $result.inserted 'Word insertion rejected'
@@ -71,6 +73,8 @@ try {
     $application.Selection.SetRange(0, 6)
     $selected = Invoke-Speech @{action='capture-target'}
     Assert-True ($selected.target.kind -eq 'uia') 'Word selection unavailable'
+    Assert-True ($selected.target.before -ceq '') 'Word selected prefix mismatch'
+    Assert-True ($selected.target.after.StartsWith(' ' + $unicode, [StringComparison]::Ordinal)) 'Word selected suffix mismatch'
     $result = Invoke-Speech @{action='insert-text'; target=$selected.target; text='After'}
     Assert-True $result.inserted 'Word selection replacement rejected'
     Assert-Text ('After ' + $unicode)

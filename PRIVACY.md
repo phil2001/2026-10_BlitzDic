@@ -17,10 +17,13 @@ laden die festgelegten Modellversionen von Hugging Face. Ein zusätzliches LLM
 wird über den gewählten Anbieter eingerichtet. BlitzDic hat kein eigenes Backend
 und enthält keine absichtlich eingebaute Telemetrie.
 
-Beim automatischen Einfügen über UI Automation wird der Inhalt des Zieltextfelds
+Beim automatischen Einfügen über die Windows-Schnittstellen wird der Inhalt des Zieltextfelds
 vorübergehend lokal gelesen, um Änderungen während der Erkennung zu erkennen.
 Gespeichert wird er nicht; nur ein flüchtiger Fingerabdruck und die Auswahlposition
-werden verglichen. Passwortfelder werden ausgeschlossen. Details:
+werden verglichen. Zusätzlich bleiben höchstens 160 UTF-16-Zeichen vor und nach
+der Auswahl vorübergehend im Arbeitsspeicher, um Abstände und Satzanfänge lokal
+anzupassen. Diese Umgebung wird weder gespeichert noch an einen LLM-Anbieter
+gesendet. Passwortfelder werden ausgeschlossen. Details:
 [Windows-Einfügen](BlitzDicWindows/speech/WINDOWS_INSERTION.md).
 
 Meeting-Zusammenfassungen senden das eingegebene Transkript an denselben gewählten
@@ -36,6 +39,6 @@ Audioausgabe. Die Streams werden lokal verarbeitet. Die technische Bildschirm-
 Freigabe liefert zusätzlich einen Videostream, der weder gespeichert noch an
 Anbieter gesendet wird. Bei Abbruch werden alle Aufnahmespuren beendet.
 
-Meeting-Transkripte lassen sich auch ohne Zusammenfassung ausdr�cklich lokal
+Meeting-Transkripte lassen sich auch ohne Zusammenfassung ausdrücklich lokal
 speichern. Dieser Schritt ruft keinen Modellanbieter auf. Die Speicherung erfolgt
-in derselben verschl�sselten Meeting-Sammlung, unabh�ngig vom Diktatverlauf.
+in derselben verschlüsselten Meeting-Sammlung, unabhängig vom Diktatverlauf.

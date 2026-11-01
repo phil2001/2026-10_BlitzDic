@@ -32,6 +32,7 @@ public static class BlitzDicUia {
 
     // The signature contains hashes and selection lengths, never the document text.
     public static string Reason = "";
+    public static string Before = "", After = "";
     static string Reject(string reason) { Reason = reason; return null; }
     static object WordMember(object instance, string name, BindingFlags operation, params object[] args) {
         return instance.GetType().InvokeMember(name, operation, null, instance, args,
@@ -95,7 +96,12 @@ public static class BlitzDicUia {
         using (var sha = SHA256.Create()) hash = Convert.ToBase64String(sha.ComputeHash(Encoding.Unicode.GetBytes(document)));
         var identity = String.Join(",", element.GetRuntimeId());
         if (GetForegroundWindow() != window || !Automation.Compare(element, AutomationElement.FocusedElement)) return Reject("Fokus während Erfassung geändert");
-        return window.ToInt64() + ":" + pid + ":" + identity + ":" + prefix.GetText(-1).Length + ":" + selection[0].GetText(-1).Length + ":" + hash;
+        string prefixText = prefix.GetText(-1);
+        var suffix = range.Clone();
+        suffix.MoveEndpointByRange(TextPatternRangeEndpoint.Start, selection[0], TextPatternRangeEndpoint.End);
+        Before = prefixText.Substring(Math.Max(0, prefixText.Length - 160));
+        After = suffix.GetText(160);
+        return window.ToInt64() + ":" + pid + ":" + identity + ":" + prefixText.Length + ":" + selection[0].GetText(-1).Length + ":" + hash;
     }
 
     public static bool Insert(string signature, string text) {
@@ -126,7 +132,7 @@ try {
     $request = [Console]::In.ReadToEnd() | ConvertFrom-Json
     if ($request.action -eq 'capture') {
         $signature = [BlitzDicUia]::Capture()
-        @{ signature = $signature; reason = [BlitzDicUia]::Reason } | ConvertTo-Json -Compress
+        @{ signature = $signature; reason = [BlitzDicUia]::Reason; before = [BlitzDicUia]::Before; after = [BlitzDicUia]::After } | ConvertTo-Json -Compress
     } elseif ($request.action -eq 'insert') {
         @{ inserted = [BlitzDicUia]::Insert($request.signature, $request.text) } | ConvertTo-Json -Compress
     } else { throw 'Unbekannte UI-Automation-Aktion.' }

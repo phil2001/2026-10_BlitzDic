@@ -80,6 +80,16 @@ mehrzeiligen klassischen Edit-Feldern nicht gewährleistet.
 
 ## Vollständiger Diktatablauf
 
+Ab Version 0.3.7 passt das automatische Einfügen die Textränder an die
+Cursorumgebung an: Wortabstände, Großschreibung am Satzanfang, Kleinschreibung
+häufiger Funktionswörter im laufenden Satz sowie doppelte Schlusszeichen.
+Eigennamen und bedeutungsabhängige Pronomen wie „Sie“, „Ihr“ oder „I“ bleiben
+erhalten. Die Regeln stammen aus dem ursprünglichen InsertionFitter und brauchen
+kein LLM. Dazu wird ein flüchtiger Ausschnitt von höchstens 160 UTF-16-Zeichen
+je Seite erfasst. Er verlässt den Rechner nicht. Ergebnis und Verlauf behalten
+den Transkripttext; nur der tatsächlich eingefügte Text erhält die Anpassung.
+Fehlt ein verlässlich erfasster Kontext, wird der Text unverändert eingefügt.
+
 `node scripts/verify-hotkey.mjs` startet BlitzDic und ein separates Chromium-
 Testfenster. Es sendet das echte globale Strg+Umschalt+1, verarbeitet eine
 synthetische Mikrofonaufnahme durch das lokale Sprachmodell und prüft den

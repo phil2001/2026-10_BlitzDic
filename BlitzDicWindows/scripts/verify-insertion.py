@@ -67,6 +67,7 @@ try:
     message(edit, 0xB1, 7, 7)
     target = worker({'action': 'capture-target'})['target']
     assert target and target['focus'] == edit, 'Windows did not foreground the test field'
+    assert (target['before'], target['after']) == ('Before ', '')
     assert worker({'action': 'insert-text', 'target': target, 'text': 'Grüße! 🌍'})['inserted']
     value = c.create_unicode_buffer(100)
     user32.GetWindowTextW(edit, value, 100)
@@ -76,6 +77,7 @@ try:
     assert not worker({'action': 'insert-text', 'target': stale, 'text': 'WRONG'})['inserted']
     message(edit, 0xB1, 0, 6)
     selected = worker({'action': 'capture-target'})['target']
+    assert (selected['before'], selected['after']) == ('', ' Grüße! 🌍')
     assert worker({'action': 'insert-text', 'target': selected, 'text': 'After'})['inserted']
     user32.GetWindowTextW(edit, value, 100)
     assert value.value == 'After Grüße! 🌍', repr(value.value)
@@ -115,6 +117,8 @@ try:
         message(multiline_edit, 0xB1, 0, 0)
         captured = worker({'action': 'capture-target'})
         assert captured['target'] and captured['target'].get('kind') == 'uia', captured.get('reason')
+        assert captured['target']['before'] == ''
+        assert captured['target']['after'] == 'A' * 160
         assert worker({'action': 'insert-text', 'target': captured['target'], 'text': 'Top '})['inserted']
         text = c.create_unicode_buffer(80000)
         user32.GetWindowTextW(multiline_edit, text, len(text))

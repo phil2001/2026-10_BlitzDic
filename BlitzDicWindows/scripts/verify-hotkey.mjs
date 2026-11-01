@@ -83,6 +83,11 @@ try {
   await editor.waitForFunction(() => document.querySelector('#editor').value.toLowerCase().includes('local speech recognition test'), {}, {timeout: 5000});
   assert.match(await editor.locator('#editor').inputValue(), /^Before /);
   assert.equal(await editor.locator('#editor').evaluate(element => document.activeElement === element), true);
+  if (process.env.BLITZDIC_TEST_FIT === '1') {
+    assert.equal(appRule, false, 'Cursor-fit fixture expects the original English transcript');
+    assert.match(await editor.locator('#editor').inputValue(), /^Before this /);
+    console.log('PASS: sentence continuation fits lowercase function word at the original cursor');
+  }
   if (appRule) {
     assert.equal(requests.length, 1);
     assert.equal(requests[0].model, 'rule-fixture');

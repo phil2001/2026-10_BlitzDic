@@ -20,7 +20,8 @@ def capture():
     result = request('capture')
     capture.reason = result.get('reason', '')
     signature = result.get('signature')
-    return {'kind': 'uia', 'signature': signature} if signature else None
+    return {'kind': 'uia', 'signature': signature,
+            'before': result.get('before'), 'after': result.get('after')} if signature else None
 
 
 def insert(target, text):

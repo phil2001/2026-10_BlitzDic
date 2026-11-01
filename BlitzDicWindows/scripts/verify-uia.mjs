@@ -17,6 +17,8 @@ try {
   assert.equal(captured.executable, 'electron.exe');
   const target = captured.target;
   assert.equal(target?.kind, 'uia', JSON.stringify(target));
+  assert.equal(target.before, 'Before ');
+  assert.equal(target.after, '');
   assert.equal((await worker({action: 'insert-text', target, text: 'Grüße! 🌍'})).inserted, true);
   await page.waitForFunction(() => document.querySelector('#editor').value === 'Before Grüße! 🌍');
   const stale = (await worker({action: 'capture-target'})).target;
@@ -24,6 +26,8 @@ try {
   assert.equal((await worker({action: 'insert-text', target: stale, text: 'WRONG'})).inserted, false);
   await page.locator('#editor').evaluate(element => element.setSelectionRange(0, 6));
   const selected = (await worker({action: 'capture-target'})).target;
+  assert.equal(selected.before, '');
+  assert.equal(selected.after, ' Grüße! 🌍');
   assert.equal((await worker({action: 'insert-text', target: selected, text: 'After'})).inserted, true);
   await page.waitForFunction(() => document.querySelector('#editor').value === 'After Grüße! 🌍');
   const changedText = (await worker({action: 'capture-target'})).target;

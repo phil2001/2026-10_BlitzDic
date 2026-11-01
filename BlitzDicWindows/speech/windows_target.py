@@ -85,6 +85,9 @@ def capture():
     if copied != length or message(info.hwndFocus, 0xE) != length:
         capture.reason = 'Dokument während Zielerfassung geändert oder nicht vollständig lesbar.'
         return None
+    if not 0 <= start.value <= end.value <= copied:
+        capture.reason = 'Textauswahl außerhalb des vollständig gelesenen Dokuments.'
+        return None
     fingerprint = hashlib.sha256(c.string_at(c.addressof(value), copied * 2)).hexdigest()
     current = GUI(); current.cbSize = c.sizeof(GUI)
     selected_start, selected_end = w.DWORD(), w.DWORD()
@@ -97,7 +100,13 @@ def capture():
     pid = w.DWORD(); thread = user32.GetWindowThreadProcessId(info.hwndFocus, c.byref(pid))
     return {'window': info.hwndActive, 'focus': info.hwndFocus, 'pid': pid.value,
             'thread': thread, 'class': class_name, 'start': start.value, 'end': end.value,
-            'length': length, 'hash': fingerprint}
+            'length': length, 'hash': fingerprint,
+            # Selection offsets are UTF-16 units, not Python character offsets.
+            # Bound context in IPC; never persist it or send it to a provider.
+            'before': c.string_at(c.addressof(value) + max(0, start.value - 160) * 2,
+                                  min(start.value, 160) * 2).decode('utf-16-le', errors='ignore'),
+            'after': c.string_at(c.addressof(value) + end.value * 2,
+                                 min(max(0, length - end.value), 160) * 2).decode('utf-16-le', errors='ignore')}
 
 def insert(target, text):
     if target and target.get('kind') == 'uia':

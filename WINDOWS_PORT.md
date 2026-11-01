@@ -762,3 +762,44 @@ Computer Use app-approval timeout cleared on a fresh window selection. The first
 completed app-rule run revealed a case-sensitive test assertion against Whisper's
 variable capitalization; the assertion now ignores case and the rerun passed.
 Physical microphone, clean-PC and the other overall release gates remain open.
+
+## Cursor fitting port and packaged 0.3.7, 2026-11-01
+
+An audit against the pinned upstream README and InsertionFitter.swift identified
+a real functionality gap: safe insertion existed, but surrounding-text spacing
+and capitalization were not ported. src/insertion-fit.js now ports those local
+rules: sentence starts, a conservative German/English function-word list, word
+boundaries, joiners/quotes and duplicate punctuation. Proper names and ambiguous
+pronouns keep their case. The result/history text remains unchanged; only the
+actual inserted text is fitted. No context goes to a text provider.
+
+Native Edit/RichEdit and UI Automation capture now supply at most 160 UTF-16
+units before and after the selection. The native reader validates selection
+bounds before accessing its text buffer. Full-document hashes and focus/selection
+guards remain in place. Password/read-only controls are still rejected. Missing
+context preserves the original insertion text. PRIVACY.md documents this transient
+local context; three legacy Windows-1252 bytes in its final paragraph were also
+repaired to UTF-8.
+
+The regular suite passed 37 tests (two optional real-ASR tests skipped). New
+behavior checks cover mid-sentence function words, names/pronouns, spacing,
+abbreviations, paragraphs, punctuation, emoji and unsupported contexts. Actual
+native Edit/RichEdit, 70K-character UIA fallback and Chromium insertion checks
+passed against both source and frozen 0.3.7 helpers, including exact context
+boundaries and all existing rejection/clipboard checks. The complete packaged
+Whisper hotkey-to-microphone-to-external-editor flow proved that 'This' becomes
+'this' after 'Before '. Both real bundled speech models passed fresh-profile
+packaged imports, along with all 111 native origin and license/source checks.
+The same complete cursor-fitting flow passed with packaged Parakeet Ultra.
+Word 16.0.20527 also passed the frozen helper regression, explicitly verifying
+the captured context for both a caret and a selection, plus Unicode/emoji,
+undo/redo, paragraphs, change/protection rejection and unchanged clipboard.
+
+Installer: BlitzDicWindows/dist/windows-2026-11-01T00-25-55-013Z-008cc0/BlitzDic Setup 0.3.7.exe;
+1,148,459,057 bytes; SHA-256
+BE43139888506054C5402554BD57A15DE5958CF9133BD3BE1D277B3621707CF1.
+It is unsigned and was built without replacing the approved 0.3.6 test installation.
+The revised roadmap explicitly records additional missing upstream functions,
+including website rules, a movable recording indicator, hold-to-dictate, audio
+muting, live notes, speaker renaming and echo filtering. No full-parity or finished
+release claim is made. The hardware/clean-PC and redistribution gates remain open.
