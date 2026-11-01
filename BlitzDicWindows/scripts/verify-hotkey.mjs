@@ -11,6 +11,7 @@ const env = {...process.env}; delete env.ELECTRON_RUN_AS_NODE;
 const preset = process.env.BLITZDIC_TEST_PRESET || 'whisper';
 const executablePath = process.env.BLITZDIC_TEST_EXECUTABLE;
 const externalInput = process.env.BLITZDIC_TEST_EXTERNAL_INPUT === '1';
+const hold = process.env.BLITZDIC_TEST_HOLD === '1';
 assert.ok(['whisper', 'parakeet-ultra'].includes(preset));
 const appRule = process.env.BLITZDIC_TEST_APP_RULE === '1';
 const explicitMode = process.env.BLITZDIC_TEST_EXPLICIT_MODE || '';
@@ -30,9 +31,9 @@ const runId = `${Date.now()}-${preset}`;
 // process at the instant of the shortcut can itself disturb foreground focus.
 const keyboard = externalInput ? null : spawn(`${root}/.runtime/venv/Scripts/python.exe`, [`${root}/scripts/test-hotkey.py`], {windowsHide: true});
 if (keyboard) await once(keyboard.stdout, 'data');
-const shortcut = async () => {
+const shortcut = async (action = 'toggle') => {
   const sent = once(keyboard.stdout, 'data');
-  keyboard.stdin.write(`toggle ${targetWindow} ${shortcutNumber}\n`);
+  keyboard.stdin.write(`${action} ${targetWindow} ${shortcutNumber}\n`);
   assert.equal((await sent)[0].toString().trim(), 'sent');
 };
 let dictation, target, targetWindow, page, editor;
@@ -42,14 +43,15 @@ try {
     `--use-file-for-fake-audio-capture=${root}/.runtime/test-speech.wav`], env});
   page = await dictation.firstWindow();
   await page.waitForSelector('#provider option', {state: 'attached'});
-  await page.evaluate(async ({preset, appRule, baseURL}) => {
+  await page.evaluate(async ({preset, appRule, baseURL, hold}) => {
     const {settings} = await window.blitz.load(); settings.speech.preset = preset;
+    settings.shortcutBehavior = hold ? 'hold' : 'toggle';
     if (appRule) {
       settings.appModes = [{executable: 'electron.exe', mode: 'clean'}];
       settings.provider = {provider: 'custom', location: 'local', baseURL, model: 'rule-fixture', apiKey: ''};
     }
     await window.blitz.settings(settings);
-  }, {preset, appRule, baseURL});
+  }, {preset, appRule, baseURL, hold});
   assert.equal(await dictation.evaluate(({globalShortcut}) => globalShortcut.isRegistered('Control+Shift+1')), true);
   target = await electron.launch({args: [resolve(import.meta.dirname, 'uia-test-app.cjs'),
     `--user-data-dir=${root}/.runtime/hotkey-target-${runId}`], env});
@@ -59,12 +61,13 @@ try {
     return handle.length === 8 ? handle.readBigUInt64LE().toString() : handle.readUInt32LE().toString();
   });
   const indicatorReady = process.env.BLITZDIC_TEST_INDICATOR === '1' ? dictation.waitForEvent('window') : null;
+  indicatorReady?.catch(() => {}); // Preserve an earlier foreground/input failure on cleanup.
   if (!externalInput) {
     await target.evaluate(({app, BrowserWindow}) => { app.focus({steal: true}); BrowserWindow.getAllWindows()[0].focus(); });
     await editor.locator('#editor').click();
     await editor.locator('#editor').evaluate(element => element.setSelectionRange(7, 7));
-    await shortcut();
-  } else console.log(`READY: focus the owned test editor, place cursor at end, then press Ctrl+Shift+${shortcutNumber}.`);
+    await shortcut(hold ? 'down' : 'toggle');
+  } else console.log(`READY: focus the owned test editor, place cursor at end, then ${hold ? 'hold' : 'press'} Ctrl+Shift+${shortcutNumber}.`);
   await page.waitForFunction(() => document.querySelector('#record').textContent === 'Aufnahme beenden', {}, {timeout: externalInput ? 180000 : 15000});
   console.log('Global shortcut started recording.');
   if (indicatorReady) {
@@ -82,8 +85,8 @@ try {
   if (process.env.BLITZDIC_TEST_MOVE_CURSOR === '1')
     await editor.locator('#editor').evaluate(element => element.setSelectionRange(0, 0));
   await new Promise(resolve => setTimeout(resolve, 6200));
-  if (externalInput) console.log('READY: press the same shortcut in the owned test window to stop.');
-  else { await shortcut(); console.log('Stop shortcut sent.'); }
+  if (externalInput) console.log(`READY: ${hold ? 'release' : 'press'} the same shortcut in the owned test window to stop.`);
+  else { await shortcut(hold ? 'up' : 'toggle'); console.log(hold ? 'Held keys released.' : 'Stop shortcut sent.'); }
   await page.waitForFunction(() => document.querySelector('#status').textContent === 'Transkription abgeschlossen.' ||
     /geändert|fehlgeschlagen|Zeitüberschreitung|Zusatztaste|Eingabefeld/.test(document.querySelector('#status').textContent), {}, {timeout: 60000});
   console.log('Transcription status:', await page.locator('#status').textContent());
@@ -112,7 +115,7 @@ try {
     assert.equal((await page.evaluate(() => window.blitz.load())).history[0].mode, expectedMode);
     console.log(`PASS: foreground app rule ${explicitMode ? 'preserves explicit ' : 'selects '}${expectedMode}, rewrite and encrypted history`);
   }
-  console.log(`PASS: real global shortcut -> synthetic microphone -> local ${preset} -> external Chromium insertion`);
+  console.log(`PASS: real global ${hold ? 'hold/release' : 'toggle'} shortcut -> synthetic microphone -> local ${preset} -> external Chromium insertion`);
   console.log('Status:', await page.locator('#status').textContent());
   }
 } catch (error) {

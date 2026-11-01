@@ -85,6 +85,23 @@ speaker in the last section and verifies both the original IDs and the separatel
 stored name after reopening the saved meeting. This requires source/packaged 0.3.9
 or later; use `BLITZDIC_TEST_EXECUTABLE` for the packaged executable.
 
+## Hold-shortcut development checks
+
+Source 0.3.10-dev.0 adds `BLITZDIC_TEST_HOLD=1` to verify-hotkey.mjs. The resident
+test helper holds only its own injected Ctrl+Shift+number chord until release;
+it refuses to press keys unless the exact owned test editor is foreground or if
+those keys were already pressed. It always releases its own keys at EOF/cleanup.
+Use `BLITZDIC_TEST_EXTERNAL_INPUT=1` for actual manually supplied hold/release input.
+This full native-key check is still pending on the current development desktop;
+do not infer its success from the passing IPC lifecycle and real-ASR checks.
+
+`node --test test/hold-shortcuts.test.js` covers repeat, early release, cancellation,
+stale workers and shutdown with controlled promises. `scripts/test-hold-keys.py`
+checks Windows accelerator parsing and simulated key-state transitions using only
+the standard library; CI runs it on Windows. The frozen worker actions
+`validate-hold-shortcuts` and `wait-shortcut-release` are bundled. A non-held chord
+query proves packaging and API availability, not physical key delivery.
+
 ## Attribution
 
 Whisper: OpenAI (MIT), CTranslate2 export by Systran, faster-whisper runtime.

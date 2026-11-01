@@ -11,9 +11,11 @@ import { modeForApp } from '../src/app-modes.js';
 import { Meetings } from '../src/meetings.js';
 import { fitInsertion } from '../src/insertion-fit.js';
 import { RecordingIndicator } from './recording-indicator.js';
+import { HoldShortcuts } from '../src/hold-shortcuts.js';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 let window, flow, store, tray, meetings, indicator, quitting = false;
+let holdShortcuts;
 const uiURL = pathToFileURL(join(root, 'ui/index.html')).href;
 app.setName('BlitzDic');
 if (!app.requestSingleInstanceLock()) app.quit();
@@ -29,24 +31,43 @@ else app.whenReady().then(async () => {
   await indicator.setEnabled((await store.settings()).recordingIndicator !== false);
   let insertionTarget = null, recording = false, capturePending = false, captureEpoch = 0;
   let insertionRequested = false, insertionProblem = '';
-  async function triggerShortcut(mode) {
-    if (flow.active || meetings.active || capturePending) return;
-    if (!recording) {
+  let shortcutBehavior = 'toggle';
+  const clearInsertion = () => { insertionTarget = null; insertionRequested = false; insertionProblem = ''; };
+  holdShortcuts = new HoldShortcuts({
+    wait: (shortcut, signal) => runSpeech({action: 'wait-shortcut-release', shortcut}, {pythonPath, signal, timeoutMs: 1805000}),
+    start: (token, mode) => window.webContents.send('hold-start', {token, mode}),
+    stop: token => window.webContents.send('hold-stop', token),
+    tooShort: () => window.webContents.send('hold-too-short'),
+    discard: clearInsertion,
+    error: (token, cause) => {
+      captureEpoch++; clearInsertion();
+      if (!quitting) window.webContents.send('hold-failed', {token, message: cause.message});
+    },
+  });
+  async function captureOriginalTarget(mode) {
       capturePending = true;
       insertionRequested = true; insertionProblem = '';
       const epoch = captureEpoch;
       try {
         const {target: captured, reason, executable} = await runSpeech({ action: 'capture-target' }, { pythonPath, timeoutMs: 5000 });
-        if (epoch !== captureEpoch) return;
-        insertionTarget = captured;
-        mode = modeForApp(mode, executable, (await store.settings()).appModes);
-        if (!captured) insertionProblem = `Kein unterstütztes Eingabefeld erkannt (${reason || 'unbekannter Feldtyp'}); Text bleibt in BlitzDic.`;
+        if (epoch === captureEpoch) {
+          insertionTarget = captured;
+          mode = modeForApp(mode, executable, (await store.settings()).appModes);
+          if (!captured) insertionProblem = `Kein unterstütztes Eingabefeld erkannt (${reason || 'unbekannter Feldtyp'}); Text bleibt in BlitzDic.`;
+        }
       }
       catch (error) { insertionTarget = null; insertionProblem = `Eingabefeld konnte nicht erfasst werden: ${error.message}`; }
       finally { capturePending = false; }
-      if (epoch !== captureEpoch) return;
+      return epoch === captureEpoch ? mode : null;
+  }
+  async function triggerShortcut(mode, shortcut) {
+    if (flow.active || meetings.active || capturePending || holdShortcuts.active) return;
+    if (shortcutBehavior === 'hold') {
+      if (!recording) await holdShortcuts.press(shortcut, () => captureOriginalTarget(mode));
+      return;
     }
-    window.webContents.send('shortcut', mode);
+    if (!recording) mode = await captureOriginalTarget(mode);
+    if (mode !== null) window.webContents.send('shortcut', mode);
   }
   window = new BrowserWindow({ width: 1200, height: 820, minWidth: 760, minHeight: 620, title: 'BlitzDic',
     webPreferences: { preload: join(root, 'desktop/preload.cjs'), contextIsolation: true, nodeIntegration: false, sandbox: true } });
@@ -89,21 +110,33 @@ else app.whenReady().then(async () => {
   handle('load', async () => ({ version: app.getVersion(), settings: await store.settings(), history: await store.history(), providers, speechPresets, modelsBundled: app.isPackaged,
     speakerModelsAvailable: await speakerModelsAvailable() }));
   function registerShortcuts(settings) {
+    shortcutBehavior = settings.shortcutBehavior === 'hold' ? 'hold' : 'toggle';
     globalShortcut.unregisterAll();
     const failed = [];
     for (const [mode, shortcut] of Object.entries(settings.shortcuts || {})) {
       try {
-        if (!globalShortcut.register(shortcut, () => triggerShortcut(mode))) failed.push(shortcut);
+        if (!globalShortcut.register(shortcut, () => triggerShortcut(mode, shortcut))) failed.push(shortcut);
       } catch { failed.push(shortcut); }
     }
     return failed;
   }
-  handle('settings', async settings => {
-    await store.saveSettings(settings);
-    await indicator.setEnabled(settings.recordingIndicator !== false);
-    const failed = registerShortcuts(settings);
-    if (failed.length) throw new Error(`Einstellungen gespeichert, aber Tastenkürzel nicht verfügbar: ${failed.join(', ')}`);
-    return settings;
+  let settingsQueue = Promise.resolve();
+  handle('settings', settings => {
+    // Include asynchronous key validation in ordering: a slower earlier save
+    // must not overwrite a newer choice of hold/toggle behavior.
+    const operation = settingsQueue.then(async () => {
+      if (settings.shortcutBehavior !== undefined && !['hold', 'toggle'].includes(settings.shortcutBehavior))
+        throw new Error('Unbekannte Kürzelbedienung.');
+      if (settings.shortcutBehavior === 'hold') await runSpeech({action: 'validate-hold-shortcuts',
+        shortcuts: Object.values(settings.shortcuts ?? {})}, {pythonPath, timeoutMs: 5000});
+      await store.saveSettings(settings);
+      await indicator.setEnabled(settings.recordingIndicator !== false);
+      const failed = registerShortcuts(settings);
+      if (failed.length) throw new Error(`Einstellungen gespeichert, aber Tastenkürzel nicht verfügbar: ${failed.join(', ')}`);
+      return settings;
+    });
+    settingsQueue = operation.catch(() => {});
+    return operation;
   });
   handle('models', config => listModels(config));
   handle('model-directory', async () => {
@@ -138,7 +171,15 @@ else app.whenReady().then(async () => {
     }
     return entry;
   });
-  handle('cancel', () => { captureEpoch++; insertionTarget = null; insertionRequested = false; insertionProblem = ''; flow.cancel(); meetings.cancel(); });
+  handle('cancel', () => {
+    captureEpoch++; clearInsertion();
+    holdShortcuts.cancel();
+    flow.cancel(); meetings.cancel();
+  });
+  handle('hold-rejected', token => {
+    if (!holdShortcuts.active || holdShortcuts.active.token !== token) return;
+    holdShortcuts.cancel(token); clearInsertion();
+  });
   handle('meetings', () => store.meetings());
   handle('meeting-save', (transcript, title, names) => meetings.saveTranscript(transcript, title, names));
   handle('meeting-rename', (id, transcript, names) => meetings.renameSpeakers(id, transcript, names));
@@ -161,6 +202,7 @@ else app.whenReady().then(async () => {
   handle('recording-state', async active => {
     if (typeof active !== 'boolean') throw new Error('Ungültiger Aufnahmestatus.');
     recording = active; tray.setToolTip(active ? 'BlitzDic · Aufnahme läuft' : 'BlitzDic · Bereit');
+    if (!active && holdShortcuts.active?.started) holdShortcuts.cancel();
     await indicator.setActive(active);
   });
   handle('recording-level', value => {
@@ -182,5 +224,5 @@ else app.whenReady().then(async () => {
 }).catch(error => { dialog.showErrorBox('BlitzDic konnte nicht starten', error.message); app.quit(); });
 app.on('second-instance', () => { window?.show(); window?.focus(); });
 app.on('window-all-closed', () => { flow?.cancel(); app.quit(); });
-app.on('before-quit', () => { quitting = true; flow?.cancel(); meetings?.cancel(); indicator?.destroy(); });
+app.on('before-quit', () => { quitting = true; holdShortcuts?.destroy(); flow?.cancel(); meetings?.cancel(); indicator?.destroy(); });
 app.on('will-quit', () => { globalShortcut.unregisterAll(); tray?.destroy(); });

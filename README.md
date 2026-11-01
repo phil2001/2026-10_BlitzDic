@@ -113,6 +113,12 @@ müssen auf Zuordnung von Aufgaben, Zahlen und offenen Fragen geprüft werden.
 
 ## Entwicklung unter Windows 11
 
+Der Quellstand **0.3.10-dev.0** ergänzt unter Einstellungen die Wahl zwischen
+Drücken und Halten eines Kürzels. Zustands-, Mikrofonstart-/Abbruch- und IPC-Tests
+sind bestanden. Der vollständige Ablauf mit echten Windows-Tasten ist noch
+nicht abgenommen, weil der Testeditor derzeit nicht automatisch den Fokus erhält.
+Dieser Vorabstand ersetzt die oben genannte Testbasis 0.3.9 nicht.
+
 Benötigt: Node.js 22 oder neuer, npm und uv. PowerShell im Projektordner:
 
 ```powershell

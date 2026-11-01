@@ -33,6 +33,9 @@ PRESETS = {
 
 
 def run(request):
+    if request['action'] in ('wait-shortcut-release', 'validate-hold-shortcuts'):
+        from keyboard_hold import run as hold_keys
+        return hold_keys(request)
     if request['action'] == 'transcribe-speakers':
         from meeting_asr import run as transcribe_speakers
         return transcribe_speakers(request, run)

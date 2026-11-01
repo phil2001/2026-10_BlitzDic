@@ -8,6 +8,7 @@ let meetingBusy = false;
 let dictationSourceEnded = false, meetingSourceEnded = false;
 let speakerOptions = {enabled: false, speakerCount: -1};
 let speakerModelsAvailable = false;
+let heldGesture = null;
 const status = text => { $('status').textContent = text; };
 const attempt = fn => async () => { try { await fn(); } catch (error) { status(error.message); } };
 let speakerDraft = {source: '', names: [], rendered: ''};
@@ -213,6 +214,7 @@ document.querySelectorAll('nav button').forEach(button => button.onclick = () =>
 $('record').onclick = attempt(async () => {
   if (busy || meetingBusy || meetingRecorder.state !== 'idle' || recorder.state === 'starting') return;
   if (['recording', 'limit'].includes(recorder.state)) {
+    heldGesture = null;
     const wav = recorder.stop(); recordingUI(false);
     const entry = await api.audio(wav, $('mode').value);
     if (dictationSourceEnded) entry.warning = [entry.warning, 'Die Audioquelle wurde beendet; der vorhandene Abschnitt wurde verarbeitet.'].filter(Boolean).join('\n');
@@ -220,9 +222,11 @@ $('record').onclick = attempt(async () => {
   } else {
     dictationSourceEnded = false;
     $('cancel').hidden = false; status('Mikrofon wird gestartet …');
+    const startingGesture = heldGesture;
     try {
       if (!await recorder.start($('microphone').value)) return;
     } catch (error) {
+      if (heldGesture === startingGesture) heldGesture = null;
       await api.cancel(); recordingUI(false); throw error;
     }
     recordingUI(true); status('');
@@ -234,7 +238,7 @@ $('record').onclick = attempt(async () => {
   }
 });
 $('import').onclick = attempt(async () => { if (!busy && !meetingBusy && meetingRecorder.state === 'idle' && recorder.state === 'idle') await result(await api.import($('mode').value)); });
-$('cancel').onclick = attempt(async () => { recorder.cancel(); meetingRecorder.cancel(); await api.cancel(); recordingUI(false); meetingRecordingUI(false); status('Abgebrochen.'); });
+$('cancel').onclick = attempt(async () => { heldGesture = null; recorder.cancel(); meetingRecorder.cancel(); await api.cancel(); recordingUI(false); meetingRecordingUI(false); status('Abgebrochen.'); });
 $('copy').onclick = attempt(async () => { await api.copy($('result').value); status('Text kopiert.'); });
 $('mode').onchange = attempt(async () => { settings.mode = $('mode').value; await save(); });
 $('speech-model').onchange = attempt(async () => { settings.speech.preset = $('speech-model').value; await save(); updateLocation(); });
@@ -268,6 +272,26 @@ api.onShortcut(mode => {
 });
 api.onShortcutError(text => status(`Tastenkürzel nicht verfügbar: ${text}`));
 api.onCancelRecording(() => $('cancel').click());
+const shortHold = () => status('Kürzel vor Aufnahmebereitschaft losgelassen. Zum Diktieren länger halten.');
+api.onHoldTooShort(shortHold);
+api.onHoldStart(({token, mode}) => {
+  if (busy || meetingBusy || !settings || recorder.state !== 'idle' || meetingRecorder.state !== 'idle') {
+    api['hold-rejected'](token).catch(() => {}); return;
+  }
+  heldGesture = token; $('mode').value = mode; $('record').click();
+});
+api.onHoldStop(token => {
+  if (heldGesture !== token) return;
+  heldGesture = null;
+  if (recorder.state === 'starting') {
+    recorder.cancel(); api.cancel().catch(() => {}); recordingUI(false); shortHold();
+  } else if (['recording', 'limit'].includes(recorder.state)) $('record').click();
+});
+api.onHoldFailed(({token, message}) => {
+  if (heldGesture === token) {heldGesture = null; recorder.cancel(); recordingUI(false);}
+  else if (heldGesture !== null || recorder.state !== 'idle') return;
+  status(`Haltemodus nicht verfügbar: ${message}`);
+});
 api.onStopRecording(() => {
   if (['recording', 'limit'].includes(meetingRecorder.state)) $('meeting-record').click();
   else if (['recording', 'limit'].includes(recorder.state)) $('record').click();
@@ -319,6 +343,26 @@ try {
   const shortcutsTitle = document.createElement('h3'); shortcutsTitle.textContent = 'Globale Tastenkürzel';
   const shortcutsNote = document.createElement('p'); shortcutsNote.textContent = 'Einmal drücken startet, erneut drücken beendet die Aufnahme. Beim Schließen bleibt BlitzDic im Infobereich aktiv.';
   $('settings').append(shortcutsTitle, shortcutsNote);
+  const behaviorLabel = document.createElement('label'); behaviorLabel.textContent = 'Kürzelbedienung';
+  const behavior = document.createElement('select'); behavior.id = 'shortcut-behavior';
+  behavior.add(new Option('Drücken: starten / erneut drücken: beenden', 'toggle'));
+  behavior.add(new Option('Halten: aufnehmen / loslassen: beenden', 'hold'));
+  behavior.value = settings.shortcutBehavior ?? 'toggle';
+  const behaviorNote = () => {shortcutsNote.textContent = behavior.value === 'hold' ?
+    'Kürzel halten, bis die Aufnahmeanzeige erscheint, dann sprechen. Loslassen beendet die Aufnahme. Die Knöpfe und der Infobereich bleiben unabhängig davon Start-/Stopp-Schalter.' :
+    'Einmal drücken startet, erneut drücken beendet die Aufnahme. Beim Schließen bleibt BlitzDic im Infobereich aktiv.';};
+  behaviorNote(); behaviorLabel.append(behavior); $('settings').append(behaviorLabel);
+  behavior.onchange = attempt(async () => {
+    behavior.disabled = true;
+    settings.shortcutBehavior = behavior.value;
+    try {await save();}
+    catch (error) {
+      try {settings.shortcutBehavior = (await api.load()).settings.shortcutBehavior ?? 'toggle'; behavior.value = settings.shortcutBehavior;}
+      finally {behaviorNote(); behavior.disabled = false;}
+      throw error;
+    }
+    behavior.disabled = false; behaviorNote(); status('Kürzelbedienung gespeichert.');
+  });
   for (const [mode, title] of Object.entries({verbatim:'Wortgenau',clean:'Überarbeiten',calm:'Ruhig formulieren',emoji:'Mit Emojis'})) {
     const label = document.createElement('label'); label.textContent = title;
     const input = document.createElement('input'); input.value = settings.shortcuts[mode];

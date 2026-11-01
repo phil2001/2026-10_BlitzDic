@@ -4,6 +4,8 @@
 - Echte LAN- und Cloud-Anbieter zusätzlich zu lokalen Servern und Protokoll-Fixtures prüfen.
 - Verbleibende Originalfunktionen portieren: Website-Regeln,
   Halten-zum-Diktieren, optionales Stummschalten und Live-Meeting-Notizen.
+- Haltemodus aus 0.3.10-dev.0 mit echten Windows-Tasten abnehmen; bislang sind
+  Zustandsmaschine und IPC-/Mikrofonablauf geprüft. Escape-Steuerung noch portieren.
 - Weitere Meeting-Funktionen des Originals prüfen: Echo-Unterdrückung.
 - Oberfläche visuell abschließen und Zugänglichkeit prüfen.
 - Vollständige Drittanbieter-Lizenzen bündeln und Installer auf sauberem Windows testen.

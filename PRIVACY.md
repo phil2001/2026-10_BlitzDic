@@ -8,6 +8,13 @@ Nur die optionalen Schreibmodi senden das Transkript an den ausdrücklich gewäh
 LLM-Endpunkt. Dieser kann lokal, im Netzwerk oder bei einem API-Anbieter liegen.
 Es gibt keinen stillen Wechsel zu einem externen Dienst.
 
+Der vorläufige Haltemodus (Quellstand 0.3.10-dev.0) fragt ausschließlich den
+gedrückten Zustand der konfigurierten Kürzeltasten bei Windows ab. Er protokolliert
+keine allgemeinen Tastatureingaben und speichert keine Tastenzustandschronik.
+Nach Abbruch der Aufnahme kann diese begrenzte Abfrage bis zum Loslassen des
+Kürzels weiterlaufen, damit gehaltene Tasten keine neue Aufnahme auslösen.
+Sie ist auf 30 Minuten begrenzt und wird beim Beenden der App beendet.
+
 Einstellungen, API-Schlüssel und Verlauf werden mit Windows-DPAPI geschützt.
 Das schützt vor anderen Windows-Benutzerkonten, nicht vor anderen Programmen im
 selben Benutzerkonto. Der Verlauf lässt sich abschalten oder leeren.

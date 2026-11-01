@@ -910,3 +910,62 @@ Final installer: BlitzDicWindows/dist/windows-2026-11-01T00-56-29-939Z-6e8751-fi
 Unsigned, unpublished local development artifact. The installed 0.3.6 remains
 untouched. Remaining upstream features and hardware/clean-PC/native-license
 release gates are still open; this is not a finished-release claim.
+
+## Hold-to-record development snapshot, 2026-11-01
+
+Source 0.3.10-dev.0 adds a hold/toggle preference, retaining toggle as the default.
+HoldShortcuts gives each gesture an owner token, starts a read-only native key-state
+worker before target preparation and ignores repeats while that gesture is held.
+Releasing during preparation or microphone startup cannot strand a recording.
+Cancellation preserves the key-up guard but stops the microphone immediately;
+stale stop/error events cannot affect a newer recording. Shutdown aborts the worker.
+Its wait is bounded to 30 minutes. The native module maps Windows accelerator keys
+and reads only the configured groups' GetAsyncKeyState high bits, without a global
+keyboard hook, input injection or general key log. Sources checked:
+https://www.electronjs.org/docs/latest/tutorial/keyboard-shortcuts and
+https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getasynckeystate.
+
+48 regular Node tests passed (two optional real-ASR unit tests skipped), including
+six gesture lifecycle cases. The two new Windows Python tests passed accelerator
+mapping and controlled release/timeout cases. CI now runs those Python checks.
+Settings validation and persistence are serialized together so a slower hold-mode
+validation cannot overwrite a newer toggle choice; its selector disables while
+saving and reloads the persisted choice after errors.
+
+Browser plugin not available. Source Electron/Playwright IPC lifecycle checks with
+actual Whisper and packaged checks with actual Parakeet passed start/release,
+delayed microphone permission completion, stream cleanup, old-token stop/error
+isolation, current-worker failure, preference persistence and concurrent settings
+ordering. Page identity, rendering, observed page/console health and screenshots
+were checked at 1200×820 and 760×620. These tests supplied application IPC events,
+not physical/native keydown/up, and do not satisfy the full native gesture gate.
+
+The guarded native hotkey test refused input because its editor was not foreground.
+An unsafe ShowWindow call in the hidden test helper was removed: its first call
+can inherit SW_HIDE from STARTUPINFO, overriding the requested restore state.
+See https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-showwindow.
+After removal the foreground handle was another application's window, rather than
+null, but Windows still refused the test's SetForegroundWindow request. The helper
+retains the exact owned-window check, refuses pre-existing pressed keys, waits
+briefly for asynchronous activation and never sends keys on refusal. A pending
+indicator-window promise no longer hides the original test failure during cleanup.
+Read-only diagnostics found WinSta0/Default and matching process/console session 1;
+no desktop switch, unlock or security-setting change was attempted. The desktop
+cannot be classified as locked from these observations. Native hold/release,
+current-build external insertion and toggle-regression acceptance remain open.
+
+A development package was built, then repackaged into a fresh -final output after
+the ordered-settings fix, reusing the unchanged frozen speech runtime and license
+inventory. Five changed runtime/UI files matched app.asar byte-for-byte. Frozen
+shortcut validation and a non-held Ctrl+Shift+F24 query passed; both actual ASR
+imports, 111 native origins, notice hashes and corresponding FFmpeg source passed.
+An accidentally placed temporary UI screenshot file was removed from project/out;
+the empty directory was retained in accordance with the no-directory-delete rule.
+All retained QA screenshots/scripts are in the external task visualization folder.
+
+Experimental installer: BlitzDicWindows/dist/windows-2026-11-01T01-22-29-281Z-9ca584-final/BlitzDic Setup 0.3.10-dev.0.exe;
+1,148,470,352 bytes; SHA-256
+BECC2C14AE8F7FE1676558F342ED03124102907FCDD4A6814D08D3997DD67128.
+This is an unsigned development snapshot with an unproven native-key flow, not an
+accepted replacement for 0.3.9. Installed 0.3.6 remains untouched. Other full-scope
+release gates remain open; the goal is not complete.
