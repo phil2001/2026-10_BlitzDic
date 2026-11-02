@@ -21,6 +21,7 @@ Keine separate Python-Installation, kein LM Studio und kein nachträglicher Mode
 - Meetings mit Mikrofon, Systemaudio oder beiden Quellen; optionale Sprecherzuordnung,
   lokales Speichern von Transkripten und Zusammenfassungen über den gewählten LLM-Anbieter.
 - Manuelle Sprechernamen je Aufnahmeabschnitt; Original-IDs bleiben gespeichert.
+- Optionale vorläufige Live-Notizen und Rückblick auf die letzten zehn Minuten.
 - Verschlüsselte Einstellungen, API-Schlüssel und Verlauf über Windows-DPAPI.
 - Systemvoraussetzungen direkt bei der Modellauswahl.
 
@@ -114,7 +115,7 @@ müssen auf Zuordnung von Aufgaben, Zahlen und offenen Fragen geprüft werden.
 
 ## Entwicklung unter Windows 11
 
-Der Quellstand **0.3.10-dev.4** enthält zusätzlich Website-Regeln. Unter
+Der Quellstand **0.3.10-dev.5** enthält zusätzlich Website-Regeln. Unter
 **Einstellungen → Schreibmodus pro Website** etwa
 `example.com => clean` und `mail.example.com => calm` eintragen. Eine Domain
 umfasst ihre Unterdomains; die spezifischste Website-Regel hat Vorrang vor der
@@ -129,7 +130,7 @@ LLM bis zum Einfügen bestanden, auch mit der gepackten App 0.3.10-dev.3.
 Chrome/Whisper und Word/klassische Felder bleiben im neuen Paket zu prüfen.
 Der Quellstand prüft Fenster und Prozess vor der erneuten Feldlesung zum Einfügen.
 Ein neuer Build liegt unter
-`BlitzDicWindows/dist/windows-2026-11-02T15-20-18-865Z-943dc7/BlitzDic Setup 0.3.10-dev.4.exe`.
+`BlitzDicWindows/dist/windows-2026-11-02T16-05-33-057Z-d100bd/BlitzDic Setup 0.3.10-dev.5.exe`.
 Beide gebündelten ASR-Engines und die Sprechertrennung sind im neuen Worker
 geprüft; die native Browser-Abnahme steht noch aus.
 
@@ -142,6 +143,20 @@ bereiten keine Stummschaltung vor. Fehler lassen das Diktat weiterlaufen und
 werden angezeigt. Die echte Stummschaltung und der Ablauf im neuen Paket sind
 noch zu prüfen; bisher sind Zustands-/Abbruchtests, Renderer und eine rein
 lesende Core-Audio-Abfrage bestanden.
+
+0.3.10-dev.5 ergänzt **vorläufige Live-Notizen** unter Meetings. Vor jeder
+Aufnahme separat aktivieren; die Oberfläche zeigt die dafür verwendete Verbindung.
+Etwa alle zweieinhalb Minuten oder mit **Jetzt aktualisieren** wird der neue
+Audioabschnitt lokal transkribiert und der Text über den gewählten lokalen,
+LAN- oder API-Anbieter zusammengefasst. Die Verbindung bleibt für diesen Abschnitt
+fest. **Was habe ich in den letzten zehn Minuten verpasst?** erzeugt einen Rückblick.
+Dafür ist zusätzlich zu Whisper/Parakeet ein erreichbares LLM erforderlich.
+Die vollständige Aufnahme bleibt für das abschließende Transkript erhalten;
+Live-Notizen haben keine Sprecherzuordnung und werden nicht automatisch gespeichert.
+Die Vorschau kann nach Fehlern oder langen Pausen unvollständig sein; dies wird
+angezeigt. Ergebnisse prüfen und bei Bedarf kopieren. Renderer, Abbruchlogik und
+beide echten ASR-Modelle mit einem simulierten HTTP-LLM sind geprüft. Echte
+Meeting-Audioaufnahme und LLM-Qualität dieser Funktion bleiben zu prüfen.
 
 Seit **0.3.10-dev.0** gibt es unter Einstellungen die Wahl zwischen
 Drücken und Halten eines Kürzels. Zustands-, Mikrofonstart-/Abbruch- und IPC-Tests

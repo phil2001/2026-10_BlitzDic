@@ -6,7 +6,7 @@
   die erweiterte Fensterbindung auch mit Word und klassischen Feldern prüfen.
 - Experimentelles Stummschalten: echte Windows-Änderung/Wiederherstellung und
   vollständigen Diktatablauf im Paket prüfen.
-- Verbleibende Originalfunktionen portieren: Live-Meeting-Notizen.
+- Live-Meeting-Notizen mit echter Aufnahme und echtem LLM im vollständigen Paket prüfen.
 - Weitere Meeting-Funktionen des Originals prüfen: Echo-Unterdrückung.
 - Oberfläche visuell abschließen und Zugänglichkeit prüfen.
 - Vollständige Drittanbieter-Lizenzen bündeln und Installer auf sauberem Windows testen.
@@ -46,3 +46,9 @@ für Diktate. Meeting-Audio ist ausgeschlossen. Zustands-, Abbruch- und Renderer
 Tests sowie die lesende Core-Audio-Abfrage sind bestanden; echte Änderungen der
 Windows-Ausgabe und die vollständige Main-/Renderer-Kette bleiben zu prüfen.
 Details, Grenzen und Nachweise: [WINDOWS_PORT.md](WINDOWS_PORT.md).
+
+Version 0.3.10-dev.5 ergänzt vorläufige Live-Notizen und einen Zehn-Minuten-
+Rückblick. Die Aktivierung gilt jeweils für einen Aufnahmeabschnitt; lokaler,
+LAN- oder API-Anbieter wird dabei festgehalten. Vollständiges Endtranskript und
+Live-Vorschau bleiben getrennt. Renderer mit simuliertem Audio/LLM und echte
+gebündelte ASR mit HTTP-Fixture sind geprüft; echte Aufnahme-/LLM-Abnahme bleibt offen.

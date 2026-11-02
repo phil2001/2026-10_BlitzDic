@@ -85,6 +85,15 @@ export class Recorder {
     try { return encodeWav(this.chunks, this.session.context.sampleRate); }
     finally { this.cancel(); }
   }
+  snapshotSince(cursor=0) {
+    if(!['recording','limit'].includes(this.state)||!this.session?.context)throw new Error('Keine aktive Aufnahme.');
+    if(!Number.isInteger(cursor)||cursor<0||cursor>this.samples)throw new Error('Ungültige Audioposition.');
+    const rate=this.session.context.sampleRate,end=this.samples,start=Math.max(cursor,end-rate*300);
+    if(end-start<rate*2)return null;
+    const parts=[];let offset=0;
+    for(const chunk of this.chunks){const next=offset+chunk.length;if(next>start)parts.push(chunk.subarray(Math.max(0,start-offset)));offset=next;}
+    return {audio:encodeWav(parts,rate),cursor:end,dropped:start>cursor};
+  }
   cancel() {
     const session = this.session; this.session = null; this.state = 'idle';
     this.release(session); this.chunks = []; this.onLevel(0);

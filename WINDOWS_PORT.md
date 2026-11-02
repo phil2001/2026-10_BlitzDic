@@ -1262,3 +1262,56 @@ version metadata matched source; 111 native and 88 notice hashes matched.
 Native mutation/restoration, actual Main/renderer recording and GUI acceptance
 remain pending. This package is unsigned, uninstalled and unpublished; all other
 remaining original-feature, licensing and release gates remain open.
+
+
+## Optional live meeting notes, 2026-11-02
+
+Source 0.3.10-dev.5 adds provisional live meeting notes and a ten-minute catch-up.
+Each recording section starts with the option unchecked. Enabling it uses a frozen
+snapshot of the selected local/LAN/API provider and speech configuration. The UI
+shows destination host, location and model. ASR remains local; only transcript
+text goes to the configured LLM. There is no automatic save or speaker attribution.
+
+Every 150 seconds, or on manual update, the renderer snapshots new audio without
+removing any samples from the full recording. Preview requests are limited to five
+minutes of mono PCM; an older skipped tail is marked incomplete. Recognized text
+survives a failed LLM update; a twice-failing prefix is skipped with a visible
+incompleteness warning so later notes can continue. LLM input/output are bounded;
+the catch-up uses only the latest ten minutes and at most 12,000 source characters.
+Stop/cancel aborts and awaits the owned preview job before final transcription or
+new preview ownership. Generation checks reject late results and prevent cancellation
+during preview shutdown from starting full transcription. The final transcript
+continues to use the entire original recording; preview text is never appended.
+
+Validation:
+- Seven new Node tests cover local/LAN/API snapshots, invalid local destinations,
+  retries, repeated-prefix failure, stopped worker/LLM results, ten-minute cutoff,
+  malformed audio/output bounds and a non-destructive 301-to-300-second audio tail.
+- Full Node suite: 66 passed, two optional ASR tests skipped. The first sandbox run
+  blocked loopback provider fixtures; the permitted rerun passed, without changes
+  to provider behavior.
+- Real renderer + real LiveNotes service passed in headless Chrome, with simulated
+  recorder, IPC, ASR and LLM: opt-in, manual update, automatic interval using a
+  controlled browser clock, catch-up, destination, stop, and cancelled-stop race.
+  No console/page errors or horizontal overflow. Desktop/small screenshots inspected
+  at .runtime/live-notes-ui-1793635360402/{desktop,small}.png (1200x820/760x620).
+  A later run at .runtime/live-notes-ui-1793635521855 includes the automatic timer
+  and translated destination display. Browser plugin unavailable; Playwright used.
+- Both real packaged dev.4 ASR engines passed through the source live service to
+  actual loopback HTTP provider transport for notes and catch-up. The LLM response
+  was simulated; payloads contained transcript text only, and stop cleared transient
+  pending/recent text. No microphone, Windows audio mutation or desktop focus needed.
+
+Actual Electron Main/renderer recording, physical microphone/system audio, long
+meetings and real LLM factual quality/LAN/cloud delivery remain acceptance gates.
+Echo filtering remains open. This feature does not claim original speaker-aware
+mic/system echo filtering. Existing installer and release limitations still apply.
+
+Full dev.5 build: dist/windows-2026-11-02T16-05-33-057Z-d100bd/
+BlitzDic Setup 0.3.10-dev.5.exe; 1,148,496,702 bytes; SHA-256
+5EC035E83E010C7D6FD40D9676267410A490F48D05E7AD4B21916FE009DE8457.
+Both ASR engines and diarization passed again with this package and system-only
+PATH. The live-notes HTTP smoke also passed with both new packaged engines.
+Seven ASAR implementation files are byte-identical to source; production package
+name/version/type/main match (electron-builder strips development metadata).
+The installer remains unsigned, uninstalled and unpublished.

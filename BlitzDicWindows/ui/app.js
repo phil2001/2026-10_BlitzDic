@@ -105,8 +105,79 @@ const recorder = new Recorder({ onLevel: value => { $('level').value = value; le
   onEnded: () => {dictationSourceEnded = true; $('record').click();} });
 const meetingRecorder = new Recorder({onLevel: value => { $('meeting-level').value = value; level(value); }, onLimit: () => $('meeting-record').click(),
   onEnded: () => {meetingSourceEnded = true; $('meeting-record').click();}});
+let livePreview = null, liveDisplayEpoch = 0, meetingCaptureEpoch = 0;
+function previewLiveDestination() {
+  if (!settings || livePreview) return;
+  const config = settings.provider;
+  let destination = 'Verbindung noch nicht eingerichtet';
+  try {destination = new URL(config.baseURL || catalog[config.provider]?.baseURL).host;} catch {}
+  const location = {local:'dieser PC',lan:'Netzwerk-PC',api:'externe API'}[config.location] || 'nicht eingerichtet';
+  $('meeting-live-destination').textContent = `Gewählte Verarbeitung: ${location} · ${destination} · ${config.model || 'kein Modell gewählt'}`;
+}
+$('meeting-live-enabled').onchange = previewLiveDestination;
+function showLive(state) {
+  $('meeting-live-notes').value = state.notes || '';
+  $('meeting-live-recap').value = state.catchUp || '';
+  $('meeting-live-recap-label').hidden = !state.catchUp;
+  $('meeting-live-copy').disabled = !state.notes;
+  $('meeting-live-destination').textContent = `Verarbeitung dieses Abschnitts: ${({local:'dieser PC',lan:'Netzwerk-PC',api:'externe API'})[state.location]} · ${state.destination} · ${state.model}`;
+  $('meeting-live-status').textContent = state.problem || (state.updatedAt ? `Aktualisiert: ${new Date(state.updatedAt).toLocaleTimeString()} · ${state.model}` : 'Erste Notizen nach etwa zweieinhalb Minuten.');
+}
+function liveControls() {
+  const available = !!livePreview?.id && !livePreview.busy;
+  $('meeting-live-refresh').disabled = !available;
+  $('meeting-live-catchup').disabled = !available;
+}
+async function startLiveNotes() {
+  if (!$('meeting-live-enabled').checked) return;
+  const token = {id:null,cursor:0,busy:false,display:++liveDisplayEpoch}; livePreview = token;
+  $('meeting-live-notes').value = ''; $('meeting-live-recap-label').hidden = true; $('meeting-live-copy').disabled = true;
+  token.started = api['meeting-live-start']();
+  try {
+    const state = await token.started;
+    if (livePreview !== token) return;
+    token.id = state.id; showLive(state);
+    token.timer = setInterval(() => updateLiveNotes().catch(error => {if (livePreview === token) $('meeting-live-status').textContent = error.message;}), 150000); liveControls();
+  } catch (error) {
+    if (livePreview === token) {livePreview = null; $('meeting-live-status').textContent = `Live-Notizen nicht verfügbar: ${error.message}`; liveControls();}
+  }
+}
+async function stopLiveNotes() {
+  const token = livePreview; livePreview = null; liveControls();
+  $('meeting-live-enabled').checked = false;
+  if (!token) return;
+  clearInterval(token.timer);
+  try {
+    const started = await token.started;
+    const state = await api['meeting-live-stop'](started.id); if (liveDisplayEpoch === token.display) showLive(state);
+  } catch (error) {if (liveDisplayEpoch === token.display) $('meeting-live-status').textContent = `Live-Notizen beendet: ${error.message}`;}
+}
+async function updateLiveNotes() {
+  const token = livePreview;
+  if (!token?.id || token.busy || !['recording','limit'].includes(meetingRecorder.state)) return;
+  const chunk = meetingRecorder.snapshotSince(token.cursor);
+  if (!chunk) {$('meeting-live-status').textContent = 'Für Live-Notizen mindestens zwei Sekunden aufnehmen.';return;}
+  token.busy = true; liveControls(); $('meeting-live-status').textContent = 'Live-Notizen werden aktualisiert …';
+  try {
+    const state = await api['meeting-live-update'](token.id,chunk.audio,{dropped:chunk.dropped});
+    if (livePreview !== token) return;
+    if (state.consumed) token.cursor = chunk.cursor;
+    showLive(state);
+  } catch (error) {if (livePreview === token) $('meeting-live-status').textContent = `Live-Notizen gerade nicht möglich: ${error.message}`;}
+  finally {token.busy = false;liveControls();}
+}
+$('meeting-live-refresh').onclick = attempt(updateLiveNotes);
+$('meeting-live-catchup').onclick = attempt(async () => {
+  const token = livePreview; if (!token?.id || token.busy) return;
+  token.busy = true; liveControls();
+  try {const state = await api['meeting-live-catchup'](token.id);if (livePreview === token) showLive(state);}
+  catch (error) {if (livePreview === token) $('meeting-live-status').textContent = error.message;}
+  finally {token.busy = false;liveControls();}
+});
+$('meeting-live-copy').onclick = attempt(async () => {await api.copy($('meeting-live-notes').value);status('Live-Notizen kopiert.');});
 function meetingRecordingUI(active, processing = false) {
   meetingEditingUI(meetingBusy);
+  $('meeting-live-enabled').disabled = active || meetingBusy;
   api['recording-state'](active, processing, 'meeting').then(result => {if (result?.warning) status(result.warning);}).catch(error => status(error.message));
   $('meeting-record').textContent = active ? 'Aufnahme beenden und transkribieren' : 'Meeting aufnehmen';
   $('meeting-level').hidden = !active;
@@ -117,9 +188,13 @@ function meetingRecordingUI(active, processing = false) {
 $('meeting-record').onclick = attempt(async () => {
   if (busy || meetingBusy || dictationStartup || meetingStartup || recorder.state !== 'idle' || meetingRecorder.state === 'starting') return;
   if (['recording', 'limit'].includes(meetingRecorder.state)) {
+    const generation = ++meetingCaptureEpoch;
     const wav = meetingRecorder.stop(); meetingBusy = true; meetingRecordingUI(false, true);
     try {
+      await stopLiveNotes();
+      if (generation !== meetingCaptureEpoch) return;
       const entry = await api['meeting-audio'](wav, speakerOptions);
+      if (generation !== meetingCaptureEpoch) return;
       const draft = currentMeetingDraft();
       // Every recording starts a section, including recordings without diarization.
       // An old section's alias must never spill into later unlabelled audio.
@@ -153,7 +228,7 @@ $('meeting-record').onclick = attempt(async () => {
       await api.cancel(); meetingRecordingUI(false); throw error;
     }
     finally {if (meetingStartup === startup) meetingStartup = null;}
-    meetingRecordingUI(true); status('Meeting-Aufnahme läuft …');
+    meetingRecordingUI(true); status('Meeting-Aufnahme läuft …'); startLiveNotes();
   }
 });
 function recordingUI(active, processing = false) {
@@ -223,7 +298,7 @@ $('meeting-summarize').onclick = attempt(async () => {
     await refreshMeetings(); status('Meeting verschlüsselt gespeichert.');
   } finally { meetingBusy = false; $('meeting-summarize').disabled = false; $('meeting-cancel').hidden = true; meetingEditingUI(false); }
 });
-$('meeting-cancel').onclick = attempt(async () => { cancelStartup(); meetingRecorder.cancel(); await api.cancel(); meetingRecordingUI(false); status('Abgebrochen.'); });
+$('meeting-cancel').onclick = attempt(async () => { meetingCaptureEpoch++; cancelStartup(); meetingRecorder.cancel(); await stopLiveNotes(); await api.cancel(); meetingRecordingUI(false); status('Abgebrochen.'); });
 $('meeting-copy').onclick = attempt(async () => { await api.copy($('meeting-result').value); status('Zusammenfassung kopiert.'); });
 $('meetings-clear').onclick = attempt(async () => {
   if (confirm('Alle gespeicherten Meetings leeren?')) { await api['meetings-clear'](); await refreshMeetings(); }
@@ -265,7 +340,7 @@ $('record').onclick = attempt(async () => {
   }
 });
 $('import').onclick = attempt(async () => { if (!busy && !meetingBusy && meetingRecorder.state === 'idle' && recorder.state === 'idle') await result(await api.import($('mode').value)); });
-$('cancel').onclick = attempt(async () => { cancelStartup(); heldGesture = null; recorder.cancel(); meetingRecorder.cancel(); await api.cancel(); recordingUI(false); meetingRecordingUI(false); status('Abgebrochen.'); });
+$('cancel').onclick = attempt(async () => { meetingCaptureEpoch++; cancelStartup(); heldGesture = null; recorder.cancel(); meetingRecorder.cancel(); await stopLiveNotes(); await api.cancel(); recordingUI(false); meetingRecordingUI(false); status('Abgebrochen.'); });
 $('copy').onclick = attempt(async () => { await api.copy($('result').value); status('Text kopiert.'); });
 $('mode').onchange = attempt(async () => { settings.mode = $('mode').value; await save(); });
 $('speech-model').onchange = attempt(async () => { settings.speech.preset = $('speech-model').value; await save(); updateLocation(); });
@@ -275,7 +350,7 @@ $('download').onclick = attempt(async () => {
   try { await api.download($('speech-model').value); status('Modell ist bereit.'); } finally { $('download').disabled = false; }
 });
 $('provider').onchange = () => { const provider = catalog[$('provider').value]; $('baseURL').value = provider.baseURL; $('location').value = provider.local ? 'local' : 'api'; $('model').value = ''; $('apiKey').value = ''; };
-$('save-provider').onclick = attempt(async () => { settings.provider = providerConfig(); await save(); status('Verbindung gespeichert.'); });
+$('save-provider').onclick = attempt(async () => { settings.provider = providerConfig(); await save(); previewLiveDestination(); status('Verbindung gespeichert.'); });
 $('discover').onclick = attempt(async () => {
   const models = await api.models(providerConfig()); $('model-list').replaceChildren(...models.map(id => new Option(id, id))); status(`${models.length} Modelle gefunden. Modellname auswählen oder eingeben.`);
 });
@@ -443,5 +518,5 @@ try {
   $('recording-indicator-enabled').checked = settings.recordingIndicator !== false;
   $('mute-output-enabled').checked = settings.muteOutputWhileRecording === true;
   $('terms').value = settings.modeSettings.customTerms.join('\n'); $('instruction').value = settings.modeSettings.systemPrompt || '';
-  updateLocation(); await refreshHistory(); await refreshMeetings();
+  updateLocation(); previewLiveDestination(); await refreshHistory(); await refreshMeetings();
 } catch (error) { status(error.message); }

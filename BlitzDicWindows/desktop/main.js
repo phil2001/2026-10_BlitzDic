@@ -14,12 +14,14 @@ import { RecordingIndicator } from './recording-indicator.js';
 import { HoldShortcuts } from '../src/hold-shortcuts.js';
 import { EscapeControl } from '../src/escape-control.js';
 import { OutputMute } from '../src/output-mute.js';
+import { LiveNotes } from '../src/live-notes.js';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 let window, flow, store, tray, meetings, indicator, quitting = false;
 let holdShortcuts;
 let escapeControl;
 let outputMute;
+let liveNotes;
 const uiURL = pathToFileURL(join(root, 'ui/index.html')).href;
 app.setName('BlitzDic');
 if (!app.requestSingleInstanceLock()) app.quit();
@@ -31,6 +33,7 @@ else app.whenReady().then(async () => {
     .map(file => access(join(modelRoot, 'diarization', file)))).then(() => true, () => false);
   flow = new Dictation({ store, modelRoot, pythonPath });
   meetings = new Meetings({store});
+  liveNotes = new LiveNotes({modelRoot,pythonPath});
   indicator = new RecordingIndicator(() => { if (!window.isDestroyed()) window.webContents.send('stop-recording'); });
   await indicator.setEnabled((await store.settings()).recordingIndicator !== false);
   let insertionTarget = null, recording = false, capturePending = false, captureEpoch = 0;
@@ -49,6 +52,7 @@ else app.whenReady().then(async () => {
   const syncEscape = () => escapeControl.setActive(!!(recordingStarting || recording || processingPending || insertionRequested || capturePending || escapeJobs.size));
   const clearInsertion = () => { insertionTarget = null; insertionRequested = false; insertionProblem = ''; syncEscape().catch(escapeError); };
   const cancelWorkflow = () => {
+    liveNotes.cancel();
     recordingKind = null; mutePreparing = false; recordingStateEpoch++; syncOutputMute();
     captureEpoch++; recordingStarting = false; processingPending = false;
     for (const controller of escapeJobs) controller.abort();
@@ -143,7 +147,7 @@ else app.whenReady().then(async () => {
   window.on('close', event => { if (!quitting) { event.preventDefault(); window.hide(); } });
   window.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
   window.webContents.on('will-navigate', event => event.preventDefault());
-  const restoreOutput = () => {recordingKind = null; mutePreparing = false; syncOutputMute();};
+  const restoreOutput = () => {liveNotes.cancel();recordingKind = null; mutePreparing = false; syncOutputMute();};
   window.webContents.on('render-process-gone', restoreOutput);
   window.webContents.on('did-start-navigation', details => {
     if (details.isMainFrame && !details.isInPlace) restoreOutput();
@@ -262,6 +266,8 @@ else app.whenReady().then(async () => {
     if (diarize && !await speakerModelsAvailable()) throw new Error('Dieses Paket enthält keine lokalen Sprecherzuordnungsmodelle.');
     if (epoch !== captureEpoch) throw new Error('Abgebrochen.');
     insertionTarget = null; insertionRequested = false;
+    if (liveNotes.session && (liveNotes.session.job || !liveNotes.session.stopped)) await liveNotes.stop(liveNotes.session.id);
+    if (epoch !== captureEpoch) throw new Error('Abgebrochen.');
     return escapeJob(() => {
       processingPending = false;
       return flow.process(Buffer.from(bytes), 'verbatim', {saveHistory: false, diarize, speakerCount});
@@ -272,6 +278,19 @@ else app.whenReady().then(async () => {
     return escapeJob(() => meetings.summarize(transcript, title, names));
   });
   handle('meetings-clear', () => store.clearMeetings());
+  handle('meeting-live-start', async () => {
+    const epoch=captureEpoch;
+    const settings=await store.settings();
+    if(liveNotes.session?.stopped&&liveNotes.session.job)await liveNotes.session.job;
+    if(epoch!==captureEpoch||recordingKind!=='meeting'||(!recording&&!recordingStarting))throw new Error('Keine laufende Meeting-Aufnahme.');
+    return liveNotes.start(settings);
+  });
+  handle('meeting-live-update', (id,bytes,options) => {
+    if(!recording||recordingKind!=='meeting')throw new Error('Keine laufende Meeting-Aufnahme.');
+    return liveNotes.update(id,bytes,options);
+  });
+  handle('meeting-live-catchup', id => liveNotes.catchUp(id));
+  handle('meeting-live-stop', id => liveNotes.stop(id));
   handle('recording-starting', async (kind = 'dictation') => {
     if (!['dictation', 'meeting'].includes(kind)) throw new Error('Ungültiger Aufnahmetyp.');
     const epoch = captureEpoch;
@@ -318,5 +337,5 @@ else app.whenReady().then(async () => {
 }).catch(error => { dialog.showErrorBox('BlitzDic konnte nicht starten', error.message); app.quit(); });
 app.on('second-instance', () => { window?.show(); window?.focus(); });
 app.on('window-all-closed', () => { flow?.cancel(); app.quit(); });
-app.on('before-quit', () => { quitting = true; outputMute?.destroy(); escapeControl?.destroy(); holdShortcuts?.destroy(); flow?.cancel(); meetings?.cancel(); indicator?.destroy(); });
+app.on('before-quit', () => { quitting = true; liveNotes?.cancel();outputMute?.destroy(); escapeControl?.destroy(); holdShortcuts?.destroy(); flow?.cancel(); meetings?.cancel(); indicator?.destroy(); });
 app.on('will-quit', () => { globalShortcut.unregisterAll(); tray?.destroy(); });
