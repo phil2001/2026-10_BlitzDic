@@ -114,7 +114,7 @@ müssen auf Zuordnung von Aufgaben, Zahlen und offenen Fragen geprüft werden.
 
 ## Entwicklung unter Windows 11
 
-Der Quellstand **0.3.10-dev.3** enthält zusätzlich Website-Regeln. Unter
+Der Quellstand **0.3.10-dev.4** enthält zusätzlich Website-Regeln. Unter
 **Einstellungen → Schreibmodus pro Website** etwa
 `example.com => clean` und `mail.example.com => calm` eintragen. Eine Domain
 umfasst ihre Unterdomains; die spezifischste Website-Regel hat Vorrang vor der
@@ -129,9 +129,19 @@ LLM bis zum Einfügen bestanden, auch mit der gepackten App 0.3.10-dev.3.
 Chrome/Whisper und Word/klassische Felder bleiben im neuen Paket zu prüfen.
 Der Quellstand prüft Fenster und Prozess vor der erneuten Feldlesung zum Einfügen.
 Ein neuer Build liegt unter
-`BlitzDicWindows/dist/windows-2026-11-02T13-23-42-624Z-851a1e/BlitzDic Setup 0.3.10-dev.3.exe`.
+`BlitzDicWindows/dist/windows-2026-11-02T15-20-18-865Z-943dc7/BlitzDic Setup 0.3.10-dev.4.exe`.
 Beide gebündelten ASR-Engines und die Sprechertrennung sind im neuen Worker
 geprüft; die native Browser-Abnahme steht noch aus.
+
+0.3.10-dev.4 ergänzt experimentell **Windows-Ausgabe während eines Diktats
+stummschalten** unter Einstellungen. Die Option ist zunächst aus. Sie betrifft
+das zu Aufnahmebeginn gewählte Windows-Standardwiedergabegerät; beim Beenden
+oder Abbrechen wird nur die eigene Stummschaltung zurückgenommen. Eine bereits
+stumme Ausgabe bleibt stumm, der Lautstärkepegel wird nicht geändert. Meetings
+bereiten keine Stummschaltung vor. Fehler lassen das Diktat weiterlaufen und
+werden angezeigt. Die echte Stummschaltung und der Ablauf im neuen Paket sind
+noch zu prüfen; bisher sind Zustands-/Abbruchtests, Renderer und eine rein
+lesende Core-Audio-Abfrage bestanden.
 
 Seit **0.3.10-dev.0** gibt es unter Einstellungen die Wahl zwischen
 Drücken und Halten eines Kürzels. Zustands-, Mikrofonstart-/Abbruch- und IPC-Tests

@@ -26,3 +26,4 @@ jobs:
       - run: python scripts/test-hold-keys.py
       - run: python scripts/test-escape-control.py
       - run: python scripts/test-target-scope.py
+      - run: python scripts/test-output-mute.py

@@ -13,11 +13,13 @@ import { fitInsertion } from '../src/insertion-fit.js';
 import { RecordingIndicator } from './recording-indicator.js';
 import { HoldShortcuts } from '../src/hold-shortcuts.js';
 import { EscapeControl } from '../src/escape-control.js';
+import { OutputMute } from '../src/output-mute.js';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 let window, flow, store, tray, meetings, indicator, quitting = false;
 let holdShortcuts;
 let escapeControl;
+let outputMute;
 const uiURL = pathToFileURL(join(root, 'ui/index.html')).href;
 app.setName('BlitzDic');
 if (!app.requestSingleInstanceLock()) app.quit();
@@ -37,9 +39,17 @@ else app.whenReady().then(async () => {
   let recordingStarting = false, processingPending = false;
   const escapeJobs = new Set();
   const escapeError = error => { if (window && !window.isDestroyed()) window.webContents.send('shortcut-error', error.message); };
+  let muteEnabled = (await store.settings()).muteOutputWhileRecording === true;
+  let recordingKind = null, recordingStateEpoch = 0, mutePreparing = false;
+  outputMute = new OutputMute({pythonPath, onError: escapeError});
+  const syncOutputMute = async () => {
+    try {await outputMute.setActive(muteEnabled && (recording || mutePreparing) && recordingKind === 'dictation'); return null;}
+    catch (error) {escapeError(error); return error.message;}
+  };
   const syncEscape = () => escapeControl.setActive(!!(recordingStarting || recording || processingPending || insertionRequested || capturePending || escapeJobs.size));
   const clearInsertion = () => { insertionTarget = null; insertionRequested = false; insertionProblem = ''; syncEscape().catch(escapeError); };
   const cancelWorkflow = () => {
+    recordingKind = null; mutePreparing = false; recordingStateEpoch++; syncOutputMute();
     captureEpoch++; recordingStarting = false; processingPending = false;
     for (const controller of escapeJobs) controller.abort();
     holdShortcuts?.cancel(); flow.cancel(); meetings.cancel(); clearInsertion();
@@ -133,6 +143,11 @@ else app.whenReady().then(async () => {
   window.on('close', event => { if (!quitting) { event.preventDefault(); window.hide(); } });
   window.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
   window.webContents.on('will-navigate', event => event.preventDefault());
+  const restoreOutput = () => {recordingKind = null; mutePreparing = false; syncOutputMute();};
+  window.webContents.on('render-process-gone', restoreOutput);
+  window.webContents.on('did-start-navigation', details => {
+    if (details.isMainFrame && !details.isInPlace) restoreOutput();
+  });
   session.defaultSession.setPermissionRequestHandler((contents, permission, callback, details) =>
     callback(contents === window.webContents &&
       ((permission === 'media' && details.mediaTypes?.every(t => t === 'audio')) || permission === 'display-capture')));
@@ -169,6 +184,8 @@ else app.whenReady().then(async () => {
     // must not overwrite a newer choice of hold/toggle behavior.
     const operation = settingsQueue.then(async () => {
       settings = {...settings, websiteModes: normalizeWebsiteModes(settings.websiteModes)};
+      if (settings.muteOutputWhileRecording !== undefined && typeof settings.muteOutputWhileRecording !== 'boolean')
+        throw new Error('Ungültige Stummschaltungseinstellung.');
       if (Object.values(settings.shortcuts ?? {}).some(value => /(?:^|\+)esc(?:ape)?$/i.test(value)))
         throw new Error('Escape ist zum Beenden einer Aufnahme und Abbrechen der Verarbeitung reserviert.');
       if (settings.shortcutBehavior !== undefined && !['hold', 'toggle'].includes(settings.shortcutBehavior))
@@ -176,9 +193,12 @@ else app.whenReady().then(async () => {
       if (settings.shortcutBehavior === 'hold') await runSpeech({action: 'validate-hold-shortcuts',
         shortcuts: Object.values(settings.shortcuts ?? {})}, {pythonPath, timeoutMs: 5000});
       await store.saveSettings(settings);
+      muteEnabled = settings.muteOutputWhileRecording === true;
+      const muteWarning = await syncOutputMute();
       await indicator.setEnabled(settings.recordingIndicator !== false);
       const failed = registerShortcuts(settings);
       if (failed.length) throw new Error(`Einstellungen gespeichert, aber Tastenkürzel nicht verfügbar: ${failed.join(', ')}`);
+      if (muteWarning) throw new Error(`Einstellungen gespeichert, aber ${muteWarning}`);
       return settings;
     });
     settingsQueue = operation.catch(() => {});
@@ -252,19 +272,32 @@ else app.whenReady().then(async () => {
     return escapeJob(() => meetings.summarize(transcript, title, names));
   });
   handle('meetings-clear', () => store.clearMeetings());
-  handle('recording-starting', async () => {
+  handle('recording-starting', async (kind = 'dictation') => {
+    if (!['dictation', 'meeting'].includes(kind)) throw new Error('Ungültiger Aufnahmetyp.');
     const epoch = captureEpoch;
-    recordingStarting = true;
+    recordingStarting = true; recordingKind = kind; mutePreparing = false;
     await syncEscape();
     if (epoch !== captureEpoch) throw new Error('Abgebrochen.');
   });
-  handle('recording-state', async (active, processing = false) => {
-    if (typeof active !== 'boolean' || typeof processing !== 'boolean') throw new Error('Ungültiger Aufnahmestatus.');
+  handle('prepare-output', async () => {
+    if (!recordingStarting || recording || recordingKind !== 'dictation') throw new Error('Abgebrochen.');
+    const epoch = captureEpoch;
+    mutePreparing = true;
+    const warning = await syncOutputMute();
+    if (epoch !== captureEpoch || !recordingStarting || recordingKind !== 'dictation') throw new Error('Abgebrochen.');
+    return {warning};
+  });
+  handle('recording-state', async (active, processing = false, kind = 'dictation') => {
+    if (typeof active !== 'boolean' || typeof processing !== 'boolean' || !['dictation', 'meeting'].includes(kind)) throw new Error('Ungültiger Aufnahmestatus.');
+    const epoch = ++recordingStateEpoch;
     recordingStarting = false; processingPending = !active && processing;
     recording = active; tray.setToolTip(active ? 'BlitzDic · Aufnahme läuft' : 'BlitzDic · Bereit');
+    recordingKind = active ? kind : null; mutePreparing = false;
     if (!active && holdShortcuts.active?.started) holdShortcuts.cancel();
     syncEscape().catch(escapeError);
-    await indicator.setActive(active);
+    const warning = await syncOutputMute();
+    if (epoch === recordingStateEpoch) await indicator.setActive(active);
+    return {warning};
   });
   handle('recording-level', value => {
     if (typeof value !== 'number' || !Number.isFinite(value)) throw new Error('Ungültiger Aufnahmepegel.');
@@ -285,5 +318,5 @@ else app.whenReady().then(async () => {
 }).catch(error => { dialog.showErrorBox('BlitzDic konnte nicht starten', error.message); app.quit(); });
 app.on('second-instance', () => { window?.show(); window?.focus(); });
 app.on('window-all-closed', () => { flow?.cancel(); app.quit(); });
-app.on('before-quit', () => { quitting = true; escapeControl?.destroy(); holdShortcuts?.destroy(); flow?.cancel(); meetings?.cancel(); indicator?.destroy(); });
+app.on('before-quit', () => { quitting = true; outputMute?.destroy(); escapeControl?.destroy(); holdShortcuts?.destroy(); flow?.cancel(); meetings?.cancel(); indicator?.destroy(); });
 app.on('will-quit', () => { globalShortcut.unregisterAll(); tray?.destroy(); });

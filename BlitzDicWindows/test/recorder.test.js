@@ -84,6 +84,18 @@ test('cancelled microphone startup cannot replace or stop a newer recording', as
     recorder.cancel(); finishResume();
     assert.equal(await third, false);
     assert.equal(recorder.state, 'idle');
+    Context.prototype.resume = () => Promise.resolve();
+    let finishPreparation;
+    const fourth = recorder.start('', {beforeCapture: () => new Promise(resolve => {finishPreparation = resolve;})});
+    pending[3](stream()); await new Promise(setImmediate);
+    assert.equal(recorder.state, 'starting');
+    assert.equal(recorder.session.node, undefined, 'No audio graph may start before output preparation');
+    assert.equal(recorder.chunks.length, 0, 'Audio must not be buffered before output preparation completes');
+    recorder.cancel();
+    const fifth = recorder.start(); const newest = stream(); pending[4](newest);
+    assert.equal(await fifth, true);
+    finishPreparation(); assert.equal(await fourth, false);
+    assert.equal(recorder.state, 'recording'); assert.equal(newest.track.stopped, false);
   } finally {
     recorder.cancel();
     if (original) Object.defineProperty(globalThis, 'navigator', original); else delete globalThis.navigator;

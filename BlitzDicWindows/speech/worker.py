@@ -108,6 +108,18 @@ if __name__ == "__main__":
             from escape_control import serve
             serve()
             sys.exit(0)
+        if sys.argv[1:] == ['--output-mute']:
+            from output_mute import serve
+            serve()
+            sys.exit(0)
+        if sys.argv[1:] == ['--output-mute-status']:
+            from output_mute import Endpoint
+            endpoint = Endpoint()
+            try:
+                print(json.dumps({'muted': endpoint.muted()}))
+            finally:
+                endpoint.close()
+            sys.exit(0)
         # PyInstaller can ignore PYTHONIOENCODING and inherit a Windows code
         # page. Electron always sends UTF-8 JSON, including paths and dictation.
         request = json.loads(sys.stdin.buffer.read().decode('utf-8'))

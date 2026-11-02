@@ -107,7 +107,7 @@ const meetingRecorder = new Recorder({onLevel: value => { $('meeting-level').val
   onEnded: () => {meetingSourceEnded = true; $('meeting-record').click();}});
 function meetingRecordingUI(active, processing = false) {
   meetingEditingUI(meetingBusy);
-  api['recording-state'](active, processing).catch(error => status(error.message));
+  api['recording-state'](active, processing, 'meeting').then(result => {if (result?.warning) status(result.warning);}).catch(error => status(error.message));
   $('meeting-record').textContent = active ? 'Aufnahme beenden und transkribieren' : 'Meeting aufnehmen';
   $('meeting-level').hidden = !active;
   $('meeting-cancel').hidden = !active && !meetingBusy;
@@ -144,7 +144,7 @@ $('meeting-record').onclick = attempt(async () => {
     $('meeting-cancel').hidden = false; status('Mikrofon wird gestartet …');
     const startup = {cancelled: false}; meetingStartup = startup;
     try {
-      await api['recording-starting']();
+      await api['recording-starting']('meeting');
       if (startup.cancelled) return;
       if (!await meetingRecorder.start($('microphone').value, {source: $('meeting-source').value})) return;
     }
@@ -157,7 +157,7 @@ $('meeting-record').onclick = attempt(async () => {
   }
 });
 function recordingUI(active, processing = false) {
-  api['recording-state'](active, processing).catch(error => status(error.message));
+  api['recording-state'](active, processing).then(result => {if (result?.warning) status(result.warning);}).catch(error => status(error.message));
   $('record').textContent = active ? 'Aufnahme beenden' : 'Aufnahme starten';
   $('recording-label').textContent = active ? 'Ich höre zu …' : 'Bereit für dein Diktat.';
   $('level').hidden = !active; $('cancel').hidden = !active && !busy;
@@ -249,14 +249,14 @@ $('record').onclick = attempt(async () => {
     try {
       await api['recording-starting']();
       if (startup.cancelled) return;
-      if (!await recorder.start($('microphone').value)) return;
+      if (!await recorder.start($('microphone').value, {beforeCapture: async () => {startup.outputWarning = (await api['prepare-output']())?.warning;}})) return;
     } catch (error) {
       if (startup.cancelled) return;
       if (heldGesture === startingGesture) heldGesture = null;
       await api.cancel(); recordingUI(false); throw error;
     }
     finally {if (dictationStartup === startup) dictationStartup = null;}
-    recordingUI(true); status('');
+    recordingUI(true); status(startup.outputWarning || '');
     const devices = await navigator.mediaDevices.enumerateDevices();
     const selected = $('microphone').value;
     $('microphone').replaceChildren(new Option('Standardmikrofon', ''));
@@ -283,6 +283,7 @@ $('test').onclick = attempt(async () => { status('Verbindung wird geprüft …')
 $('save-settings').onclick = attempt(async () => {
   settings.historyEnabled = $('history-enabled').checked;
   settings.recordingIndicator = $('recording-indicator-enabled').checked;
+  settings.muteOutputWhileRecording = $('mute-output-enabled').checked;
   settings.modeSettings.customTerms = $('terms').value.split('\n').map(s => s.trim()).filter(Boolean);
   settings.modeSettings.systemPrompt = $('instruction').value; await save(); status('Einstellungen gespeichert.');
 });
@@ -440,6 +441,7 @@ try {
   customVisibility();
   $('history-enabled').checked = settings.historyEnabled;
   $('recording-indicator-enabled').checked = settings.recordingIndicator !== false;
+  $('mute-output-enabled').checked = settings.muteOutputWhileRecording === true;
   $('terms').value = settings.modeSettings.customTerms.join('\n'); $('instruction').value = settings.modeSettings.systemPrompt || '';
   updateLocation(); await refreshHistory(); await refreshMeetings();
 } catch (error) { status(error.message); }

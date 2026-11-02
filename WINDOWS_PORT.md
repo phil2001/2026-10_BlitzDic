@@ -1211,3 +1211,54 @@ no acceptance evidence. No classic-field run was started in the remaining time.
 All fixture windows/processes closed; no additional interactive tests were started
 after telling the user the PC was free. Chrome/Whisper, Word/classic controls and
 the packaged settings UI still require acceptance of 0.3.10-dev.3.
+
+## Optional output mute, 2026-11-02
+
+Source 0.3.10-dev.4 adds a default-off setting for dictation output muting.
+After microphone permission succeeds and before constructing the audio graph,
+the renderer awaits a Main-process preparation acknowledgement. A separate lazy
+windowless helper owns a Core Audio mute lease on the default multimedia rendering
+endpoint. It holds that exact endpoint until restoration, never changes volume
+levels and leaves an already-muted endpoint unchanged. Meeting startup/state IPC
+explicitly identifies meeting audio and never prepares a dictation mute.
+
+Stop/cancel, renderer navigation/crash and normal app shutdown request restoration.
+The helper restores on stdin EOF and retries the same endpoint if a previous
+restore failed. The client requests EOF instead of force-killing a possible lease
+owner. New sessions cannot supersede restoration of an earlier sent mute.
+Failures preserve dictation availability and return a visible warning. A helper
+failure requires restarting the app before using the optional control again.
+
+The bridge uses system COM APIs without another installed package. Method order
+and GUIDs were checked against the Microsoft Windows SDK headers. References:
+[IAudioEndpointVolume](https://learn.microsoft.com/en-us/windows/win32/api/endpointvolume/nn-endpointvolume-iaudioendpointvolume),
+[GetDefaultAudioEndpoint](https://learn.microsoft.com/en-us/windows/win32/api/mmdeviceapi/nf-mmdeviceapi-immdeviceenumerator-getdefaultaudioendpoint).
+
+Evidence and limits:
+- Node: 59 passed, two optional ASR tests skipped. Six mute-controller tests cover
+  disabled/no-spawn, startup cancellation, acknowledged restoration, helper loss,
+  session handover and synchronous launch failure. Recorder tests additionally
+  cover cancellation during preparation, no graph before preparation and late
+  resource arrival without stopping a newer recording.
+- Python: six fake-endpoint tests cover user-owned mute, idempotency, changed
+  default devices, partial failure, retry and EOF. No test changes Windows audio.
+- The actual source and frozen helper passed ready/idle/EOF protocol checks and
+  a read-only Core Audio GetMute call. No real SetMute call has been made.
+- Headless rendered UI (Browser plugin not available; Playwright) passed default
+  off, save/reload, meeting/dictation routing, preparation before dictation and a
+  visible preparation warning while recording still starts. IPC/recorder were
+  simulated; this does not prove Main IPC or hardware behavior. Page identity,
+  meaningful content, zero page/console errors and no horizontal overflow passed.
+  Inspected screenshots: .runtime/output-mute-ui-1793632101363/desktop.png and
+  small.png, at 1200x820 and 760x620.
+
+Full development build:
+dist/windows-2026-11-02T15-20-18-865Z-943dc7/BlitzDic Setup 0.3.10-dev.4.exe;
+1,148,492,948 bytes; SHA-256
+50CDA3A5479B2C7E3750676E00CA9F2270BD536665EB600B4D9BA73BFB84C2FD.
+Actual packaged Whisper, Parakeet Ultra and speaker diarization passed with the
+packaged model directories and system-only PATH. Seven relevant ASAR files and
+version metadata matched source; 111 native and 88 notice hashes matched.
+Native mutation/restoration, actual Main/renderer recording and GUI acceptance
+remain pending. This package is unsigned, uninstalled and unpublished; all other
+remaining original-feature, licensing and release gates remain open.

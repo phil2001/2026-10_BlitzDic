@@ -56,6 +56,16 @@ variable, those two tests are explicitly skipped. Synthetic microphone capture a
 
 ## Installed-app hotkey checks
 
+`worker.py --output-mute` serves acknowledged NDJSON mute leases. It changes only
+the mute switch of the default multimedia rendering endpoint, holds that exact
+endpoint until restoration, and preserves an already-muted device. EOF restores
+an owned change. `--output-mute-status` only queries its current mute state.
+`scripts/test-output-mute.py` exercises fake endpoints, including partial failures,
+device changes and EOF; it never changes Windows audio. `node
+scripts/verify-output-mute-ui.mjs` uses a headless renderer with fake IPC/recorder
+to check settings and meeting/dictation routing without desktop focus or audio
+access. This renderer fixture does not prove actual Main IPC or native mutation.
+
 `node scripts/verify-website-settings.mjs` checks real renderer/IPC/DPAPI storage,
 canonical host persistence, invalid edits, concurrent settings saves and clearing
 rules. It saves screenshots in a new `.runtime/website-settings-artifacts-*`

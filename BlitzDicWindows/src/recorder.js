@@ -4,7 +4,7 @@ export class Recorder {
   constructor({ onLevel = () => {}, onLimit = () => {}, onEnded = onLimit } = {}) {
     this.onLevel = onLevel; this.onLimit = onLimit; this.onEnded = onEnded; this.state = 'idle';
   }
-  async start(deviceId = '', { source = 'microphone' } = {}) {
+  async start(deviceId = '', { source = 'microphone', beforeCapture = async () => {} } = {}) {
     if (this.state !== 'idle') throw new Error('Aufnahme läuft bereits.');
     if (!['microphone', 'system', 'both'].includes(source)) throw new Error('Unbekannte Audioquelle.');
     this.state = 'starting'; this.chunks = []; this.samples = 0;
@@ -39,6 +39,10 @@ export class Recorder {
       } });
       watch(session.stream);
       }
+      if (!current()) { this.release(session); return false; }
+      checkSource();
+      // Permission is granted, but no audio graph/buffer runs before output preparation.
+      await beforeCapture();
       if (!current()) { this.release(session); return false; }
       checkSource();
       session.context = new AudioContext();
@@ -87,10 +91,15 @@ export class Recorder {
   }
   release(session) {
     if (!session) return;
-    session.streams.forEach(stream => stream.getTracks().forEach(track => track.removeEventListener?.('ended', session.onEnded)));
-    session.streams.forEach(stream => stream.getTracks().forEach(track => track.stop()));
-    session.sources.forEach(source => source.disconnect()); session.node?.disconnect(); session.mute?.disconnect();
+    // Drain resources rather than sealing the session: permission may resolve
+    // after cancellation and add a late stream that must also be stopped.
+    const streams = session.streams.splice(0), sources = session.sources.splice(0);
+    streams.forEach(stream => stream.getTracks().forEach(track => track.removeEventListener?.('ended', session.onEnded)));
+    streams.forEach(stream => stream.getTracks().forEach(track => track.stop()));
+    sources.forEach(source => source.disconnect()); session.node?.disconnect(); session.mute?.disconnect();
     if (session.node) session.node.port.onmessage = null;
-    if (session.context && session.context.state !== 'closed') session.context.close().catch(() => {});
+    session.node = null; session.mute = null;
+    const context = session.context; session.context = null;
+    if (context && context.state !== 'closed') context.close().catch(() => {});
   }
 }

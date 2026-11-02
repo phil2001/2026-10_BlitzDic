@@ -4,7 +4,9 @@
 - Echte LAN- und Cloud-Anbieter zusätzlich zu lokalen Servern und Protokoll-Fixtures prüfen.
 - Website-Regeln: abschließendes Paket einschließlich Whisper/Chrome prüfen;
   die erweiterte Fensterbindung auch mit Word und klassischen Feldern prüfen.
-- Verbleibende Originalfunktionen portieren: optionales Stummschalten und Live-Meeting-Notizen.
+- Experimentelles Stummschalten: echte Windows-Änderung/Wiederherstellung und
+  vollständigen Diktatablauf im Paket prüfen.
+- Verbleibende Originalfunktionen portieren: Live-Meeting-Notizen.
 - Weitere Meeting-Funktionen des Originals prüfen: Echo-Unterdrückung.
 - Oberfläche visuell abschließen und Zugänglichkeit prüfen.
 - Vollständige Drittanbieter-Lizenzen bündeln und Installer auf sauberem Windows testen.
@@ -39,4 +41,8 @@ Version 0.3.10-dev.3 bindet Tests an ihr eigenes Fenster und prüft beim Einfüg
 Fenster/Prozess vor einer erneuten Feldlesung. Host- und Frame-Erkennung sind mit
 Edge und Chrome bestanden; Parakeet/Halten hat in Edge alle drei Modusfälle bis
 zum geschützten Einfügen bestanden. Die abschließende Paketabnahme bleibt offen.
+Version 0.3.10-dev.4 ergänzt die zunächst ausgeschaltete Stummschaltungsoption
+für Diktate. Meeting-Audio ist ausgeschlossen. Zustands-, Abbruch- und Renderer-
+Tests sowie die lesende Core-Audio-Abfrage sind bestanden; echte Änderungen der
+Windows-Ausgabe und die vollständige Main-/Renderer-Kette bleiben zu prüfen.
 Details, Grenzen und Nachweise: [WINDOWS_PORT.md](WINDOWS_PORT.md).
