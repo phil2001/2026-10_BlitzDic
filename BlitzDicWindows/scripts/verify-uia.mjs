@@ -7,16 +7,18 @@ const root = resolve(import.meta.dirname, '..');
 const env = {...process.env}; delete env.ELECTRON_RUN_AS_NODE;
 const app = await electron.launch({args: [resolve(import.meta.dirname, 'uia-test-app.cjs'),
   `--user-data-dir=${root}/.runtime/uia-test-profile`], env});
-const worker = request => runSpeech(request, {pythonPath: process.env.BLITZDIC_TEST_SPEECH_EXECUTABLE || `${root}/.runtime/venv/Scripts/python.exe`, timeoutMs: 10000});
+let scope;
+const worker = request => runSpeech(request.action==='capture-target'?{...request,scope}:request, {pythonPath: process.env.BLITZDIC_TEST_SPEECH_EXECUTABLE || `${root}/.runtime/venv/Scripts/python.exe`, timeoutMs: 10000});
 try {
   const page = await app.firstWindow();
+  scope=await app.evaluate(({BrowserWindow})=>({window:Number(BrowserWindow.getAllWindows()[0].getNativeWindowHandle().readBigUInt64LE()),process:process.pid}));
   await app.evaluate(({app, BrowserWindow}) => { app.focus({steal: true}); BrowserWindow.getAllWindows()[0].focus(); });
   await page.locator('#editor').click();
   await page.locator('#editor').evaluate(element => element.setSelectionRange(7, 7));
   const captured = await worker({action: 'capture-target'});
   assert.equal(captured.executable, 'electron.exe');
   const target = captured.target;
-  assert.equal(target?.kind, 'uia', JSON.stringify(target));
+  assert.equal(target?.kind, 'uia');
   assert.equal(target.before, 'Before ');
   assert.equal(target.after, '');
   assert.equal((await worker({action: 'insert-text', target, text: 'Grüße! 🌍'})).inserted, true);

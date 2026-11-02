@@ -1,4 +1,4 @@
-param([string]$SpeechExecutable = '')
+﻿param([string]$SpeechExecutable = '')
 $ErrorActionPreference = 'Stop'
 $projectRoot = Split-Path $PSScriptRoot -Parent
 if (!$SpeechExecutable) { $SpeechExecutable = Join-Path $projectRoot '.runtime/venv/Scripts/python.exe' }
@@ -9,9 +9,11 @@ public static class WordInsertionTest {
     [DllImport("user32.dll")] public static extern bool SetForegroundWindow(IntPtr window);
     [DllImport("user32.dll")] public static extern IntPtr GetForegroundWindow();
     [DllImport("user32.dll")] public static extern uint GetClipboardSequenceNumber();
+    [DllImport("user32.dll")] public static extern uint GetWindowThreadProcessId(IntPtr window, out uint process);
 }
 '@
 function Invoke-Speech($request) {
+    if ($request.action -eq "capture-target" -and $script:captureScope) { $request.scope = $script:captureScope }
     $info = [Diagnostics.ProcessStartInfo]::new()
     $info.FileName = $SpeechExecutable
     if ([IO.Path]::GetFileName($SpeechExecutable) -ne 'blitzdic-speech.exe') {
@@ -42,7 +44,7 @@ function Assert-Text([string]$expected) {
         if ($actual -ceq $expected) { return }
         Start-Sleep -Milliseconds 25
     } while ([DateTime]::UtcNow -lt $deadline)
-    throw ('Word test-text mismatch. Expected: ' + ($expected | ConvertTo-Json -Compress) + '; actual: ' + ($actual | ConvertTo-Json -Compress))
+    throw ('Word fixture text mismatch; expected length ' + $expected.Length + '; actual length ' + $actual.Length)
 }
 
 $application = $null; $document = $null; $otherDocument = $null; $owned = $false; $testFailure = $null
@@ -58,6 +60,9 @@ try {
     $document.Activate(); $application.Activate()
     $application.Selection.SetRange(7, 7)
     $window = [IntPtr]$document.ActiveWindow.Hwnd
+    [uint32]$owner = 0
+    [void][WordInsertionTest]::GetWindowThreadProcessId($window, [ref]$owner)
+    $script:captureScope = @{window=$window.ToInt64(); process=$owner}
     [void][WordInsertionTest]::SetForegroundWindow($window)
     Assert-True ([WordInsertionTest]::GetForegroundWindow() -eq $window) 'Windows did not foreground the owned Word instance'
     $clipboard = [WordInsertionTest]::GetClipboardSequenceNumber()

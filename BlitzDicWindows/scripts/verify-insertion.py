@@ -29,6 +29,8 @@ user32.DispatchMessageW.restype = c.c_ssize_t
 
 
 def worker(request):
+    if request.get("action") == "capture-target":
+        request = {**request, "scope": {"window": parent, "process": os.getpid()}}
     command = ([os.environ['BLITZDIC_TEST_SPEECH_EXECUTABLE']] if os.environ.get('BLITZDIC_TEST_SPEECH_EXECUTABLE')
                else [sys.executable, str(ROOT / 'speech/worker.py')])
     process = subprocess.Popen(command,
@@ -71,7 +73,7 @@ try:
     assert worker({'action': 'insert-text', 'target': target, 'text': 'Grüße! 🌍'})['inserted']
     value = c.create_unicode_buffer(100)
     user32.GetWindowTextW(edit, value, 100)
-    assert value.value == 'Before Grüße! 🌍', repr(value.value)
+    assert value.value == 'Before Grüße! 🌍', f'Unexpected fixture text length: {len(value.value)}'
     stale = worker({'action': 'capture-target'})['target']
     message(edit, 0xB1, 0, 0)
     assert not worker({'action': 'insert-text', 'target': stale, 'text': 'WRONG'})['inserted']
@@ -80,10 +82,10 @@ try:
     assert (selected['before'], selected['after']) == ('', ' Grüße! 🌍')
     assert worker({'action': 'insert-text', 'target': selected, 'text': 'After'})['inserted']
     user32.GetWindowTextW(edit, value, 100)
-    assert value.value == 'After Grüße! 🌍', repr(value.value)
+    assert value.value == 'After Grüße! 🌍', f'Unexpected fixture text length: {len(value.value)}'
     message(edit, 0xC7)  # EM_UNDO
     user32.GetWindowTextW(edit, value, 100)
-    assert value.value == 'Before Grüße! 🌍', repr(value.value)
+    assert value.value == 'Before Grüße! 🌍', f'Unexpected fixture text length: {len(value.value)}'
     message(edit, 0xB1, 0, 0)
     changed = worker({'action': 'capture-target'})['target']
     replacement = c.create_unicode_buffer('Other! Grüße! 🌍')
@@ -91,7 +93,7 @@ try:
     message(edit, 0xB1, 0, 0)
     assert not worker({'action': 'insert-text', 'target': changed, 'text': 'WRONG'})['inserted'], 'Changed document accepted at unchanged cursor'
     user32.GetWindowTextW(edit, value, 100)
-    assert value.value == 'Other! Grüße! 🌍', repr(value.value)
+    assert value.value == 'Other! Grüße! 🌍', f'Unexpected fixture text length: {len(value.value)}'
     replacement = c.create_unicode_buffer('Before Grüße! 🌍')
     message(edit, 0xC, 0, c.addressof(replacement))
     message(edit, 0xB1, 0, 0)
@@ -109,7 +111,7 @@ try:
     assert multiline, 'Multiline native target unavailable'
     assert worker({'action': 'insert-text', 'target': multiline, 'text': 'Top\nMiddle'})['inserted']
     user32.GetWindowTextW(multiline_edit, value, 100)
-    assert value.value == 'Top\r\nMiddle\r\nSecond', repr(value.value)
+    assert value.value == 'Top\r\nMiddle\r\nSecond', f'Unexpected fixture text length: {len(value.value)}'
     if rich and '--large' in sys.argv:
         large = c.create_unicode_buffer('A' * 70000)
         message(multiline_edit, 0x435, 0, 1000000)  # EM_EXLIMITTEXT
