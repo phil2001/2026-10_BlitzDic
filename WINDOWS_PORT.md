@@ -1200,3 +1200,14 @@ malformed/impossible capture scopes before field access. Five relevant ASAR
 files, version metadata and the PowerShell bridge matched source bytes; 111
 native-file hashes and 88 package-notice hashes matched. Native acceptance of
 this final package is still pending. Installed 0.3.6 remains unchanged.
+
+In the next user-confirmed three-minute idle period, the actual packaged app and
+worker passed Edge/Parakeet Ultra with native held shortcuts in all three cases
+(website calm, explicit clean, no-LLM verbatim), including external insertion,
+encrypted history and provider-payload privacy checks. Its host/frame probes also
+passed. The preceding Chrome/Whisper attempt and owned Word 16.0.20527 instance
+were refused foreground activation before field capture/input, so they provide
+no acceptance evidence. No classic-field run was started in the remaining time.
+All fixture windows/processes closed; no additional interactive tests were started
+after telling the user the PC was free. Chrome/Whisper, Word/classic controls and
+the packaged settings UI still require acceptance of 0.3.10-dev.3.

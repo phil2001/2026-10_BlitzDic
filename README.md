@@ -125,7 +125,8 @@ Kann das fokussierte Browser-Dokument nicht sicher zugeordnet werden, gilt die
 Programmregel. Die neue Fassung wurde noch nicht als Upgrade installiert.
 Die Host- und Frame-Erkennung ist in Edge und Chrome geprüft. Parakeet hat mit
 Halten-zum-Diktieren in Edge Website-Vorrang, explizite Moduswahl und den Fall ohne
-LLM bis zum Einfügen bestanden. Der abschließende Paketnachweis bleibt offen.
+LLM bis zum Einfügen bestanden, auch mit der gepackten App 0.3.10-dev.3.
+Chrome/Whisper und Word/klassische Felder bleiben im neuen Paket zu prüfen.
 Der Quellstand prüft Fenster und Prozess vor der erneuten Feldlesung zum Einfügen.
 Ein neuer Build liegt unter
 `BlitzDicWindows/dist/windows-2026-11-02T13-23-42-624Z-851a1e/BlitzDic Setup 0.3.10-dev.3.exe`.
