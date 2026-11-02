@@ -1137,3 +1137,66 @@ with a system-only PATH. Four relevant ASAR files and the native bridge matched
 source bytes. All 111 mapped native hashes and 88 package-notice hashes matched;
 copied speech-model and metadata files also matched. This does not replace the
 outstanding native browser/packaged UI acceptance or redistribution review.
+
+The German fixture also passed using this package's actual worker executable
+and its copied model directories (not the development model folders). Both
+engines retained the meeting time, Anna's task, 2500-euro budget and open Berlin
+delivery; Whisper identified de. SYSTEMVORAUSSETZUNGEN.md now reflects this
+synthetic German evidence while retaining the physical-microphone and accuracy
+limitations. The updated text was included in the subsequent -de-docs packaging
+pass, which reused the unchanged frozen runtime. That actual packaged app passed
+the website-settings renderer/IPC/DPAPI verifier, including concurrent saves,
+clearing, restart persistence, screenshots and console checks.
+
+## Earlier window ownership checks, 2026-11-02
+
+Source 0.3.10-dev.3 adds an optional HWND/PID scope to target capture. Website
+tests bind both direct worker probes and the tested app's capture subprocess to
+their exact browser window. The Python bridge checks ownership before inspecting
+the focused control; the PowerShell bridge repeats the check after startup.
+During UIA insertion, the original signature's window/process are checked before
+recapturing field contents. Classic insertion similarly rejects a changed window
+before reading its current field. Document hashes, runtime IDs, selection offsets,
+read-only/password checks and held-modifier checks remain required.
+
+Additional real-worker and compiled-C# tests reject malformed/impossible window
+scopes and insertion signatures without reading application elements or sending
+input. Both passed locally; CI includes them. Optional BLITZDIC_UIA_TRACE=1 emits
+only phase labels and elapsed time. Failure diagnostics no longer print editor
+contents or recognition results.
+
+The earlier foreground refusal eventually closed its fixture after the bounded
+wait. New automatic foreground acquisition subsequently worked, but UIA timed out
+at AutomationElement.FocusedElement, before website metadata was requested.
+Changing PowerShell to MTA did not resolve that observation and was reverted.
+Desktop/session metadata showed WinSta0/Default in session 1, matching the active
+console. No desktop, security or privacy setting was changed.
+
+After the user confirmed a two-minute idle period, actual source runs passed:
+- Edge 156.0.4314.58 and Chrome 156.0.8078.74: focused document host, metadata off,
+  no URL path/query in capture IPC, URL-shaped editable text, unfocused covering
+  iframe and focused cross-origin iframe. Direct ancestry returned the correct
+  frame host; no screen-coordinate hit test is used.
+- Edge with actual Parakeet Ultra and native held shortcuts: specific website
+  calm beats root-domain clean and browser emoji; explicit clean stays explicit;
+  unconfigured LLM gives verbatim without an LLM request. All three recognized,
+  inserted into the owned external field and saved the expected encrypted history.
+  No browser host/path/query appeared in provider requests or history.
+
+These results do not establish the cause of every earlier timeout/insertion
+refusal. The final frozen 0.3.10-dev.3 package, Chrome/Whisper full path and the
+expanded guards with Word/classic controls still require acceptance. Both ASR
+engines were exercised with synthetic audio; physical-microphone testing, other
+remaining original features, licensing and release gates remain open.
+
+The complete 0.3.10-dev.3 build is:
+dist/windows-2026-11-02T13-23-42-624Z-851a1e/BlitzDic Setup 0.3.10-dev.3.exe;
+1,148,486,370 bytes; SHA-256
+8FBA63B1F417C07593F2B189A44997260EBA49A2519A31563F0877EEC6F830A3.
+Both ASR engines, German recognition and speaker diarization passed with the
+actual packaged worker and actual packaged model directories. The English and
+diarization run used a system-only PATH. The frozen worker also rejected all
+malformed/impossible capture scopes before field access. Five relevant ASAR
+files, version metadata and the PowerShell bridge matched source bytes; 111
+native-file hashes and 88 package-notice hashes matched. Native acceptance of
+this final package is still pending. Installed 0.3.6 remains unchanged.

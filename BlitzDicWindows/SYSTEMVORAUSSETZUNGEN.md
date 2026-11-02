@@ -1,6 +1,6 @@
 # Systemvoraussetzungen für lokale Spracherkennung
 
-Stand: 31.10.2026. Gilt für die aktuellen BlitzDic-Vorgaben und den getesteten
+Stand: 02.11.2026. Gilt für die aktuellen BlitzDic-Vorgaben und den getesteten
 CPU-Betrieb. Die Windows-App befindet sich noch in Entwicklung.
 
 Die vollständige Windows-Ausgabe bündelt Whisper Small, Parakeet Ultra und
@@ -42,8 +42,15 @@ Intel Core Ultra 7 265 mit 20 logischen Prozessoren, x64 und rund 31 GiB vom
 Betriebssystem gemeldetem RAM erfolgreich erkannt. Dabei lief die Erkennung
 explizit auf der CPU: Whisper mit INT8 und Parakeet mit CPUExecutionProvider.
 Der Test belegt keinen Mindest-RAM-Bedarf und garantiert keine bestimmte
-Geschwindigkeit auf anderen PCs. Langzeitaufnahmen und deutsche Sprache müssen
-noch gesondert geprüft werden.
+Geschwindigkeit auf anderen PCs.
+
+Auch ein kurzer synthetischer deutscher Satz wurde mit beiden tatsächlich im
+Windows-Paket enthaltenen Modellen und dessen Sprachlaufzeit erfolgreich geprüft:
+Umlaute, „Anna prüft die Unterlagen“, „morgen um 9 Uhr“, ein Budget von 2.500 Euro
+und die offene Lieferung nach Berlin blieben erhalten. Whisper erkannte die
+Sprache als Deutsch. Das ist ein Funktionstest, kein allgemeiner Genauigkeitsnachweis.
+Physische Mikrofone, Dialekte, Fachvokabular und lange deutsche Aufnahmen sind
+weiterhin gesondert zu prüfen.
 
 ## Grafikkarten, ARM und andere Modellgrößen
 

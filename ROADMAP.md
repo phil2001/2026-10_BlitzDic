@@ -2,8 +2,8 @@
 
 - Physische Mikrofontests, weitere Office-/Browser-Versionen und ein frisches Windows 11 prüfen.
 - Echte LAN- und Cloud-Anbieter zusätzlich zu lokalen Servern und Protokoll-Fixtures prüfen.
-- Website-Regeln: native Frame-Zuordnung und geschütztes Einfügen mit beiden
-  Browsern und dem abschließenden Paket prüfen.
+- Website-Regeln: abschließendes Paket einschließlich Whisper/Chrome prüfen;
+  die erweiterte Fensterbindung auch mit Word und klassischen Feldern prüfen.
 - Verbleibende Originalfunktionen portieren: optionales Stummschalten und Live-Meeting-Notizen.
 - Weitere Meeting-Funktionen des Originals prüfen: Echo-Unterdrückung.
 - Oberfläche visuell abschließen und Zugänglichkeit prüfen.
@@ -35,4 +35,8 @@ Der Installationsablauf 0.1.0 → 0.3.6 wurde auf dem Entwicklungs-PC geprüft.
 Version 0.3.10-dev.2 ergänzt Website-Regeln mit Host-Normalisierung, Vorrang vor
 Programmregeln und verschlüsselter Speicherung. Regel- und Oberflächentests sind
 bestanden. Der abschließende native Browser-/Paketnachweis ist noch offen.
+Version 0.3.10-dev.3 bindet Tests an ihr eigenes Fenster und prüft beim Einfügen
+Fenster/Prozess vor einer erneuten Feldlesung. Host- und Frame-Erkennung sind mit
+Edge und Chrome bestanden; Parakeet/Halten hat in Edge alle drei Modusfälle bis
+zum geschützten Einfügen bestanden. Die abschließende Paketabnahme bleibt offen.
 Details, Grenzen und Nachweise: [WINDOWS_PORT.md](WINDOWS_PORT.md).

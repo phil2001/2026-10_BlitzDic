@@ -82,6 +82,15 @@ Unavailable metadata falls back to the program rule. Run
 bridge without inspecting any application. Native browser acceptance remains
 separate from this compilation check.
 
+`scripts/test-uia-scope.ps1` also verifies early rejection of an impossible
+window/signature without querying application elements. `scripts/test-target-scope.py`
+checks the actual worker's malformed/mismatched window scopes. Website tests pass
+their owned HWND and browser PID through capture requests, including the tested
+app's capture subprocess. UIA and classic insertion reject a changed foreground
+window before reading another field. Existing document/selection/modifier guards
+remain in place. Optional `BLITZDIC_UIA_TRACE=1` logs phase names and elapsed time,
+never field text or URLs; the website verifier forwards these diagnostics.
+
 `scripts/verify-hotkey.mjs` can target the installed app through
 `BLITZDIC_TEST_EXECUTABLE`. Set `BLITZDIC_TEST_APP_RULE=1` to check that the
 foreground editor's `electron.exe` rule selects the clean mode, sends the expected

@@ -35,8 +35,20 @@ public static class BlitzDicUia {
     // The signature contains hashes and selection lengths, never the document text.
     public static string Reason = "";
     public static string Before = "", After = "";
+    static readonly System.Diagnostics.Stopwatch TraceClock = System.Diagnostics.Stopwatch.StartNew();
+    static void Trace(string stage) {
+        if (Environment.GetEnvironmentVariable("BLITZDIC_UIA_TRACE") == "1")
+            Console.Error.WriteLine("UIA " + TraceClock.ElapsedMilliseconds + "ms " + stage);
+    }
     static AutomationElement CapturedElement;
     static IntPtr CapturedWindow;
+    static IntPtr RequiredWindow;
+    static uint RequiredProcess;
+    public static string CaptureScoped(long window, uint process) {
+        if (window <= 0 || process == 0) return Reject("Ungültiger Fensterbereich");
+        RequiredWindow = new IntPtr(window); RequiredProcess = process;
+        return Capture();
+    }
     // Minimal read-only UIA COM declarations, in Windows SDK vtable order.
     // The managed UIA API omits LegacyIAccessibleValue, needed for document URLs.
     [ComImport, Guid("D22108AA-8AC5-49A5-837B-37BBB3D7591E"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
@@ -73,6 +85,7 @@ public static class BlitzDicUia {
     }
     // Follow the exact focused element, never a hit-test position or page label.
     public static string WebsiteHost() {
+        Trace("website:start");
         var references = new List<object>();
         try {
             var focused = CapturedElement;
@@ -82,16 +95,21 @@ public static class BlitzDicUia {
             uint pid; GetWindowThreadProcessId(window, out pid);
             string executable = System.Diagnostics.Process.GetProcessById((int)pid).ProcessName.ToLowerInvariant();
             if (Array.IndexOf(new string[] {"chrome", "msedge", "firefox", "brave", "opera", "vivaldi"}, executable) < 0) return null;
+            Trace("website:activate-native");
             var automation = (NativeAutomation)Activator.CreateInstance(Type.GetTypeFromCLSID(new Guid("FF48DBA4-60EF-4201-AA87-54103EEF594E")));
             references.Add(automation);
             NativeElement element; NativeWalker walker; int[] identity;
+            Trace("website:native-focus");
             if (automation.GetFocusedElement(out element) != 0 || element == null) return null;
             references.Add(element);
+            Trace("website:runtime-id");
             if (element.GetRuntimeId(out identity) != 0 || String.Join(",", identity) != String.Join(",", focused.GetRuntimeId())) return null;
+            Trace("website:raw-walker");
             if (automation.GetRawViewWalker(out walker) != 0 || walker == null) return null;
             references.Add(walker);
             var timer = System.Diagnostics.Stopwatch.StartNew();
             for (int depth = 0; element != null && depth < 40 && timer.ElapsedMilliseconds < 250; depth++) {
+                Trace("website:ancestor-" + depth);
                 object process, role, value;
                 if (element.GetCurrentPropertyValue(30002, out process) != 0 || !(process is int) || (int)process != pid) return null;
                 if (element.GetCurrentPropertyValue(30003, out role) != 0) return null;
@@ -113,6 +131,7 @@ public static class BlitzDicUia {
             }
         } catch { /* Unsupported/inaccessible browser: fall back to its app rule. */ }
         finally {
+            Trace("website:release");
             foreach (object item in references) if (Marshal.IsComObject(item)) Marshal.ReleaseComObject(item);
         }
         return null;
@@ -155,11 +174,18 @@ public static class BlitzDicUia {
         }
     }
     public static string Capture() {
+        Trace("capture:start");
         Reason = "";
         CapturedElement = null; CapturedWindow = IntPtr.Zero;
         IntPtr window = GetForegroundWindow();
+        if (window == IntPtr.Zero) return Reject("Kein Vordergrundfenster");
+        if (RequiredWindow != IntPtr.Zero) {
+            uint owner; GetWindowThreadProcessId(window, out owner);
+            if (window != RequiredWindow || owner != RequiredProcess) return Reject("Vordergrundfenster geändert");
+        }
         var element = AutomationElement.FocusedElement;
         if (element == null) return Reject("Kein fokussiertes Element");
+        Trace("capture:focused");
         var current = element.Current;
         if (current.IsPassword || !current.IsEnabled || !current.HasKeyboardFocus) return Reject("Feld geschützt, inaktiv oder ohne Tastaturfokus");
         if (current.ControlType != ControlType.Edit && current.ControlType != ControlType.Document) return Reject("Kein Texteingabefeld");
@@ -167,6 +193,7 @@ public static class BlitzDicUia {
         if (pid != current.ProcessId) return Reject("Prozess stimmt nicht mit Vordergrundfenster überein");
         object pattern;
         if (!element.TryGetCurrentPattern(TextPattern.Pattern, out pattern)) return Reject("TextPattern nicht verfügbar");
+        Trace("capture:text-pattern");
         var text = (TextPattern)pattern;
         var range = text.DocumentRange;
         var readOnly = range.GetAttributeValue(TextPattern.IsReadOnlyAttribute);
@@ -175,6 +202,7 @@ public static class BlitzDicUia {
         if (selection == null || selection.Length != 1) return Reject("Keine eindeutige Textauswahl");
         var prefix = range.Clone();
         prefix.MoveEndpointByRange(TextPatternRangeEndpoint.End, selection[0], TextPatternRangeEndpoint.Start);
+        Trace("capture:document");
         string document = range.GetText(1000001);
         if (document.Length > 1000000) return Reject("Dokument zu groß");
         string hash;
@@ -186,12 +214,17 @@ public static class BlitzDicUia {
         suffix.MoveEndpointByRange(TextPatternRangeEndpoint.Start, selection[0], TextPatternRangeEndpoint.End);
         Before = prefixText.Substring(Math.Max(0, prefixText.Length - 160));
         After = suffix.GetText(160);
+        Trace("capture:done");
         CapturedElement = element; CapturedWindow = window;
         return window.ToInt64() + ":" + pid + ":" + identity + ":" + prefixText.Length + ":" + selection[0].GetText(-1).Length + ":" + hash;
     }
 
     public static bool Insert(string signature, string text) {
         if (String.IsNullOrEmpty(signature) || text == null || text.Length > 100000 || text.IndexOf('\0') >= 0) return false;
+        var parts = signature.Split(':'); long expectedWindow; uint expectedProcess;
+        if (parts.Length != 6 || !Int64.TryParse(parts[0], out expectedWindow) || expectedWindow <= 0 ||
+                !UInt32.TryParse(parts[1], out expectedProcess) || expectedProcess == 0) return false;
+        RequiredWindow = new IntPtr(expectedWindow); RequiredProcess = expectedProcess;
         // Never release or synthesize modifiers that the user is currently holding.
         foreach (int key in new int[] { 0x10, 0x11, 0x12, 0x5B, 0x5C })
             if ((GetAsyncKeyState(key) & 0x8000) != 0) return false;
@@ -217,7 +250,9 @@ public static class BlitzDicUia {
 try {
     $request = [Console]::In.ReadToEnd() | ConvertFrom-Json
     if ($request.action -eq 'capture') {
-        $signature = [BlitzDicUia]::Capture()
+        $signature = if ($null -ne $request.scope) {
+            [BlitzDicUia]::CaptureScoped([long]$request.scope.window, [uint32]$request.scope.process)
+        } else { [BlitzDicUia]::Capture() }
         $websiteHost = if ($request.website -eq $true -and $signature) { [BlitzDicUia]::WebsiteHost() } else { $null }
         @{ signature = $signature; reason = [BlitzDicUia]::Reason; before = [BlitzDicUia]::Before; after = [BlitzDicUia]::After; websiteHost = $websiteHost } | ConvertTo-Json -Compress
     } elseif ($request.action -eq 'insert') {

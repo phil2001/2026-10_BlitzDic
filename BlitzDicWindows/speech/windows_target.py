@@ -49,18 +49,30 @@ def message(hwnd, msg, wp=0, lp=0):
         raise RuntimeError('Textfeld antwortet nicht oder verweigert den Zugriff.')
     return result.value
 
-def capture(website=False):
+def capture(website=False, scope=None):
     capture.website_host = None
     capture.reason = 'Kein fokussiertes Windows-Eingabefeld.'
+    if scope is not None:
+        foreground = user32.GetForegroundWindow(); owner = w.DWORD()
+        user32.GetWindowThreadProcessId(foreground, c.byref(owner))
+        if (not isinstance(scope, dict) or type(scope.get('window')) is not int or
+                type(scope.get('process')) is not int or not foreground or
+                scope['window'] != foreground or scope['process'] != owner.value):
+            capture.reason = 'Vordergrundfenster geändert.'
+            return None
     info = GUI(); info.cbSize = c.sizeof(GUI)
     if not user32.GetGUIThreadInfo(0, c.byref(info)) or not info.hwndFocus:
+        return None
+    if scope is not None and (info.hwndActive != scope['window'] or
+                              user32.GetForegroundWindow() != scope['window']):
+        capture.reason = 'Vordergrundfenster geändert.'
         return None
     name = c.create_unicode_buffer(256)
     user32.GetClassNameW(info.hwndFocus, name, len(name))
     class_name = name.value.lower()
     def uia_fallback():
         from uia_target import capture as uia_capture
-        target = uia_capture(website=website)
+        target = uia_capture(website=website, scope=scope)
         capture.website_host = uia_capture.website_host
         capture.reason = uia_capture.reason
         return target
@@ -114,7 +126,11 @@ def insert(target, text):
     if target and target.get('kind') == 'uia':
         from uia_target import insert as uia_insert
         return uia_insert(target, text)
-    if not target or capture() != target:
+    if not target or user32.GetForegroundWindow() != target.get('window'):
+        return {'inserted': False, 'reason': 'Eingabefeld oder Cursorposition geändert; Text bleibt in BlitzDic.'}
+    owner = w.DWORD()
+    user32.GetWindowThreadProcessId(target['window'], c.byref(owner))
+    if capture(scope={'window': target['window'], 'process': owner.value}) != target:
         return {'inserted': False, 'reason': 'Eingabefeld oder Cursorposition geändert; Text bleibt in BlitzDic.'}
     if not isinstance(text, str) or '\x00' in text or len(text) > 100000:
         raise ValueError('Text kann nicht automatisch eingefügt werden.')

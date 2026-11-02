@@ -46,7 +46,7 @@ def run(request):
         from windows_target import capture, insert, foreground_app
         if request['action'] == 'capture-target':
             executable = foreground_app()
-            target = capture(website=request.get('website') is True)
+            target = capture(website=request.get('website') is True, scope=request.get('scope'))
             same_app = foreground_app() == executable
             return {'target': target, 'reason': capture.reason if not target else '',
                     'executable': executable if same_app else '',

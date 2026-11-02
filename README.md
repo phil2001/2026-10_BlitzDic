@@ -114,8 +114,8 @@ müssen auf Zuordnung von Aufgaben, Zahlen und offenen Fragen geprüft werden.
 
 ## Entwicklung unter Windows 11
 
-Der Quellstand **0.3.10-dev.2** enthält zusätzlich Website-Regeln (noch in nativer
-Browser-Prüfung). Unter **Einstellungen → Schreibmodus pro Website** etwa
+Der Quellstand **0.3.10-dev.3** enthält zusätzlich Website-Regeln. Unter
+**Einstellungen → Schreibmodus pro Website** etwa
 `example.com => clean` und `mail.example.com => calm` eintragen. Eine Domain
 umfasst ihre Unterdomains; die spezifischste Website-Regel hat Vorrang vor der
 Programmregel. Das gilt für das Wortgenau-Kürzel. Explizite Modus-Kürzel bleiben
@@ -123,8 +123,12 @@ unverändert. Ohne konfiguriertes LLM bleibt der Text wortgenau. Gespeichert wir
 nur der Hostname; Pfad und Suchparameter gelangen nicht in Verlauf oder LLM-Anfrage.
 Kann das fokussierte Browser-Dokument nicht sicher zugeordnet werden, gilt die
 Programmregel. Die neue Fassung wurde noch nicht als Upgrade installiert.
+Die Host- und Frame-Erkennung ist in Edge und Chrome geprüft. Parakeet hat mit
+Halten-zum-Diktieren in Edge Website-Vorrang, explizite Moduswahl und den Fall ohne
+LLM bis zum Einfügen bestanden. Der abschließende Paketnachweis bleibt offen.
+Der Quellstand prüft Fenster und Prozess vor der erneuten Feldlesung zum Einfügen.
 Ein neuer Build liegt unter
-`BlitzDicWindows/dist/windows-2026-11-02T06-45-42-813Z-14de0a/BlitzDic Setup 0.3.10-dev.2.exe`.
+`BlitzDicWindows/dist/windows-2026-11-02T13-23-42-624Z-851a1e/BlitzDic Setup 0.3.10-dev.3.exe`.
 Beide gebündelten ASR-Engines und die Sprechertrennung sind im neuen Worker
 geprüft; die native Browser-Abnahme steht noch aus.
 

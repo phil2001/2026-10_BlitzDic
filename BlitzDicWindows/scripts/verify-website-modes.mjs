@@ -1,6 +1,8 @@
 import {resolve} from 'node:path';
 import {chromium,_electron as electron} from 'playwright';
-import {runSpeech} from '../src/speech.js';
+import {runSpeech as speech} from '../src/speech.js';
+let captureScope;
+const runSpeech=(request,options)=>speech(request.action==='capture-target'?{...request,scope:captureScope}:request,{...options,onProgress:text=>{if(process.env.BLITZDIC_UIA_TRACE==='1')process.stderr.write(text);}});
 import {createServer} from 'node:http';
 import {once} from 'node:events';
 import {spawn} from 'node:child_process';
@@ -45,6 +47,7 @@ try {
       let output='';child.stdout.on('data',chunk=>output+=chunk.toString('utf8'));
       child.on('close',()=>{try{const result=JSON.parse(output);globalThis.websiteTestTrace.push({action:request.action,signature:result.target?.signature||request.target?.signature,inserted:result.inserted,reason:result.reason});}catch{}});
      }
+     if(request?.action==='capture-target'&&globalThis.websiteTestScope)data=JSON.stringify({...request,scope:globalThis.websiteTestScope});
      return end(data,...rest);
     };
     return child;
@@ -74,7 +77,7 @@ try {
  await page.bringToFront();await page.locator('#editor').click();
  const ownWindow=async(check=true)=>{
   const child=spawn(`${root}/.runtime/venv/Scripts/python.exe`,[`${root}/scripts/test-browser-window.py`,String(pid),title,check&&process.env.BLITZDIC_TEST_WAIT_FOR_FOCUS!=='1'?'request':'observe',String(check?(process.env.BLITZDIC_TEST_WAIT_FOR_FOCUS==='1'?1800:30):0)],{windowsHide:true});let data='';child.stdout.on('data',c=>data+=c);
-  assert.equal((await once(child,'close'))[0],0);const state=JSON.parse(data);if(check){assert.equal(state.windows.length,1);assert.equal(state.foreground,true,'Refusing capture outside the owned browser window');}return state;
+  assert.equal((await once(child,'close'))[0],0);const state=JSON.parse(data);if(check){assert.equal(state.windows.length,1);assert.equal(state.foreground,true,'Refusing capture outside the owned browser window');captureScope={window:state.windows[0],process:Number(pid)};if(dictation)await dictation.evaluate((_,scope)=>{globalThis.websiteTestScope=scope;},captureScope);}return state;
  };
  inspectWindow=()=>ownWindow(false);
  console.log(`READY: ${title} (${name}); waiting for the exact owned foreground browser window.`);
@@ -143,7 +146,7 @@ try {
    if(expected&&actual)console.error('Signature equality:',{window:expected[0]===actual[0],process:expected[1]===actual[1],element:expected[2]===actual[2],prefix:expected[3]===actual[3],selection:expected[4]===actual[4],document:expected[5]===actual[5]});
   }
  }
- if(dictation)console.error('Dictation diagnostics:',await(await dictation.firstWindow()).evaluate(()=>({status:document.querySelector('#status').textContent,button:document.querySelector('#record').textContent,mode:document.querySelector('#mode').value,result:document.querySelector('#result').value})));
- if(context)console.error('Browser diagnostics:',await context.pages()[0].locator('#editor').inputValue());
+ if(dictation)console.error('Dictation diagnostics:',await(await dictation.firstWindow()).evaluate(()=>({status:document.querySelector('#status').textContent,button:document.querySelector('#record').textContent,mode:document.querySelector('#mode').value,resultLength:document.querySelector('#result').value.length})));
+ if(context){const value=await context.pages()[0].locator('#editor').inputValue();console.error('Browser diagnostics:',{unchanged:value==='Before ',length:value.length});}
  throw error;
 } finally {keyboard?.stdin.end();await dictation?.close();await context?.close();server.closeAllConnections();await new Promise(resolve=>server.close(resolve));}
