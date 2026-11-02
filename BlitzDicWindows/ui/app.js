@@ -1,5 +1,6 @@
 import { Recorder } from '../src/recorder.js';
 import { parseAppModes } from '../src/app-modes.js';
+import { parseWebsiteModes } from '../src/website-modes.js';
 import { meetingSpeakers, namedMeetingTranscript, normalizeSpeakerNames, speakerSectionHeading } from '../src/meeting-speakers.js';
 const $ = id => document.getElementById(id);
 const api = window.blitz;
@@ -367,6 +368,20 @@ try {
     await save(); status('Programmregeln gespeichert.');
   });
   $('settings').append(appTitle, appNote, appRules, appSave);
+  const websiteTitle = document.createElement('h3'); websiteTitle.textContent = 'Schreibmodus pro Website';
+  const websiteNote = document.createElement('p');
+  websiteNote.textContent = 'Gilt für das Wortgenau-Kürzel. Die spezifischste Website-Regel hat Vorrang vor der Programmregel; eine Domain umfasst ihre Unterdomains. Andere Modus-Kürzel behalten ihre Auswahl. Eine Regel pro Zeile: mail.beispiel.de => clean. Modi: verbatim, clean, calm, emoji. Gespeichert wird nur der Hostname, keine vollständige Adresse. Ohne eingerichtetes LLM bleibt der Text wortgenau.';
+  const websiteRules = document.createElement('textarea'); websiteRules.id = 'website-mode-rules';
+  websiteRules.setAttribute('aria-label', 'Website-Regeln für Schreibmodi');
+  websiteRules.value = (settings.websiteModes || []).map(rule => `${rule.host} => ${rule.mode}`).join('\n');
+  const websiteSave = document.createElement('button'); websiteSave.id = 'save-website-modes'; websiteSave.textContent = 'Website-Regeln speichern';
+  websiteSave.onclick = attempt(async () => {
+    const rules = parseWebsiteModes(websiteRules.value);
+    settings.websiteModes = rules; await save();
+    websiteRules.value = rules.map(rule => `${rule.host} => ${rule.mode}`).join('\n');
+    status('Website-Regeln gespeichert.');
+  });
+  $('settings').append(websiteTitle, websiteNote, websiteRules, websiteSave);
   const shortcutsTitle = document.createElement('h3'); shortcutsTitle.textContent = 'Globale Tastenkürzel';
   const shortcutsNote = document.createElement('p'); shortcutsNote.textContent = 'Einmal drücken startet, erneut drücken beendet die Aufnahme. Beim Schließen bleibt BlitzDic im Infobereich aktiv.';
   $('settings').append(shortcutsTitle, shortcutsNote);

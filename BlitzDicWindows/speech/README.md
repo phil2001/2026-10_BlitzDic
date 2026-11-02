@@ -56,6 +56,32 @@ variable, those two tests are explicitly skipped. Synthetic microphone capture a
 
 ## Installed-app hotkey checks
 
+`node scripts/verify-website-settings.mjs` checks real renderer/IPC/DPAPI storage,
+canonical host persistence, invalid edits, concurrent settings saves and clearing
+rules. It saves screenshots in a new `.runtime/website-settings-artifacts-*`
+directory. Run it separately from foreground browser tests, because its own
+visible Electron windows can take focus.
+
+`scripts/verify-website-modes.mjs` uses a fresh owned Chrome or Edge profile and
+an isolated HTTP fixture. `BLITZDIC_BROWSER=edge` selects Edge. It checks the
+focused document host, URL-shaped editable text and cross-origin frames without
+reading an unrelated foreground window. `BLITZDIC_WEBSITE_E2E=1` additionally
+checks actual ASR, website/app precedence, explicit shortcuts and the no-LLM
+fallback. Choose `BLITZDIC_TEST_PRESET=parakeet-ultra` and
+`BLITZDIC_TEST_HOLD=1` for Parakeet with hold-to-dictate. Optional executable
+overrides are `BLITZDIC_TEST_EXECUTABLE` and
+`BLITZDIC_TEST_SPEECH_EXECUTABLE`. `BLITZDIC_TEST_WAIT_FOR_FOCUS=1` waits up to
+30 minutes for manual focus; leave its exact fixture window active until it
+closes. It generates only owned test keystrokes after foreground ownership checks.
+
+The host bridge follows the exact focused UIA element's document ancestors,
+reads the document's LegacyIAccessible URL property and returns only its host.
+It does not inspect the address bar, arbitrary browser text or screen positions.
+Unavailable metadata falls back to the program rule. Run
+`powershell.exe -NoProfile -File scripts/test-uia-compile.ps1` to compile the
+bridge without inspecting any application. Native browser acceptance remains
+separate from this compilation check.
+
 `scripts/verify-hotkey.mjs` can target the installed app through
 `BLITZDIC_TEST_EXECUTABLE`. Set `BLITZDIC_TEST_APP_RULE=1` to check that the
 foreground editor's `electron.exe` rule selects the clean mode, sends the expected

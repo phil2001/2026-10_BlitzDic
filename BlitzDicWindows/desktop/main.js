@@ -6,8 +6,8 @@ import { PrivateStore } from '../src/store.js';
 import { windowsCrypto } from '../src/windows-storage.js';
 import { Dictation } from '../src/dictation.js';
 import { runSpeech, speechPresets } from '../src/speech.js';
-import { providers, listModels, testConnection } from '../src/providers.js';
-import { modeForApp } from '../src/app-modes.js';
+import { providers, listModels, testConnection, validateConfig } from '../src/providers.js';
+import { modeForContext, normalizeWebsiteModes } from '../src/website-modes.js';
 import { Meetings } from '../src/meetings.js';
 import { fitInsertion } from '../src/insertion-fit.js';
 import { RecordingIndicator } from './recording-indicator.js';
@@ -87,10 +87,14 @@ else app.whenReady().then(async () => {
       try {
         await syncEscape();
         if (epoch !== captureEpoch) return null;
-        const {target: captured, reason, executable} = await runSpeech({ action: 'capture-target' }, { pythonPath, timeoutMs: 5000 });
+        const settings = await store.settings();
+        const website = mode === 'verbatim' && settings.websiteModes?.length > 0;
+        const {target: captured, reason, executable, websiteHost: host} = await runSpeech({ action: 'capture-target', website }, { pythonPath, timeoutMs: 5000 });
         if (epoch === captureEpoch) {
           insertionTarget = captured;
-          mode = modeForApp(mode, executable, (await store.settings()).appModes);
+          let canRewrite = false;
+          try {validateConfig(settings.provider); canRewrite = true;} catch {}
+          mode = modeForContext(mode, {executable, host}, settings, value => value === 'verbatim' || canRewrite);
           if (!captured) insertionProblem = `Kein unterstütztes Eingabefeld erkannt (${reason || 'unbekannter Feldtyp'}); Text bleibt in BlitzDic.`;
         }
       }
@@ -164,6 +168,7 @@ else app.whenReady().then(async () => {
     // Include asynchronous key validation in ordering: a slower earlier save
     // must not overwrite a newer choice of hold/toggle behavior.
     const operation = settingsQueue.then(async () => {
+      settings = {...settings, websiteModes: normalizeWebsiteModes(settings.websiteModes)};
       if (Object.values(settings.shortcuts ?? {}).some(value => /(?:^|\+)esc(?:ape)?$/i.test(value)))
         throw new Error('Escape ist zum Beenden einer Aufnahme und Abbrechen der Verarbeitung reserviert.');
       if (settings.shortcutBehavior !== undefined && !['hold', 'toggle'].includes(settings.shortcutBehavior))

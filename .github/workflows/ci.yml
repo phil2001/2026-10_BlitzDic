@@ -17,6 +17,7 @@ jobs:
           cache-dependency-path: BlitzDicWindows/package-lock.json
       - run: npm ci
       - run: npm test
+      - run: powershell.exe -NoProfile -File scripts/test-uia-compile.ps1
       - uses: actions/setup-python@v7
         with:
           python-version: '3.12'

@@ -1085,3 +1085,55 @@ This unsigned development package has not replaced installed 0.3.6 and is not a
 public release. Synthetic microphone input and injected Windows keys do not prove
 physical-device behavior. Other original features, broader application coverage,
 clean Windows installation, licensing review and release gates remain open.
+
+## Website rules in progress, 2026-11-02
+
+Source 0.3.10-dev.2 adds canonical host-only website rules. The most specific
+matching domain (including subdomains) precedes the executable rule for the
+default verbatim shortcut. Explicit mode shortcuts stay explicit. An unavailable
+rewrite configuration falls back to the app rule, then verbatim. Settings saves
+validate and normalize rules in the main process; the renderer updates its
+settings snapshot before enqueueing a save so a concurrent general save retains
+the rules. URLs, paths, query strings and credentials are not stored in rules.
+
+The target worker requests website metadata only when needed. The current bridge
+compares native and managed focused runtime IDs, follows native UIA raw document
+ancestors, and reads LegacyIAccessibleValue only on Document controls. Browser
+process, foreground window, focused element, ancestry depth and elapsed time are
+checked. Only the canonical host leaves the bridge. Unsupported metadata falls
+back to the app rule; insertion signatures and modifier checks are unchanged.
+The COM interface declarations follow the Microsoft Windows SDK
+[UIAutomationClient.h](https://github.com/microsoft/win32metadata/blob/main/generation/WinSDK/RecompiledIdlHeaders/um/UIAutomationClient.h).
+
+Current evidence:
+- Node: 53 passed, two optional real-ASR tests skipped. The sandbox initially
+  blocked loopback provider fixtures; the unrestricted test run passed.
+- The current bridge compiled using system Windows PowerShell 5.1. CI now checks
+  compilation without reading applications or sending input.
+- Real Electron UI/IPC/DPAPI tests passed normalization, rejection of invalid and
+  duplicate rules, encrypted storage, restart persistence, concurrent saves,
+  clearing rules, desktop/small-window screenshots, no horizontal overflow and
+  no renderer/console errors. Browser plugin unavailable; Electron Playwright used.
+- Earlier source prototypes passed Chrome/Edge host and focused-frame checks;
+  Chrome also passed real Whisper dictation, precedence, explicit shortcuts and
+  no-LLM fallback. An Edge Parakeet hold run recognized/rewrote correctly but its
+  insertion guard rejected the target. Cause remains unproven.
+- A later geometric MSAA hit-test intermittently failed focused-frame host
+  lookup. It has been replaced by direct UIA ancestry. Native browser/frame and
+  insertion acceptance of this replacement remains open. Foreground ownership
+  refusals are test-environment failures, not successful acceptance results.
+
+The intermediate 0.3.10-dev.2 package under
+dist/windows-2026-11-02T05-47-59-505Z-716e27 predates both the current ancestry
+bridge and the concurrent-save fix. It is retained as an intermediate artifact,
+not the current verified package. No new installer was installed or published.
+
+A subsequent full build contains the current ancestry bridge and save fix:
+dist/windows-2026-11-02T06-45-42-813Z-14de0a/BlitzDic Setup 0.3.10-dev.2.exe;
+1,148,483,870 bytes; SHA-256
+2EEED60E875D36CD217A1FE445E44B0A47FA2A664E4538F8A3F56ED298E5A25D.
+Both real ASR engines and speaker diarization passed using its frozen worker
+with a system-only PATH. Four relevant ASAR files and the native bridge matched
+source bytes. All 111 mapped native hashes and 88 package-notice hashes matched;
+copied speech-model and metadata files also matched. This does not replace the
+outstanding native browser/packaged UI acceptance or redistribution review.

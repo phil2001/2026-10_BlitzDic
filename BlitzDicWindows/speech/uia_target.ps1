@@ -10,11 +10,13 @@ using System.Text;
 using System.Reflection;
 using System.Windows.Automation;
 using System.Windows.Automation.Text;
+using System.Collections.Generic;
 
 public static class BlitzDicUia {
     [DllImport("user32.dll")] static extern IntPtr GetForegroundWindow();
     [DllImport("user32.dll")] static extern uint GetWindowThreadProcessId(IntPtr hwnd, out uint pid);
     [DllImport("user32.dll")] static extern short GetAsyncKeyState(int key);
+    [StructLayout(LayoutKind.Sequential)] struct POINT { public int x, y; }
     [DllImport("oleacc.dll")] static extern int AccessibleObjectFromWindow(IntPtr window, uint objectId,
         ref Guid interfaceId, [MarshalAs(UnmanagedType.Interface)] out object native);
     [DllImport("user32.dll", SetLastError=true)] static extern uint SendInput(uint count, INPUT[] inputs, int size);
@@ -33,6 +35,88 @@ public static class BlitzDicUia {
     // The signature contains hashes and selection lengths, never the document text.
     public static string Reason = "";
     public static string Before = "", After = "";
+    static AutomationElement CapturedElement;
+    static IntPtr CapturedWindow;
+    // Minimal read-only UIA COM declarations, in Windows SDK vtable order.
+    // The managed UIA API omits LegacyIAccessibleValue, needed for document URLs.
+    [ComImport, Guid("D22108AA-8AC5-49A5-837B-37BBB3D7591E"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+    interface NativeElement {
+        [PreserveSig] int SetFocus(); // Never called.
+        [PreserveSig] int GetRuntimeId([MarshalAs(UnmanagedType.SafeArray, SafeArraySubType=VarEnum.VT_I4)] out int[] id);
+        [PreserveSig] int FindFirst(int scope, IntPtr condition, out NativeElement result);
+        [PreserveSig] int FindAll(int scope, IntPtr condition, out IntPtr result);
+        [PreserveSig] int FindFirstBuildCache(int scope, IntPtr condition, IntPtr cache, out NativeElement result);
+        [PreserveSig] int FindAllBuildCache(int scope, IntPtr condition, IntPtr cache, out IntPtr result);
+        [PreserveSig] int BuildUpdatedCache(IntPtr cache, out NativeElement result);
+        [PreserveSig] int GetCurrentPropertyValue(int property, [MarshalAs(UnmanagedType.Struct)] out object value);
+    }
+    [ComImport, Guid("4042C624-389C-4AFC-A630-9DF854A541FC"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+    interface NativeWalker {
+        [PreserveSig] int GetParentElement(NativeElement element, out NativeElement parent);
+    }
+    [ComImport, Guid("30CBE57D-D9D0-452A-AB13-7AC5AC4825EE"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+    interface NativeAutomation {
+        [PreserveSig] int CompareElements(IntPtr a, IntPtr b, out int same);
+        [PreserveSig] int CompareRuntimeIds(IntPtr a, IntPtr b, out int same);
+        [PreserveSig] int GetRootElement(out NativeElement element);
+        [PreserveSig] int ElementFromHandle(IntPtr window, out NativeElement element);
+        [PreserveSig] int ElementFromPoint(POINT point, out NativeElement element);
+        [PreserveSig] int GetFocusedElement(out NativeElement element);
+        [PreserveSig] int GetRootElementBuildCache(IntPtr cache, out NativeElement element);
+        [PreserveSig] int ElementFromHandleBuildCache(IntPtr window, IntPtr cache, out NativeElement element);
+        [PreserveSig] int ElementFromPointBuildCache(POINT point, IntPtr cache, out NativeElement element);
+        [PreserveSig] int GetFocusedElementBuildCache(IntPtr cache, out NativeElement element);
+        [PreserveSig] int CreateTreeWalker(IntPtr condition, out NativeWalker walker);
+        [PreserveSig] int GetControlViewWalker(out NativeWalker walker);
+        [PreserveSig] int GetContentViewWalker(out NativeWalker walker);
+        [PreserveSig] int GetRawViewWalker(out NativeWalker walker);
+    }
+    // Follow the exact focused element, never a hit-test position or page label.
+    public static string WebsiteHost() {
+        var references = new List<object>();
+        try {
+            var focused = CapturedElement;
+            IntPtr window = CapturedWindow;
+            if (focused == null || window == IntPtr.Zero || GetForegroundWindow() != window ||
+                    !Automation.Compare(focused, AutomationElement.FocusedElement)) return null;
+            uint pid; GetWindowThreadProcessId(window, out pid);
+            string executable = System.Diagnostics.Process.GetProcessById((int)pid).ProcessName.ToLowerInvariant();
+            if (Array.IndexOf(new string[] {"chrome", "msedge", "firefox", "brave", "opera", "vivaldi"}, executable) < 0) return null;
+            var automation = (NativeAutomation)Activator.CreateInstance(Type.GetTypeFromCLSID(new Guid("FF48DBA4-60EF-4201-AA87-54103EEF594E")));
+            references.Add(automation);
+            NativeElement element; NativeWalker walker; int[] identity;
+            if (automation.GetFocusedElement(out element) != 0 || element == null) return null;
+            references.Add(element);
+            if (element.GetRuntimeId(out identity) != 0 || String.Join(",", identity) != String.Join(",", focused.GetRuntimeId())) return null;
+            if (automation.GetRawViewWalker(out walker) != 0 || walker == null) return null;
+            references.Add(walker);
+            var timer = System.Diagnostics.Stopwatch.StartNew();
+            for (int depth = 0; element != null && depth < 40 && timer.ElapsedMilliseconds < 250; depth++) {
+                object process, role, value;
+                if (element.GetCurrentPropertyValue(30002, out process) != 0 || !(process is int) || (int)process != pid) return null;
+                if (element.GetCurrentPropertyValue(30003, out role) != 0) return null;
+                if (role is int && (int)role == 50030 && element.GetCurrentPropertyValue(30093, out value) == 0) {
+                    string address = value as string;
+                    Uri uri;
+                    if (address != null && address.Length <= 8192 && Uri.TryCreate(address, UriKind.Absolute, out uri) &&
+                            (uri.Scheme == "http" || uri.Scheme == "https")) {
+                        if (GetForegroundWindow() != window || !Automation.Compare(focused, AutomationElement.FocusedElement)) return null;
+                        string host = uri.IdnHost.ToLowerInvariant();
+                        if (uri.HostNameType == UriHostNameType.IPv6) host = "[" + host.Trim('[', ']') + "]";
+                        return host.StartsWith("www.") ? host.Substring(4) : host;
+                    }
+                    if (value != null && Marshal.IsComObject(value)) Marshal.ReleaseComObject(value);
+                }
+                NativeElement parent;
+                if (walker.GetParentElement(element, out parent) != 0 || parent == null || references.Contains(parent)) return null;
+                references.Add(parent); element = parent;
+            }
+        } catch { /* Unsupported/inaccessible browser: fall back to its app rule. */ }
+        finally {
+            foreach (object item in references) if (Marshal.IsComObject(item)) Marshal.ReleaseComObject(item);
+        }
+        return null;
+    }
     static string Reject(string reason) { Reason = reason; return null; }
     static object WordMember(object instance, string name, BindingFlags operation, params object[] args) {
         return instance.GetType().InvokeMember(name, operation, null, instance, args,
@@ -72,6 +156,7 @@ public static class BlitzDicUia {
     }
     public static string Capture() {
         Reason = "";
+        CapturedElement = null; CapturedWindow = IntPtr.Zero;
         IntPtr window = GetForegroundWindow();
         var element = AutomationElement.FocusedElement;
         if (element == null) return Reject("Kein fokussiertes Element");
@@ -101,6 +186,7 @@ public static class BlitzDicUia {
         suffix.MoveEndpointByRange(TextPatternRangeEndpoint.Start, selection[0], TextPatternRangeEndpoint.End);
         Before = prefixText.Substring(Math.Max(0, prefixText.Length - 160));
         After = suffix.GetText(160);
+        CapturedElement = element; CapturedWindow = window;
         return window.ToInt64() + ":" + pid + ":" + identity + ":" + prefixText.Length + ":" + selection[0].GetText(-1).Length + ":" + hash;
     }
 
@@ -132,7 +218,8 @@ try {
     $request = [Console]::In.ReadToEnd() | ConvertFrom-Json
     if ($request.action -eq 'capture') {
         $signature = [BlitzDicUia]::Capture()
-        @{ signature = $signature; reason = [BlitzDicUia]::Reason; before = [BlitzDicUia]::Before; after = [BlitzDicUia]::After } | ConvertTo-Json -Compress
+        $websiteHost = if ($request.website -eq $true -and $signature) { [BlitzDicUia]::WebsiteHost() } else { $null }
+        @{ signature = $signature; reason = [BlitzDicUia]::Reason; before = [BlitzDicUia]::Before; after = [BlitzDicUia]::After; websiteHost = $websiteHost } | ConvertTo-Json -Compress
     } elseif ($request.action -eq 'insert') {
         @{ inserted = [BlitzDicUia]::Insert($request.signature, $request.text) } | ConvertTo-Json -Compress
     } else { throw 'Unbekannte UI-Automation-Aktion.' }

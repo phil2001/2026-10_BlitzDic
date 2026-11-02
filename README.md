@@ -36,8 +36,9 @@ Ein zusätzliches lokales LLM hat eigene RAM-/VRAM-Anforderungen.
 
 ## Installation und Bedienung
 
-Der aktuelle lokal gebaute Entwicklungsinstaller ist **0.3.9** unter
-`BlitzDicWindows/dist/windows-2026-11-01T00-56-29-939Z-6e8751-final/BlitzDic Setup 0.3.9.exe`
+Der zuletzt vollständig im nativen Test geprüfte lokale Entwicklungsinstaller ist
+**0.3.10-dev.1** unter
+`BlitzDicWindows/dist/windows-2026-11-01T06-58-02-880Z-ac79d7-verified/BlitzDic Setup 0.3.10-dev.1.exe`
 (etwa 1,15 GB). Er ist nicht signiert. Eine fertige Release-Datei ist noch nicht
 veröffentlicht. Ältere Testbuilds bitte durch diesen Stand ersetzen: 0.3.4 behebt
 die UTF-8-Verarbeitung von Umlauten und Emoji in der gebündelten Sprachlaufzeit.
@@ -113,7 +114,21 @@ müssen auf Zuordnung von Aufgaben, Zahlen und offenen Fragen geprüft werden.
 
 ## Entwicklung unter Windows 11
 
-Der Quellstand **0.3.10-dev.1** ergänzt unter Einstellungen die Wahl zwischen
+Der Quellstand **0.3.10-dev.2** enthält zusätzlich Website-Regeln (noch in nativer
+Browser-Prüfung). Unter **Einstellungen → Schreibmodus pro Website** etwa
+`example.com => clean` und `mail.example.com => calm` eintragen. Eine Domain
+umfasst ihre Unterdomains; die spezifischste Website-Regel hat Vorrang vor der
+Programmregel. Das gilt für das Wortgenau-Kürzel. Explizite Modus-Kürzel bleiben
+unverändert. Ohne konfiguriertes LLM bleibt der Text wortgenau. Gespeichert wird
+nur der Hostname; Pfad und Suchparameter gelangen nicht in Verlauf oder LLM-Anfrage.
+Kann das fokussierte Browser-Dokument nicht sicher zugeordnet werden, gilt die
+Programmregel. Die neue Fassung wurde noch nicht als Upgrade installiert.
+Ein neuer Build liegt unter
+`BlitzDicWindows/dist/windows-2026-11-02T06-45-42-813Z-14de0a/BlitzDic Setup 0.3.10-dev.2.exe`.
+Beide gebündelten ASR-Engines und die Sprechertrennung sind im neuen Worker
+geprüft; die native Browser-Abnahme steht noch aus.
+
+Seit **0.3.10-dev.0** gibt es unter Einstellungen die Wahl zwischen
 Drücken und Halten eines Kürzels. Zustands-, Mikrofonstart-/Abbruch- und IPC-Tests
 sowie der native Windows-Tastenablauf sind bestanden: Halten und Start/Stopp
 wurden mit beiden gebündelten Sprachmodellen bis zum Einfügen in einen externen

@@ -49,7 +49,8 @@ def message(hwnd, msg, wp=0, lp=0):
         raise RuntimeError('Textfeld antwortet nicht oder verweigert den Zugriff.')
     return result.value
 
-def capture():
+def capture(website=False):
+    capture.website_host = None
     capture.reason = 'Kein fokussiertes Windows-Eingabefeld.'
     info = GUI(); info.cbSize = c.sizeof(GUI)
     if not user32.GetGUIThreadInfo(0, c.byref(info)) or not info.hwndFocus:
@@ -59,7 +60,8 @@ def capture():
     class_name = name.value.lower()
     def uia_fallback():
         from uia_target import capture as uia_capture
-        target = uia_capture()
+        target = uia_capture(website=website)
+        capture.website_host = uia_capture.website_host
         capture.reason = uia_capture.reason
         return target
     if class_name != 'edit' and not class_name.startswith('richedit'):

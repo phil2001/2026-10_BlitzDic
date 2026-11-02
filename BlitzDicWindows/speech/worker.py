@@ -46,9 +46,11 @@ def run(request):
         from windows_target import capture, insert, foreground_app
         if request['action'] == 'capture-target':
             executable = foreground_app()
-            target = capture()
+            target = capture(website=request.get('website') is True)
+            same_app = foreground_app() == executable
             return {'target': target, 'reason': capture.reason if not target else '',
-                    'executable': executable if foreground_app() == executable else ''}
+                    'executable': executable if same_app else '',
+                    'websiteHost': capture.website_host if same_app else None}
         return insert(request.get('target'), request.get('text'))
     root = Path(request["modelDirectory"]).resolve()
     preset = PRESETS.get(request.get("preset"))

@@ -16,8 +16,9 @@ def request(action, **args):
     return json.loads(result.stdout)
 
 
-def capture():
-    result = request('capture')
+def capture(website=False):
+    result = request('capture', website=website)
+    capture.website_host = result.get('websiteHost')
     capture.reason = result.get('reason', '')
     signature = result.get('signature')
     return {'kind': 'uia', 'signature': signature,
