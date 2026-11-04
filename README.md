@@ -260,6 +260,9 @@ Danach das [PowerShell-Prüfskript](BlitzDicWindows/scripts/verify-windows-packa
 mit `-Executable` und dem Pfad zur installierten `BlitzDic.exe` starten. Es erzeugt
 mit einer vorhandenen deutschen oder englischen Windows-Stimme eine kurze
 Testaufnahme und erwartet je eine `PASS`-Zeile für Whisper und Parakeet Ultra.
+Falls keine Windows-Stimme verfügbar ist, eine bekannte WAV-Testaufnahme mit
+`-WavePath` angeben und mit `-Language` (`de` oder `en`) sowie `-ExpectedText`
+die Sprache und einen wörtlich erwarteten Textausschnitt festlegen.
 Für den Mikrofontest anschließend in BlitzDic **Wortgenau** wählen, eine kurze
 Aufnahme starten und beenden und den Text prüfen.
 

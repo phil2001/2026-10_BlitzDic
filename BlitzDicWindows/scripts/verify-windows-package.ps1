@@ -1,5 +1,9 @@
+[CmdletBinding(DefaultParameterSetName = 'Synthesis')]
 param(
-    [Parameter(Mandatory = $true)] [string]$Executable
+    [Parameter(Mandatory = $true)] [string]$Executable,
+    [Parameter(Mandatory = $true, ParameterSetName = 'Recording')] [string]$WavePath,
+    [Parameter(Mandatory = $true, ParameterSetName = 'Recording')] [ValidateSet('de', 'en')] [string]$Language,
+    [Parameter(Mandatory = $true, ParameterSetName = 'Recording')] [ValidateNotNullOrEmpty()] [string]$ExpectedText
 )
 
 $ErrorActionPreference = 'Stop'
@@ -13,30 +17,39 @@ foreach ($file in @($worker, (Join-Path $resources 'app.asar'))) {
     if (!(Test-Path -LiteralPath $file -PathType Leaf)) { throw "Paketdatei fehlt: $file" }
 }
 
-Add-Type -AssemblyName System.Speech
-$synth = New-Object System.Speech.Synthesis.SpeechSynthesizer
-$wave = New-Object System.IO.MemoryStream
-try {
-    $voice = $synth.GetInstalledVoices() | Where-Object {
-        $_.Enabled -and $_.VoiceInfo.Culture.TwoLetterISOLanguageName -in @('de', 'en')
-    } | Select-Object -First 1
-    if (!$voice) { throw 'Fuer diese Testaufnahme ist eine deutsche oder englische Windows-Stimme erforderlich.' }
-    $language = $voice.VoiceInfo.Culture.TwoLetterISOLanguageName
-    if ($language -eq 'de') {
-        $sentence = 'Die Besprechung beginnt morgen. Anna prueft die Unterlagen.' -replace 'prueft', ('pr' + [char]0x00FC + 'ft')
-        $expected = 'Besprechung.*morgen'
-    } else {
-        $sentence = 'This is a local speech recognition test. The meeting starts tomorrow.'
-        $expected = 'speech recognition test'
+if ($PSCmdlet.ParameterSetName -eq 'Recording') {
+    $recording = Get-Item -LiteralPath $WavePath
+    if ($recording.PSIsContainer -or $recording.Extension -ne '.wav') {
+        throw 'Bitte eine WAV-Testaufnahme angeben.'
     }
-    $synth.SelectVoice($voice.VoiceInfo.Name)
-    $synth.SetOutputToWaveStream($wave)
-    $synth.Speak($sentence)
-    $synth.SetOutputToNull()
-    $audio = [Convert]::ToBase64String($wave.ToArray())
-} finally {
-    $synth.Dispose()
-    $wave.Dispose()
+    $audio = [Convert]::ToBase64String([IO.File]::ReadAllBytes($recording.FullName))
+    $expected = [regex]::Escape($ExpectedText)
+} else {
+    Add-Type -AssemblyName System.Speech
+    $synth = New-Object System.Speech.Synthesis.SpeechSynthesizer
+    $wave = New-Object System.IO.MemoryStream
+    try {
+        $voice = $synth.GetInstalledVoices() | Where-Object {
+            $_.Enabled -and $_.VoiceInfo.Culture.TwoLetterISOLanguageName -in @('de', 'en')
+        } | Select-Object -First 1
+        if (!$voice) { throw 'Fuer diese Testaufnahme ist eine deutsche oder englische Windows-Stimme erforderlich.' }
+        $language = $voice.VoiceInfo.Culture.TwoLetterISOLanguageName
+        if ($language -eq 'de') {
+            $sentence = 'Die Besprechung beginnt morgen. Anna prueft die Unterlagen.' -replace 'prueft', ('pr' + [char]0x00FC + 'ft')
+            $expected = 'Besprechung.*morgen'
+        } else {
+            $sentence = 'This is a local speech recognition test. The meeting starts tomorrow.'
+            $expected = 'speech recognition test'
+        }
+        $synth.SelectVoice($voice.VoiceInfo.Name)
+        $synth.SetOutputToWaveStream($wave)
+        $synth.Speak($sentence)
+        $synth.SetOutputToNull()
+        $audio = [Convert]::ToBase64String($wave.ToArray())
+    } finally {
+        $synth.Dispose()
+        $wave.Dispose()
+    }
 }
 
 foreach ($preset in @('whisper', 'parakeet-ultra')) {
