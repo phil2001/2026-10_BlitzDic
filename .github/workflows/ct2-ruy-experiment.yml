@@ -34,7 +34,7 @@ jobs:
           Copy-Item ct2-runtime/bin/ctranslate2.dll ct2-source/python/ctranslate2/
           python -m pip wheel --no-deps --no-build-isolation ct2-source/python -w ct2-wheel
           $wheel = Get-ChildItem ct2-wheel/*.whl | Select-Object -First 1
-          python -m pip install $wheel.FullName 'faster-whisper==1.2.1'
+          python -m pip install $wheel.FullName 'faster-whisper==1.2.1' 'av==16.0.1'
       - name: Verify binary imports and actual CPU INT8 speech recognition
         env:
           HF_HUB_DISABLE_TELEMETRY: '1'
