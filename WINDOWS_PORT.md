@@ -1595,3 +1595,15 @@ The unsigned installer is
 `dist/windows-2026-11-04T12-45-08-259Z-e4e534/BlitzDic Setup 0.3.10-dev.13.exe`
 (1,137,801,702 bytes). SHA-256 is
 `D81130E81384B3ABC3F85662B469DBC2BE20CBF99859668D41820E097F375542`.
+
+## Development package 0.3.10-dev.14
+
+The staged app includes the original OpenAI MIT and Apache-2.0 reference
+license texts. Both files matched their repository copies by SHA-256.
+Model hashes, the notice inventory and all 110 native origin records passed.
+Whisper Small and Parakeet Ultra both transcribed the German fixture offline.
+
+The unsigned installer is
+`dist/windows-2026-11-04T12-48-43-236Z-b7603d/BlitzDic Setup 0.3.10-dev.14.exe`
+(1,137,806,244 bytes). SHA-256 is
+`A9567FF714584EC4D450563D6089CB6B416B948C48AE3763AA04A913FDC5B75D`.
