@@ -32,8 +32,36 @@ jobs:
           python -m pip install 'pybind11==3.0.1' setuptools wheel 'pefile==2024.8.26'
           $env:CTRANSLATE2_ROOT = "$PWD/ct2-runtime"
           Copy-Item ct2-runtime/bin/ctranslate2.dll ct2-source/python/ctranslate2/
+          $sources = [ordered]@{
+            ctranslate2 = 'ct2-source'
+            cpu_features = 'ct2-source/third_party/cpu_features'
+            spdlog = 'ct2-source/third_party/spdlog'
+            ruy = 'ct2-source/third_party/ruy'
+            cpuinfo = 'ct2-source/third_party/ruy/third_party/cpuinfo'
+            clog = 'ct2-source/third_party/ruy/third_party/cpuinfo/deps/clog'
+          }
+          foreach ($component in $sources.GetEnumerator()) {
+            $notices = @(Get-ChildItem -LiteralPath $component.Value -File | Where-Object Name -Match '^(LICENSE|COPYING|NOTICE)(\.|$)')
+            if (!$notices.Count) { throw "Missing notice for $($component.Key)" }
+            foreach ($notice in $notices) {
+              Copy-Item -LiteralPath $notice.FullName -Destination "ct2-source/python/LICENSE.$($component.Key).$($notice.Name).txt"
+            }
+          }
           python -m pip wheel --no-deps --no-build-isolation ct2-source/python -w ct2-wheel
           $wheel = Get-ChildItem ct2-wheel/*.whl | Select-Object -First 1
+          @'
+          from pathlib import Path
+          from zipfile import ZipFile
+          with ZipFile(next(Path('ct2-wheel').glob('*.whl'))) as wheel:
+              for name in ('ctranslate2', 'cpu_features', 'spdlog', 'ruy', 'cpuinfo', 'clog'):
+                  assert any(Path(path).name.startswith(f'LICENSE.{name}.') for path in wheel.namelist()), name
+          '@ | python -
+          @(
+            'Experimental Windows x64 CPU wheel. Ruy ON, MKL OFF, DNNL OFF, OpenMP NONE.'
+            "CTranslate2: $(git -C ct2-source rev-parse HEAD)"
+            (git -C ct2-source submodule status --recursive)
+            "Wheel SHA-256: $((Get-FileHash -LiteralPath $wheel.FullName).Hash)"
+          ) | Set-Content -Encoding utf8 ct2-wheel/build-provenance.txt
           python -m pip install $wheel.FullName 'faster-whisper==1.2.1' 'av==16.0.1'
       - name: Verify binary imports and actual CPU INT8 speech recognition
         env:
@@ -68,3 +96,10 @@ jobs:
           assert 'apples' in text and 'grapes' in text and 'continue tomorrow morning' in text, text
           print('PASS: Windows Ruy CPU INT8 build recognizes the start and end of the Whisper Small fixture.')
           '@ | python -
+      - name: Retain the verified wheel for package integration
+        uses: actions/upload-artifact@v7
+        with:
+          name: ctranslate2-ruy-windows-cp312
+          path: ct2-wheel/
+          if-no-files-found: error
+          retention-days: 7
