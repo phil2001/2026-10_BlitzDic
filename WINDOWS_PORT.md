@@ -1489,3 +1489,11 @@ installed worker with a system-only PATH and offline model loading. On the
 development PC, both models in the staged dev.10 package passed the German
 fixture. This verifies the script and the staged worker. The installer wizard
 and physical microphone still require a run on the target system.
+
+The experimental Ruy build of CTranslate2 4.8.4 recognized the Whisper Small
+fixture with CPU INT8 on the Windows CI runner. The checked DLL and extension
+import tables contained no Intel OpenMP, MKL or oneDNN DLLs.
+[Ruy experiment](https://github.com/phil2001/2026-10_BlitzDic/actions/runs/41823772496)
+For a package comparison, `BLITZDIC_BUILD_PYTHON` can point at a separate
+Python executable under `.runtime`. License collection, binary inventory and
+PyInstaller then use that interpreter. The default remains `.runtime/venv`.

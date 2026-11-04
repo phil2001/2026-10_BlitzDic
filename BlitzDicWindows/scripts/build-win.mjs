@@ -1,13 +1,17 @@
-import { mkdir, readFile, writeFile, access } from 'node:fs/promises';
+import { mkdir, readFile, writeFile, access, realpath } from 'node:fs/promises';
 import { spawn } from 'node:child_process';
-import { resolve } from 'node:path';
+import { resolve, sep } from 'node:path';
 import { randomBytes } from 'node:crypto';
 
 const root = resolve(import.meta.dirname, '..');
 const id = `${new Date().toISOString().replace(/[:.]/g, '-')}-${randomBytes(3).toString('hex')}`;
 const buildRoot = `build/${id}`, output = `dist/windows-${id}`;
 const speechOutput = `dist/speech-${id}`;
-const python = resolve(root, '.runtime/venv/Scripts/python.exe');
+const runtime = await realpath(resolve(root, '.runtime'));
+const python = resolve(root, process.env.BLITZDIC_BUILD_PYTHON || '.runtime/venv/Scripts/python.exe');
+if (!(await realpath(python)).toLowerCase().startsWith(runtime.toLowerCase() + sep))
+  throw new Error('Build-Python muss im Projektordner .runtime liegen.');
+process.env.BLITZDIC_BUILD_PYTHON = python;
 async function run(command, args) {
   await new Promise((accept, reject) => {
     const child = spawn(command, args, {cwd: root, stdio: 'inherit', windowsHide: true, shell: false});
