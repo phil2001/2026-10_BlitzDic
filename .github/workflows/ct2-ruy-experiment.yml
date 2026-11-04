@@ -23,7 +23,7 @@ jobs:
         run: |
           $PSNativeCommandUseErrorActionPreference = $true
           git -C ct2-source submodule update --init --recursive third_party/cpu_features third_party/spdlog third_party/ruy
-          cmake -S ct2-source -B ct2-build -A x64 -DBUILD_CLI=OFF -DBUILD_TESTS=OFF -DWITH_RUY=ON -DWITH_MKL=OFF -DWITH_DNNL=OFF -DOPENMP_RUNTIME=NONE
+          cmake -S ct2-source -B ct2-build -A x64 -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DBUILD_CLI=OFF -DBUILD_TESTS=OFF -DWITH_RUY=ON -DWITH_MKL=OFF -DWITH_DNNL=OFF -DOPENMP_RUNTIME=NONE
           cmake --build ct2-build --config Release --parallel 2
           cmake --install ct2-build --config Release --prefix "$PWD/ct2-runtime"
       - name: Build and install the experimental Python wheel
