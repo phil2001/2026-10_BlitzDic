@@ -244,6 +244,14 @@ Der verfügbare Installer ist daher kein Nachweis der Fertigstellung.
 
 [Arbeitsstand](WINDOWS_PORT.md) · [Datenschutz](PRIVACY.md) · [Mitwirken](CONTRIBUTING.md)
 
+Für die Prüfung auf einem frischen Windows-11-PC zuerst den Installer ausführen.
+Danach das [PowerShell-Prüfskript](BlitzDicWindows/scripts/verify-windows-package.ps1)
+mit `-Executable` und dem Pfad zur installierten `BlitzDic.exe` starten. Es erzeugt
+mit einer vorhandenen deutschen oder englischen Windows-Stimme eine kurze
+Testaufnahme und erwartet je eine `PASS`-Zeile für Whisper und Parakeet Ultra.
+Für den Mikrofontest anschließend in BlitzDic **Wortgenau** wählen, eine kurze
+Aufnahme starten und beenden und den Text prüfen.
+
 ## Herkunft und Lizenz
 
 BlitzDic ist eine Windows-Weiterentwicklung mit gemeinsamer Git-Historie bis

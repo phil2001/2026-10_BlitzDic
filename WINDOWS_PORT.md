@@ -1481,3 +1481,11 @@ The installer is `dist/windows-2026-11-04T06-06-33-405Z-aa3e05/BlitzDic Setup 0.
 (1,148,515,616 bytes). SHA-256 is
 `26CBF0080E5AC3995AC1B4E56F53CDABD1CBB7CF74519926B4E19C5F1B5246F6`.
 Installation on a fresh Windows 11 system remains unverified.
+
+`scripts/verify-windows-package.ps1` is a standalone follow-up for that test.
+It uses Windows PowerShell and an installed German or English Windows speech
+voice to synthesize a WAV in memory. It starts each bundled model in the
+installed worker with a system-only PATH and offline model loading. On the
+development PC, both models in the staged dev.10 package passed the German
+fixture. This verifies the script and the staged worker. The installer wizard
+and physical microphone still require a run on the target system.

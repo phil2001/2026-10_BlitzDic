@@ -1,0 +1,81 @@
+param(
+    [Parameter(Mandatory = $true)] [string]$Executable
+)
+
+$ErrorActionPreference = 'Stop'
+$app = Get-Item -LiteralPath $Executable
+if ($app.PSIsContainer -or $app.Name -ne 'BlitzDic.exe') {
+    throw 'Bitte den Pfad zur installierten BlitzDic.exe angeben.'
+}
+$resources = Join-Path $app.DirectoryName 'resources'
+$worker = Join-Path $resources 'speech-runtime\blitzdic-speech.exe'
+foreach ($file in @($worker, (Join-Path $resources 'app.asar'))) {
+    if (!(Test-Path -LiteralPath $file -PathType Leaf)) { throw "Paketdatei fehlt: $file" }
+}
+
+Add-Type -AssemblyName System.Speech
+$synth = New-Object System.Speech.Synthesis.SpeechSynthesizer
+$wave = New-Object System.IO.MemoryStream
+try {
+    $voice = $synth.GetInstalledVoices() | Where-Object {
+        $_.Enabled -and $_.VoiceInfo.Culture.TwoLetterISOLanguageName -in @('de', 'en')
+    } | Select-Object -First 1
+    if (!$voice) { throw 'Fuer diese Testaufnahme ist eine deutsche oder englische Windows-Stimme erforderlich.' }
+    $language = $voice.VoiceInfo.Culture.TwoLetterISOLanguageName
+    if ($language -eq 'de') {
+        $sentence = 'Die Besprechung beginnt morgen. Anna prueft die Unterlagen.' -replace 'prueft', ('pr' + [char]0x00FC + 'ft')
+        $expected = 'Besprechung.*morgen'
+    } else {
+        $sentence = 'This is a local speech recognition test. The meeting starts tomorrow.'
+        $expected = 'speech recognition test'
+    }
+    $synth.SelectVoice($voice.VoiceInfo.Name)
+    $synth.SetOutputToWaveStream($wave)
+    $synth.Speak($sentence)
+    $synth.SetOutputToNull()
+    $audio = [Convert]::ToBase64String($wave.ToArray())
+} finally {
+    $synth.Dispose()
+    $wave.Dispose()
+}
+
+foreach ($preset in @('whisper', 'parakeet-ultra')) {
+    $modelDirectory = Join-Path $resources "models\$preset"
+    if (!(Test-Path -LiteralPath $modelDirectory -PathType Container)) {
+        throw "Mitgelieferter Modellordner fehlt: $modelDirectory"
+    }
+    $request = @{
+        action = 'transcribe'
+        preset = $preset
+        modelDirectory = $modelDirectory
+        language = $language
+        audioBase64 = $audio
+    } | ConvertTo-Json -Compress
+
+    $start = New-Object System.Diagnostics.ProcessStartInfo
+    $start.FileName = $worker
+    $start.WorkingDirectory = Split-Path -Parent $worker
+    $start.UseShellExecute = $false
+    $start.CreateNoWindow = $true
+    $start.RedirectStandardInput = $true
+    $start.RedirectStandardOutput = $true
+    $start.RedirectStandardError = $true
+    $start.EnvironmentVariables['PATH'] = "$env:SystemRoot\System32;$env:SystemRoot"
+    $start.EnvironmentVariables['HF_HUB_OFFLINE'] = '1'
+    $process = [System.Diagnostics.Process]::Start($start)
+    try {
+        $output = $process.StandardOutput.ReadToEndAsync()
+        $errors = $process.StandardError.ReadToEndAsync()
+        $bytes = [Text.Encoding]::UTF8.GetBytes($request)
+        $process.StandardInput.BaseStream.Write($bytes, 0, $bytes.Length)
+        $process.StandardInput.Close()
+        if (!$process.WaitForExit(120000)) { throw "Zeitlimit fuer $preset erreicht." }
+        if ($process.ExitCode -ne 0) { throw "$preset fehlgeschlagen: $($output.Result) $($errors.Result)" }
+        $result = ConvertFrom-Json -InputObject $output.Result
+        if ($result.text -notmatch $expected) { throw "Unerwarteter Text fuer $preset`: $($result.text)" }
+        Write-Output "PASS $preset ($language): $($result.text)"
+    } finally {
+        if (!$process.HasExited) { $process.Kill(); $process.WaitForExit() }
+        $process.Dispose()
+    }
+}
