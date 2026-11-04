@@ -1574,3 +1574,11 @@ section of the 105.2-second English fixture with offline model loading.
 [Windows CI for the package source](https://github.com/phil2001/2026-10_BlitzDic/actions/runs/41830883286)
 also passed. The setup wizard and microphone remain to be tested on a clean
 Windows 11 system.
+
+The actual Electron executable from the extracted dev.12 installer also
+passed `verify-installed.mjs --without-intel-openmp`. The test used a fresh
+BlitzDic profile on a separate, non-visible Win32 desktop on the development
+PC. The packaged app started, rendered its settings and meeting pages, and
+transcribed the WAV through the app's import action with both bundled models.
+The test substituted the file picker and license-folder opener. No renderer
+errors were captured during the check.
