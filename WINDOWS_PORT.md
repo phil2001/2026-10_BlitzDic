@@ -1399,3 +1399,22 @@ Physical audio and a clean Windows installation remain to be verified.
 The installer is `dist/windows-2026-11-04T05-38-51-082Z-2f3109/BlitzDic Setup 0.3.10-dev.7.exe`
 (1,148,508,494 bytes). SHA-256 is
 `A14AF0EE6C3B8A35E410927406949BFCA4D203D445BB7176403BB1A2B7FFD509`.
+
+## Installer payload qualification
+
+The dev.7 NSIS payload exposed four extraction failures with 7-Zip 16.04
+in a deep workspace directory. Each affected path belonged to the PyAV
+FFmpeg source and notice bundle. Dev.8 removes the redundant wheel metadata
+prefix from that bundle's installed path. The maximum relative path in the
+bundle dropped from 168 to 128 characters, and all 18 file hashes were preserved.
+
+The dev.8 installer extracted successfully at the same destination depth.
+All 1,096 payload files matched the staged application byte for byte. Resource
+and notice verification passed, and the extracted worker passed Whisper,
+Parakeet Ultra and speaker diarization with a system-only PATH. This tested
+the archive payload. A fresh Windows 11 run of the NSIS installation wizard
+remains open.
+
+The installer is `dist/windows-2026-11-04T05-48-41-607Z-9c3773/BlitzDic Setup 0.3.10-dev.8.exe`
+(1,148,513,872 bytes). SHA-256 is
+`3BE4D87C51CEB83F766A9EF2302C9D47045D37AC7083464BC88BE509F3FFF2DE`.

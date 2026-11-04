@@ -37,6 +37,12 @@ for dist in sorted(metadata.distributions(), key=lambda item: item.metadata['Nam
         if not source.is_file():
             continue
         relative = Path(*[part for part in path.parts if part not in ('..', '.')])
+        # Keep the FFmpeg source bundle intact while shortening its installed
+        # path. The outer directory already identifies the package and version.
+        if (name.lower() == 'av' and len(relative.parts) > 3 and
+                relative.parts[0].endswith('.dist-info') and
+                relative.parts[1:3] == ('licenses', 'blitzdic-ffmpeg')):
+            relative = Path(*relative.parts[2:])
         destination = folder / relative
         destination.parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(source, destination)

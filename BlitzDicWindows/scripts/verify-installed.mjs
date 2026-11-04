@@ -7,6 +7,7 @@ const root = resolve(import.meta.dirname, '..');
 const executablePath = process.env.BLITZDIC_TEST_EXECUTABLE;
 if (!executablePath) throw new Error('BLITZDIC_TEST_EXECUTABLE muss auf die installierte BlitzDic.exe zeigen.');
 const resources = resolve(dirname(executablePath), 'resources');
+const licenseRoot = resolve(resources, 'licenses/dependencies');
 for (const relative of ['models/whisper/model.bin', 'models/parakeet-ultra/encoder-model.int8.onnx',
   'models/parakeet-ultra/decoder_joint-model.int8.onnx', 'speech-runtime/blitzdic-speech.exe',
   'speech-runtime/_internal/uia_target.ps1', 'licenses/dependencies/inventory.json'])
@@ -15,8 +16,10 @@ const inventory = JSON.parse(await readFile(resolve(resources, 'licenses/depende
 assert.deepEqual(inventory.missingPackageNotices, []);
 const avPackage = inventory.packages.find(item => item.name === 'av');
 assert.equal(avPackage.version, '16.0.1+blitzdic.1');
-const ffmpegSource = resolve(resources, 'licenses/dependencies/python-packages', `av-${avPackage.version}`,
-  `av-${avPackage.version}.dist-info/licenses/blitzdic-ffmpeg/ffmpeg-8.0.3.tar.xz`);
+const ffmpegNotice = avPackage.files.find(item => /[\\/]blitzdic-ffmpeg[\\/]ffmpeg-8\.0\.3\.tar\.xz$/.test(item.path));
+assert.ok(ffmpegNotice, 'FFmpeg source missing from the installed notice inventory');
+const ffmpegSource = resolve(licenseRoot, ffmpegNotice.path);
+assert.ok(ffmpegSource.startsWith(licenseRoot + sep));
 assert.equal(createHash('sha256').update(await readFile(ffmpegSource)).digest('hex'),
   '6136812ea6d4e68bdba27e33c2a94382711cdf4f8602ffef056ff792bd6f9818');
 const nativeInventory = JSON.parse(await readFile(resolve(resources, 'licenses/dependencies/native-binaries.json'), 'utf8'));
@@ -27,7 +30,6 @@ assert.deepEqual(nativeMap.unresolvedBuildOrigins, []);
 assert.deepEqual(nativeMap.externalBuildOrigins, []);
 assert.ok(nativeMap.files.every(item => !/libsndfile|_cffi_backend|cudnn64/i.test(item.path)),
   'CPU package unexpectedly includes removed audio/GPU libraries');
-const licenseRoot = resolve(resources, 'licenses/dependencies');
 for (const item of inventory.packages.flatMap(pkg => pkg.files)) {
   const path = resolve(licenseRoot, item.path);
   assert.ok(path.startsWith(licenseRoot + sep));
@@ -37,6 +39,10 @@ const openmp = JSON.parse(await readFile(resolve(licenseRoot, 'native/intel-open
 assert.equal(createHash('sha256').update(await readFile(resolve(licenseRoot, 'native/intel-openmp', openmp.notice.file))).digest('hex'), openmp.notice.sha256);
 assert.equal(nativeMap.files.find(item => item.path.toLowerCase().endsWith('/ctranslate2/libiomp5md.dll')).sha256, openmp.dllSha256);
 console.log('Verified native origins:', nativeMap.files.length);
+if (process.argv.includes('--payload-only')) {
+  console.log('PASS: packaged resources, native inventory and notice hashes');
+  process.exit(0);
+}
 const env = {...process.env}; delete env.ELECTRON_RUN_AS_NODE;
 const app = await electron.launch({executablePath,
   args: [`--user-data-dir=${root}/.runtime/installed-smoke-${Date.now()}`], env});
