@@ -1,6 +1,6 @@
 # Systemvoraussetzungen für lokale Spracherkennung
 
-Stand: 02.11.2026. Gilt für die aktuellen BlitzDic-Vorgaben und den getesteten
+Stand: 04.11.2026. Gilt für die aktuellen BlitzDic-Vorgaben und den getesteten
 CPU-Betrieb. Die Windows-App befindet sich noch in Entwicklung.
 
 Die vollständige Windows-Ausgabe bündelt Whisper Small, Parakeet Ultra und
@@ -23,8 +23,9 @@ und Laufzeiten. Externe LLM-Anbieter für Schreibmodi werden separat eingerichte
 | Audio | Mikrofon mit Windows-Zugriffserlaubnis oder Audiodatei | Mikrofon mit Windows-Zugriffserlaubnis oder Audiodatei |
 
 **Planungsempfehlung:** Für App, Laufzeiten, beide Modelle und Downloadreserve
-zunächst mindestens 5 GB freien SSD-Speicher vorsehen. Das ist eine vorläufige
-Reserve, keine gemessene finale Installergröße. Aufnahmen, weitere Modelle und
+zunächst mindestens 5 GB freien SSD-Speicher vorsehen. Für 0.3.10-dev.9 wurden
+1,15 GB für den Installer und 1,86 GB für die entpackte App einschließlich der
+Modelle gemessen. Die Empfehlung enthält Reserve für die Installation. Aufnahmen, weitere Modelle und
 der Verlauf benötigen zusätzlichen Platz. Die RAM-Empfehlung ist eine
 Projekt-Empfehlung, keine offizielle Mindestanforderung von NVIDIA oder OpenAI.
 8-GB-PCs wurden bisher nicht verifiziert; 32 GB sind nicht als Pflicht anzusehen.
@@ -51,6 +52,26 @@ und die offene Lieferung nach Berlin blieben erhalten. Whisper erkannte die
 Sprache als Deutsch. Das ist ein Funktionstest, kein allgemeiner Genauigkeitsnachweis.
 Physische Mikrofone, Dialekte, Fachvokabular und lange deutsche Aufnahmen sind
 weiterhin gesondert zu prüfen.
+
+### Gemessener Speicherbedarf und Laufzeit
+
+Der Worker aus 0.3.10-dev.9 verarbeitete eine synthetische englische WAV-Datei
+von 105,2 Sekunden. Der Test lief unter Windows 11 Pro (Build 26200) auf dem
+oben genannten PC mit 31,4 GiB sichtbarem RAM. Je Modell startete ein eigener
+Prozess. Die Messzeit umfasst den Start und das Laden des Modells. Alle sechs
+Abschnitte wurden anhand ihrer Textmarker erkannt.
+
+| Modell | Verarbeitung | Maximaler physischer Speicher des Workers | Höchster gemessener privater Speicher des Workers |
+|---|---:|---:|---:|
+| Whisper Small | 15,38 s | 1.006 MiB | 3.586 MiB |
+| Parakeet Ultra | 16,28 s | 1.047 MiB | 1.700 MiB |
+
+Der physische Speicher entspricht dem Windows-Wert `PeakWorkingSet64`.
+Der private Speicher (`PrivateMemorySize64`) wurde alle 100 ms abgefragt und
+kann auch nicht im RAM befindlichen Speicher umfassen. Die Tabelle enthält
+Einzelmessungen des Sprachprozesses. Der Bedarf von Windows, der BlitzDic-Oberfläche,
+eines zusätzlichen LLM und von paralleler Aufnahme ist darin nicht enthalten.
+Die Messung begründet keine RAM-Mindestanforderung für andere PCs.
 
 ## Grafikkarten, ARM und andere Modellgrößen
 
