@@ -1529,8 +1529,16 @@ Microsoft runtime terms, other native dependencies and clean Windows 11
 installation remain separate release checks.
 
 The pinned wheel recipe is also available as a manual workflow on `main`.
+The [manual run on Windows CI](https://github.com/phil2001/2026-10_BlitzDic/actions/runs/41828636061)
+passed the PE import checks and transcribed the Whisper Small fixture using
+CPU INT8. The downloaded wheel matched its manifest with SHA-256
+`6ABD8D4FAD8A700E8875587B88F93000B4C18E2B81E3219CAF55B1F065E792A7`.
 `setup-speech.ps1 -RuyArtifactDirectory <directory>` checks the artifact
 manifest and creates a new environment under `.runtime`. Setup from the
 verified artifact and rejection of an altered checksum both passed under
 Windows PowerShell. Set `BLITZDIC_BUILD_PYTHON` to the reported interpreter
 for installer packaging.
+
+The standalone package test also passed with German and English WAV inputs
+for both models in the staged dev.11 package. This mode does not require an
+installed Windows speech synthesis voice.
