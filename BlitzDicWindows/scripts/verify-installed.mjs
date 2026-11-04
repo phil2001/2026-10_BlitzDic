@@ -35,9 +35,20 @@ for (const item of inventory.packages.flatMap(pkg => pkg.files)) {
   assert.ok(path.startsWith(licenseRoot + sep));
   assert.equal(createHash('sha256').update(await readFile(path)).digest('hex'), item.sha256);
 }
-const openmp = JSON.parse(await readFile(resolve(licenseRoot, 'native/intel-openmp/provenance.json'), 'utf8'));
-assert.equal(createHash('sha256').update(await readFile(resolve(licenseRoot, 'native/intel-openmp', openmp.notice.file))).digest('hex'), openmp.notice.sha256);
-assert.equal(nativeMap.files.find(item => item.path.toLowerCase().endsWith('/ctranslate2/libiomp5md.dll')).sha256, openmp.dllSha256);
+if (process.argv.includes('--without-intel-openmp')) {
+  assert.ok(nativeMap.files.some(item => /\/ctranslate2\/ctranslate2\.dll$/i.test(item.path)));
+  assert.ok(nativeMap.files.every(item => !/\/libiomp[^/]*\.dll$/i.test(item.path)), 'Intel OpenMP unexpectedly present');
+  const runtime = inventory.packages.find(item => item.name === 'ctranslate2');
+  assert.ok(runtime, 'CTranslate2 missing from license inventory');
+  for (const name of ['ctranslate2', 'cpu_features', 'spdlog', 'ruy', 'cpuinfo', 'clog']) {
+    assert.ok(runtime.files.some(item => item.path.split(/[\\/]/).at(-1).startsWith(`LICENSE.${name}.`)),
+      `Missing ${name} notice for the Ruy runtime`);
+  }
+} else {
+  const openmp = JSON.parse(await readFile(resolve(licenseRoot, 'native/intel-openmp/provenance.json'), 'utf8'));
+  assert.equal(createHash('sha256').update(await readFile(resolve(licenseRoot, 'native/intel-openmp', openmp.notice.file))).digest('hex'), openmp.notice.sha256);
+  assert.equal(nativeMap.files.find(item => item.path.toLowerCase().endsWith('/ctranslate2/libiomp5md.dll')).sha256, openmp.dllSha256);
+}
 console.log('Verified native origins:', nativeMap.files.length);
 if (process.argv.includes('--payload-only')) {
   console.log('PASS: packaged resources, native inventory and notice hashes');

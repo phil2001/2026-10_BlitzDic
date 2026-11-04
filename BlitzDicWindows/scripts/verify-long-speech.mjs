@@ -4,6 +4,8 @@ import {spawn} from 'node:child_process';
 import assert from 'node:assert/strict';
 import {runSpeech} from '../src/speech.js';
 const root = resolve(import.meta.dirname, '..');
+const modelRoot = process.env.BLITZDIC_TEST_MODEL_ROOT || `${root}/models`;
+const pythonPath = process.env.BLITZDIC_TEST_SPEECH_EXECUTABLE || `${root}/.runtime/venv/Scripts/python.exe`;
 const audioPath = `${root}/.runtime/long-speech.wav`;
 try {await access(audioPath);} catch {
   await new Promise((resolvePromise, reject) => {
@@ -26,8 +28,8 @@ assert.ok(seconds > 60 && seconds < 600, `Unexpected fixture duration: ${seconds
 console.log(`Synthetic fixture: ${seconds.toFixed(1)} seconds`);
 for (const preset of ['whisper', 'parakeet-ultra']) {
   const start = Date.now();
-  const result = await runSpeech({action: 'transcribe', preset, modelDirectory: `${root}/models/${preset}`, audioPath},
-    {pythonPath: `${root}/.runtime/venv/Scripts/python.exe`});
+  const result = await runSpeech({action: 'transcribe', preset, modelDirectory: `${modelRoot}/${preset}`, audioPath},
+    {pythonPath});
   let position = -1;
   if (/\bpairs\b/i.test(result.text)) console.log(`SPELLING VARIATION: ${preset} used the homophone pairs for pears`);
   const normalized = result.text.toLowerCase().replace(/\bpairs\b/g, 'pears');

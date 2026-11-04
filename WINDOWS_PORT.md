@@ -1497,3 +1497,33 @@ import tables contained no Intel OpenMP, MKL or oneDNN DLLs.
 For a package comparison, `BLITZDIC_BUILD_PYTHON` can point at a separate
 Python executable under `.runtime`. License collection, binary inventory and
 PyInstaller then use that interpreter. The default remains `.runtime/venv`.
+
+## Windows package with the Ruy CPU backend
+
+Dev.11 uses the wheel from [the verified CI run](https://github.com/phil2001/2026-10_BlitzDic/actions/runs/41825821014).
+Its CTranslate2 source commit is `5de572ef60b67a0276c5989ee73d0072808ff4c3`
+(the target of tag `v4.8.4`). Wheel SHA-256 is
+`8D9C1E6AC5A33518051C8B6381EE1011F7349D35C8BDFCE083DB4CB39DAB6A85`.
+The wheel contains notices for CTranslate2, Ruy, cpu_features, spdlog, cpuinfo
+and clog. The artifact is temporary and the pinned recipe is in the
+[`build/ct2-ruy` workflow](https://github.com/phil2001/2026-10_BlitzDic/blob/a40c978/.github/workflows/ct2-ruy-experiment.yml).
+
+Build in a fresh `.runtime` Python environment with the locked requirements,
+PyInstaller 6.22.3, the clean PyAV wheel and this CTranslate2 wheel supplied
+as an explicit local wheel. Set `BLITZDIC_BUILD_PYTHON` to that environment's
+`Scripts/python.exe` and run `node scripts/build-win.mjs`.
+
+The staged package passed `verify-installed.mjs --payload-only --without-intel-openmp`.
+The packaged CTranslate2 DLL and extension had no Intel OpenMP, MKL, oneDNN
+or vcomp imports. Whisper Small, Parakeet Ultra and speaker diarization passed
+using the frozen worker. Both models passed the German word-timing fixture
+and the echo-removal fixture with diarization. Both also passed the 105.2-second
+English fixture. On this PC the latter took 19.50 seconds
+for Whisper and 13.87 seconds for Parakeet in one run. These are local test
+measurements, with no speed guarantee for other PCs.
+
+The installer is `dist/windows-2026-11-04T12-16-15-585Z-23ed47/BlitzDic Setup 0.3.10-dev.11.exe`
+(1,137,799,453 bytes). SHA-256 is
+`6F8D5D95562278689758379BAE507425301ED394DB9C1E335EF07059528AC586`.
+Microsoft runtime terms, other native dependencies and clean Windows 11
+installation remain separate release checks.

@@ -121,7 +121,7 @@ müssen auf Zuordnung von Aufgaben, Zahlen und offenen Fragen geprüft werden.
 
 ## Entwicklung unter Windows 11
 
-Der Quellstand **0.3.10-dev.10** enthält zusätzlich Website-Regeln. Unter
+Der Quellstand **0.3.10-dev.11** enthält zusätzlich Website-Regeln. Unter
 **Einstellungen → Schreibmodus pro Website** etwa
 `example.com => clean` und `mail.example.com => calm` eintragen. Eine Domain
 umfasst ihre Unterdomains; die spezifischste Website-Regel hat Vorrang vor der
@@ -136,7 +136,9 @@ LLM bis zum Einfügen bestanden, auch mit der gepackten App 0.3.10-dev.3.
 Chrome/Whisper und Word/klassische Felder bleiben im neuen Paket zu prüfen.
 Der Quellstand prüft Fenster und Prozess vor der erneuten Feldlesung zum Einfügen.
 Ein neuer Build liegt unter
-`BlitzDicWindows/dist/windows-2026-11-04T06-06-33-405Z-aa3e05/BlitzDic Setup 0.3.10-dev.10.exe`.
+`BlitzDicWindows/dist/windows-2026-11-04T12-16-15-585Z-23ed47/BlitzDic Setup 0.3.10-dev.11.exe`.
+Dieser Build verwendet für Whisper Small eine CTranslate2-Laufzeit mit Ruy ohne
+Intel-OpenMP-DLL. Die beiden mitgelieferten Sprachmodelle bleiben dieselben.
 Beide gebündelten ASR-Engines und die Sprechertrennung sind im neuen Worker
 geprüft; die native Browser-Abnahme steht noch aus.
 
