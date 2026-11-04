@@ -66,7 +66,11 @@ erhalten und werden bei geänderten Namen als veraltet gekennzeichnet.
 2. Unter **Diktat** Mikrofon und Schreibmodus wählen, Aufnahme starten und beenden.
 3. Für Schreibmodi außer Wortgenau unter **Verbindungen** einen LLM-Server einrichten.
    LM Studio verwendet üblicherweise `http://127.0.0.1:1234/v1`,
-   Ollama `http://127.0.0.1:11434/v1`. Für einen Netzwerk-PC dessen Adresse einsetzen.
+   Ollama `http://127.0.0.1:11434/v1`. Für einen Netzwerk-PC **KI-Computer im Netzwerk**
+   und die Adresse dieses Rechners wählen, zum Beispiel `http://ki-pc:1234`.
+   Der aktuelle Quellstand ergänzt bei LM Studio und Ollama `/v1`, wenn die
+   Adresse nur aus Host und Port besteht. Bei einer eigenen API den Basis-Pfad
+   des Servers angeben.
 4. Modellnamen abrufen oder eingeben, Verbindung testen und speichern.
 5. Text kopieren. Beim Schließen bleibt die App im Infobereich; dort lässt sie sich beenden.
 

@@ -110,7 +110,7 @@ function previewLiveDestination() {
   if (!settings || livePreview) return;
   const config = settings.provider;
   let destination = 'Verbindung noch nicht eingerichtet';
-  try {destination = new URL(config.baseURL || catalog[config.provider]?.baseURL).host;} catch {}
+  try {destination = new URL(config.baseURL || (config.location !== 'lan' && catalog[config.provider]?.baseURL)).host;} catch {}
   const location = {local:'dieser PC',lan:'Netzwerk-PC',api:'externe API'}[config.location] || 'nicht eingerichtet';
   $('meeting-live-destination').textContent = `Gewählte Verarbeitung: ${location} · ${destination} · ${config.model || 'kein Modell gewählt'}`;
 }
@@ -358,7 +358,27 @@ $('download').onclick = attempt(async () => {
   $('download').disabled = true; status('Modell wird heruntergeladen …');
   try { await api.download($('speech-model').value); status('Modell ist bereit.'); } finally { $('download').disabled = false; }
 });
-$('provider').onchange = () => { const provider = catalog[$('provider').value]; $('baseURL').value = provider.baseURL; $('location').value = provider.local ? 'local' : 'api'; $('model').value = ''; $('apiKey').value = ''; };
+function updateServerPlaceholder() {
+  const provider = catalog[$('provider').value];
+  const port = $('provider').value === 'ollama' ? 11434 : 1234;
+  $('baseURL').placeholder = $('location').value === 'lan'
+    ? (provider?.local ? `http://ki-pc:${port}` : 'http://ki-pc:8080/v1')
+    : (provider?.baseURL || 'https://api.example.com/v1');
+}
+$('location').onchange = () => {
+  const provider = catalog[$('provider').value];
+  if ($('location').value === 'lan' && $('baseURL').value === provider?.baseURL) $('baseURL').value = '';
+  $('model-list').replaceChildren();
+  updateServerPlaceholder();
+};
+$('provider').onchange = () => {
+  const provider = catalog[$('provider').value];
+  const keepNetwork = $('location').value === 'lan' && provider.local;
+  $('location').value = keepNetwork ? 'lan' : provider.local ? 'local' : 'api';
+  $('baseURL').value = keepNetwork ? '' : provider.baseURL;
+  $('model').value = ''; $('apiKey').value = ''; $('model-list').replaceChildren();
+  updateServerPlaceholder();
+};
 $('save-provider').onclick = attempt(async () => { settings.provider = providerConfig(); await save(); previewLiveDestination(); status('Verbindung gespeichert.'); });
 $('discover').onclick = attempt(async () => {
   const models = await api.models(providerConfig()); $('model-list').replaceChildren(...models.map(id => new Option(id, id))); status(`${models.length} Modelle gefunden. Modellname auswählen oder eingeben.`);
@@ -521,6 +541,7 @@ try {
   if (data.modelsBundled) { $('download').textContent = 'Beide Modelle sind enthalten'; $('download').disabled = true; $('model-download-info').textContent = 'Whisper und Parakeet Ultra sind bereits enthalten. Die lokale Spracherkennung benötigt keine Internetverbindung und keine zusätzliche Installation.'; }
   for (const [id, provider] of Object.entries(catalog)) $('provider').add(new Option(provider.label, id));
   for (const id of ['provider', 'location', 'baseURL', 'model', 'apiKey']) $(id).value = settings.provider[id] || '';
+  updateServerPlaceholder();
   $('mode').value = settings.mode; $('speech-model').value = settings.speech.preset;
   customVisibility();
   $('history-enabled').checked = settings.historyEnabled;

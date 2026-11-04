@@ -18,6 +18,16 @@ test('local mode rejects remote destinations and malformed URLs', () => {
   assert.equal(validateConfig({ provider: 'ollama', location: 'lan', model: 'm', baseURL: 'http://192.168.1.2:11434/v1/' }).baseURL, 'http://192.168.1.2:11434/v1');
 });
 
+test('LAN settings require a destination and infer /v1 only for standard model servers', () => {
+  const config = { provider: 'lmstudio', location: 'lan', model: 'm' };
+  for (const baseURL of ['', 'http://localhost.:1234', 'http://127.0.0.2:1234', 'http://[::ffff:127.0.0.1]:1234', 'http://0.0.0.0:1234', 'http://[::]:1234']) {
+    assert.throws(() => validateConfig({ ...config, baseURL }), /KI-Computers/);
+  }
+  assert.equal(validateConfig({ ...config, baseURL: 'http://ki-pc:1234' }).baseURL, 'http://ki-pc:1234/v1');
+  assert.equal(validateConfig({ ...config, baseURL: 'http://ki-pc:1234/proxy/v1/' }).baseURL, 'http://ki-pc:1234/proxy/v1');
+  assert.equal(validateConfig({ ...config, provider: 'custom', baseURL: 'http://ki-pc:8080' }).baseURL, 'http://ki-pc:8080');
+});
+
 test('real HTTP model discovery and rewriting preserve path, roles and model', async t => {
   const config = await server(t, async (req, res) => {
     res.setHeader('Content-Type', 'application/json');
@@ -29,8 +39,9 @@ test('real HTTP model discovery and rewriting preserve path, roles and model', a
     assert.deepEqual(body.messages, [{ role: 'system', content: 'instruction' }, { role: 'user', content: 'dictation' }]);
     res.end(JSON.stringify({ choices: [{ message: { content: ' Corrected text. ' }, finish_reason: 'stop' }] }));
   });
-  assert.deepEqual(await listModels(config), ['a', 'b']);
-  assert.equal(await complete(config, 'instruction', 'dictation'), 'Corrected text.');
+  const serverAddress = { ...config, baseURL: new URL(config.baseURL).origin };
+  assert.deepEqual(await listModels(serverAddress), ['a', 'b']);
+  assert.equal(await complete(serverAddress, 'instruction', 'dictation'), 'Corrected text.');
 });
 
 test('server errors do not leak echoed sensitive text', async t => {

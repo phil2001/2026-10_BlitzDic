@@ -13,19 +13,26 @@ export const providers = Object.freeze({
 export function validateConfig(config, { requireModel = true } = {}) {
   const provider = providers[config.provider];
   if (!provider) throw new Error('Unbekannter Anbieter.');
+  const suppliedAddress = config.baseURL?.trim();
+  if (config.location === 'lan' && !suppliedAddress)
+    throw new Error('Bitte die Adresse des KI-Computers im Netzwerk eingeben.');
   let url;
-  try { url = new URL(config.baseURL?.trim() || provider.baseURL); }
+  try { url = new URL(suppliedAddress || provider.baseURL); }
   catch { throw new Error('Bitte eine gültige Serveradresse eingeben.'); }
   if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password || url.search || url.hash)
     throw new Error('Serveradresse muss HTTP(S) ohne Zugangsdaten, Abfrage oder Fragment verwenden.');
   if (!['local', 'lan', 'api'].includes(config.location)) throw new Error('Verarbeitungsort fehlt.');
-  const loopback = ['localhost', '127.0.0.1', '[::1]'].includes(url.hostname);
+  const loopback = ['localhost', 'localhost.', '[::1]'].includes(url.hostname) ||
+    /^127(?:\.\d{1,3}){3}$/.test(url.hostname) || /^\[::ffff:7f[0-9a-f]{2}:[0-9a-f]+\]$/.test(url.hostname);
   if (config.location === 'local' && !loopback)
     throw new Error('Lokale Verarbeitung benötigt localhost oder eine Loopback-Adresse.');
+  if (config.location === 'lan' && (loopback || ['0.0.0.0', '[::]'].includes(url.hostname)))
+    throw new Error('Für die Netzwerkverarbeitung den Hostnamen oder die IP-Adresse des KI-Computers eingeben.');
   if (config.location === 'api' && url.protocol !== 'https:')
     throw new Error('Externe APIs benötigen HTTPS.');
   if (requireModel && !config.model?.trim()) throw new Error('Bitte ein Modell auswählen oder eingeben.');
   if (provider.key && !config.apiKey?.trim()) throw new Error('Für diesen Anbieter fehlt der API-Key.');
+  if (provider.local && url.pathname === '/') url.pathname = '/v1';
   return { ...config, baseURL: url.href.replace(/\/+$/, ''), model: config.model?.trim() };
 }
 

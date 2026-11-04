@@ -52,6 +52,14 @@ try {
  const url=`http://127.0.0.1:${server.address().port}/ui/index.html`;
  await page.goto(url);assert.equal(page.url(),url);assert.equal(await page.title(),'BlitzDic');
  await page.waitForSelector('#app-version',{state:'attached'});
+ await page.locator('[data-page=connections]').click();
+ await page.locator('#provider').selectOption('ollama');
+ await page.locator('#location').selectOption('lan');
+ assert.equal(await page.locator('#baseURL').inputValue(),'');
+ assert.equal(await page.locator('#baseURL').getAttribute('placeholder'),'http://ki-pc:11434');
+ await page.locator('#provider').selectOption('lmstudio');
+ assert.equal(await page.locator('#location').inputValue(),'lan');
+ assert.equal(await page.locator('#baseURL').getAttribute('placeholder'),'http://ki-pc:1234');
  await page.locator('[data-page=meetings]').click();
  const enable=page.locator('#meeting-live-enabled');assert.equal(await enable.isChecked(),false);await enable.check();
  await page.locator('#meeting-record').click();await page.waitForFunction(()=>!document.querySelector('#meeting-live-refresh').disabled);
