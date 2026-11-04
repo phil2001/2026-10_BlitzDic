@@ -115,7 +115,7 @@ müssen auf Zuordnung von Aufgaben, Zahlen und offenen Fragen geprüft werden.
 
 ## Entwicklung unter Windows 11
 
-Der Quellstand **0.3.10-dev.6** enthält zusätzlich Website-Regeln. Unter
+Der Quellstand **0.3.10-dev.7** enthält zusätzlich Website-Regeln. Unter
 **Einstellungen → Schreibmodus pro Website** etwa
 `example.com => clean` und `mail.example.com => calm` eintragen. Eine Domain
 umfasst ihre Unterdomains; die spezifischste Website-Regel hat Vorrang vor der
@@ -130,7 +130,7 @@ LLM bis zum Einfügen bestanden, auch mit der gepackten App 0.3.10-dev.3.
 Chrome/Whisper und Word/klassische Felder bleiben im neuen Paket zu prüfen.
 Der Quellstand prüft Fenster und Prozess vor der erneuten Feldlesung zum Einfügen.
 Ein neuer Build liegt unter
-`BlitzDicWindows/dist/windows-2026-11-02T16-28-34-655Z-af01e6/BlitzDic Setup 0.3.10-dev.6.exe`.
+`BlitzDicWindows/dist/windows-2026-11-04T05-38-51-082Z-2f3109/BlitzDic Setup 0.3.10-dev.7.exe`.
 Beide gebündelten ASR-Engines und die Sprechertrennung sind im neuen Worker
 geprüft; die native Browser-Abnahme steht noch aus.
 
@@ -167,9 +167,11 @@ abschaltbar. Er benötigt zusätzliche Erkennungszeit und kann eigene gleichzeit
 Wiederholungen entfernen. Bei einem Filterfehler wird die vollständige gemischte
 Aufnahme mit einer Warnung transkribiert. Bei Sprechertrennung bezeichnet die
 Sprecherzahl die Systemspur; die Mikrofonspur bildet eine gemeinsame Quelle,
-keine automatisch erkannte Person. Live-Notizen verwenden bisher die gemischte
-Vorschau; deren Echo-Filterung steht noch aus. Physische Lautsprecher-/Mikrofontests
-und die komplette Electron-Aufnahmekette dieser Änderung sind noch offen.
+keine automatisch erkannte Person. Seit 0.3.10-dev.7 gilt dieselbe Filtereinstellung
+für die Live-Notizen und den Rückblick. An Abschnittsgrenzen können Echos in der
+Vorschau stehen bleiben. Ein Rückfall auf gemischte Erkennung wird angezeigt.
+Physische Lautsprecher-/Mikrofontests und die komplette Electron-Aufnahmekette
+dieser Änderung sind noch offen.
 
 Seit **0.3.10-dev.0** gibt es unter Einstellungen die Wahl zwischen
 Drücken und Halten eines Kürzels. Zustands-, Mikrofonstart-/Abbruch- und IPC-Tests

@@ -24,6 +24,17 @@ for(let at=12;at+8<=wav.length;){
 assert.ok(format&&data);assert.equal(format.readUInt16LE(0),1);assert.equal(format.readUInt16LE(2),1);assert.equal(format.readUInt16LE(14),16);
 const pcm=Float32Array.from({length:data.length/2},(_,i)=>data.readInt16LE(i*2)/32768);
 const audio=encodeWav([pcm],format.readUInt32LE(4)),requests=[];
+const echoFilter=process.argv.includes('--echo');
+const ratio=format.readUInt32LE(4)/16000;
+const samples=Float32Array.from({length:Math.floor(pcm.length/ratio)},(_,i)=>{
+ const at=i*ratio, lower=Math.floor(at), fraction=at-lower;
+ return pcm[lower]*(1-fraction)+(pcm[lower+1]??0)*fraction;
+});
+const stereo=new Float32Array((samples.length+4800)*2);
+for(let i=0;i<samples.length;i++){
+ stereo[i*2+1]=samples[i];
+ stereo[(i+4800)*2]=samples[i]*.7;
+}
 const server=createServer(async(req,res)=>{
  let body='';for await(const chunk of req)body+=chunk;
  requests.push({url:req.url,body:JSON.parse(body)});
@@ -36,13 +47,19 @@ try {
   const settings=defaultSettings();settings.speech.preset=preset;settings.speech.language='en';
   settings.provider={provider:'custom',location:'local',baseURL:`http://127.0.0.1:${server.address().port}/v1`,model:'live-fixture'};
   const live=new LiveNotes({modelRoot:resolve(resources,'models'),pythonPath:resolve(resources,'speech-runtime/blitzdic-speech.exe')});
-  const {id}=live.start(settings),start=requests.length;
-  const state=await live.update(id,audio);assert.equal(state.consumed,true);assert.equal(state.problem,'');assert.match(state.notes,/Spracherkennungstest/);
+  const {id}=live.start(settings,{echoFilter}),start=requests.length;
+  const state=await live.update(id,echoFilter?encodeWav([stereo],16000,2):audio);assert.equal(state.consumed,true);assert.equal(state.problem,'');assert.match(state.notes,/Spracherkennungstest/);
   await live.catchUp(id);await live.stop(id);
   assert.equal(requests.length,start+2);
   for(const request of requests.slice(start)){
    assert.equal(request.url,'/v1/chat/completions');assert.equal(request.body.model,'live-fixture');
    assert.match(request.body.messages.at(-1).content,/speech recognition test/i);
+   if(echoFilter){
+    const transcript=request.body.messages.at(-1).content;
+    assert.equal([...transcript.matchAll(/speech recognition test/gi)].length,1);
+    assert.match(transcript,/Systemaudio:/);
+    assert.doesNotMatch(transcript,/Mikrofon:/);
+   }
    assert.doesNotMatch(JSON.stringify(request.body),/audioBase64|UklGR/);
   }
   assert.equal(live.session.pending,'');assert.deepEqual(live.session.stretches,[]);

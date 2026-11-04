@@ -24,13 +24,16 @@ function leadingEnd(text,limit) {
   if(end<text.length&&/[\uD800-\uDBFF]/.test(text[end-1]))end--;
   return end;
 }
-function audioBuffer(value) {
+function audioBuffer(value,echoFilter) {
   if(!(value instanceof ArrayBuffer)||value.byteLength<44||value.byteLength>120*1024*1024)throw new Error('Ungültiger Live-Audioabschnitt.');
   const b=Buffer.from(value),rate=b.readUInt32LE(24),length=b.readUInt32LE(40);
+  const channels=echoFilter?2:1, frameBytes=channels*2;
   if(b.toString('ascii',0,4)!=='RIFF'||b.toString('ascii',8,12)!=='WAVE'||b.toString('ascii',12,16)!=='fmt '||
-     b.readUInt32LE(16)!==16||b.readUInt16LE(20)!==1||b.readUInt16LE(22)!==1||b.readUInt16LE(34)!==16||
-     b.toString('ascii',36,40)!=='data'||length!==b.length-44||length%2||rate<8000||rate>192000||length/rate/2>300)
-    throw new Error('Live-Notizen erwarten höchstens fünf Minuten Mono-PCM-Audio.');
+     b.readUInt32LE(4)!==b.length-8||b.readUInt32LE(16)!==16||b.readUInt16LE(20)!==1||
+     b.readUInt16LE(22)!==channels||b.readUInt16LE(34)!==16||b.readUInt16LE(32)!==frameBytes||
+     b.readUInt32LE(28)!==rate*frameBytes||b.toString('ascii',36,40)!=='data'||length!==b.length-44||
+     length%frameBytes||rate<8000||rate>192000||(echoFilter&&rate!==16000)||length/rate/frameBytes>300)
+    throw new Error('Live-Notizen erwarten höchstens fünf Minuten PCM-Audio im Aufnahmeformat.');
   return b;
 }
 
@@ -38,7 +41,7 @@ export class LiveNotes {
   constructor({modelRoot,pythonPath,recognize=runSpeech,generate=complete,now=Date.now}) {
     Object.assign(this,{modelRoot,pythonPath,recognize,generate,now});this.session=null;
   }
-  start(settings) {
+  start(settings,{echoFilter=false}={}) {
     if(this.session&&!this.session.stopped)throw new Error('Live-Notizen sind bereits aktiv.');
     if(this.session?.job)throw new Error('Die vorherigen Live-Notizen werden noch beendet.');
     const config=validateConfig(structuredClone(settings.provider));
@@ -46,14 +49,14 @@ export class LiveNotes {
     if(!preset&&snapshot.speech.preset!=='custom')throw new Error('Unbekanntes Sprachmodell.');
     const directory=preset?join(this.modelRoot,preset.id):snapshot.speech.modelDirectory;
     if(!directory)throw new Error('Lokalen Sprachmodellordner auswählen.');
-    this.session={id:randomUUID(),config,snapshot,preset,directory,notes:'',catchUp:'',pending:'',stretches:[],problem:'',incomplete:false,updatedAt:null,stopped:false};
+    this.session={id:randomUUID(),config,snapshot,preset,directory,echoFilter:echoFilter===true,echoWarning:'',notes:'',catchUp:'',pending:'',stretches:[],problem:'',incomplete:false,updatedAt:null,stopped:false};
     return this.state();
   }
   require(id,allowStopped=false) {
     const s=this.session;if(!s||s.id!==id||(!allowStopped&&s.stopped))throw new Error('Live-Notizen sind für diese Aufnahme beendet.');return s;
   }
   state(s=this.session) {
-    return {id:s.id,notes:s.notes,catchUp:s.catchUp,problem:s.problem,incomplete:s.incomplete,updatedAt:s.updatedAt,
+    return {id:s.id,notes:s.notes,catchUp:s.catchUp,problem:[s.echoWarning,s.problem].filter(Boolean).join(' '),incomplete:s.incomplete,updatedAt:s.updatedAt,
       model:s.config.model,location:s.config.location,destination:new URL(s.config.baseURL).host,busy:!!s.job,stopped:s.stopped};
   }
   cancel() {if(this.session){this.session.stopped=true;this.session.controller?.abort();}}
@@ -70,15 +73,16 @@ export class LiveNotes {
     return result.trim();
   }
   async update(id,bytes,{dropped=false}={}) {
-    const s=this.require(id),audio=audioBuffer(bytes);let consumed=false;
+    const s=this.require(id),audio=audioBuffer(bytes,s.echoFilter);let consumed=false;
     await this.task(s,async signal=>{
       try {
         signal.throwIfAborted();
-        const recognized=await this.recognize({action:'transcribe',preset:s.preset?.id,engine:s.preset?.engine??s.snapshot.speech.engine,
+        const recognized=await this.recognize({action:s.echoFilter?'transcribe-meeting':'transcribe',preset:s.preset?.id,engine:s.preset?.engine??s.snapshot.speech.engine,
           modelDirectory:s.directory,language:s.snapshot.speech.language,audioBase64:audio.toString('base64')},{pythonPath:this.pythonPath,signal});
         signal.throwIfAborted();if(typeof recognized.text!=='string')throw new Error('Ungültiges Live-Transkript.');
         const text=await rewrite(recognized.text,'verbatim',s.snapshot.modeSettings,s.config,{signal});signal.throwIfAborted();
         consumed=true;
+        if(s.echoFilter&&recognized.warning)s.echoWarning='Ein Live-Abschnitt wurde ohne Echo-Filter transkribiert. Dopplungen sind möglich.';
         if(dropped){s.incomplete=true;s.problem='Ein älterer Audioabschnitt fehlt nur in der Live-Vorschau; die vollständige Aufnahme bleibt erhalten.';}
         if(text.trim()){
           s.stretches.push({at:this.now(),text});s.stretches=s.stretches.filter(item=>item.at>=this.now()-600000);

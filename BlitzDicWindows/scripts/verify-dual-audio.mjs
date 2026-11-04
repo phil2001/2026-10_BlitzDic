@@ -32,7 +32,9 @@ try{
   try{
    await sourceContext.resume();await recorder.start('',{source:'both'});
    await new Promise(resolve=>setTimeout(resolve,2200));
-   const preview=recorder.snapshotSince(0),full=recorder.stop();
+   const preview=recorder.snapshotSince(0);
+   const separate=recorder.snapshotSince(0,{separate:true});
+   const full=recorder.stop();
    const summarize=audio=>{
     const view=new DataView(audio),channels=view.getUint16(22,true),frames=(audio.byteLength-44)/2/channels;
     const means=[];
@@ -42,7 +44,7 @@ try{
     }
     return {channels,rate:view.getUint32(24,true),frames,means};
    };
-   return {full:summarize(full),preview:summarize(preview.audio),cursor:preview.cursor,stopped:streams.every(stream=>stream.getTracks().every(track=>track.readyState==='ended'))};
+   return {full:summarize(full),preview:summarize(preview.audio),separate:summarize(separate.audio),cursor:preview.cursor,stopped:streams.every(stream=>stream.getTracks().every(track=>track.readyState==='ended'))};
   }finally{
    recorder.cancel();navigator.mediaDevices.getDisplayMedia=oldDisplay;navigator.mediaDevices.getUserMedia=oldMic;
    sources.forEach(source=>source.stop());await sourceContext.close();
@@ -52,6 +54,7 @@ try{
  assert.ok(Math.abs(result.full.means[0]-.25)<.002,'Left channel must be microphone');
  assert.ok(Math.abs(result.full.means[1]+.5)<.002,'Right channel must be system audio');
  assert.equal(result.preview.channels,1);assert.equal(result.preview.frames,result.full.frames);assert.equal(result.cursor,result.full.frames);
+ assert.deepEqual(result.separate,result.full);
  assert.ok(Math.abs(result.preview.means[0]+.125)<.002,'Live preview must retain the mixed sources');
  assert.equal(result.stopped,true);assert.deepEqual(errors,[]);
  console.log('PASS real Web Audio: synchronized 16-kHz microphone-left/system-right PCM16, correct source levels and frame counts, mono live preview, all owned media tracks stopped. Generated streams only.');

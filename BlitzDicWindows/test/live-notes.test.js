@@ -9,6 +9,22 @@ const audio=()=>encodeWav([new Float32Array(16000)],8000);
 const settings=()=>({...defaultSettings(),provider:{provider:'custom',location:'local',baseURL:'http://127.0.0.1:1234/v1',model:'fixture'}});
 const tick=()=>new Promise(setImmediate);
 
+test('echo sessions require separate tracks and keep a fallback warning visible',async()=>{
+ const requests=[];
+ const live=new LiveNotes({modelRoot:'models',recognize:async request=>{
+  requests.push(request);
+  return {text:'Meetingtext',warning:requests.length===1?'Gemischte Aufnahme':null};
+ },generate:async()=> 'Notizen'});
+ const {id}=live.start(settings(),{echoFilter:true});
+ await assert.rejects(live.update(id,audio()),/Aufnahmeformat/);
+ assert.equal(requests.length,0);
+ const stereo=encodeWav([new Float32Array(64000)],16000,2);
+ assert.match((await live.update(id,stereo)).problem,/ohne Echo-Filter/);
+ assert.match((await live.update(id,stereo)).problem,/ohne Echo-Filter/);
+ assert.deepEqual(requests.map(request=>request.action),['transcribe-meeting','transcribe-meeting']);
+ await live.stop(id);
+});
+
 test('live notes freeze the selected local/LAN/API connection and reject invalid destinations before audio',async()=>{
  for(const [location,baseURL] of [['local','http://127.0.0.1:1234/v1'],['lan','http://192.168.1.5:1234/v1'],['api','https://api.example.test/v1']]){
   const config=settings();Object.assign(config.provider,{location,baseURL});const calls=[];

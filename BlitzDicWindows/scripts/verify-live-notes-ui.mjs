@@ -13,7 +13,7 @@ import {LiveNotes} from '../src/live-notes.js';
 const root=resolve(import.meta.dirname,'..'),artifacts=resolve(root,'.runtime',`live-notes-ui-${Date.now()}`);
 await mkdir(artifacts,{recursive:true});
 console.log(`Renderer fixture artifacts: ${artifacts}`);
-const fakeRecorder=`import {encodeWav} from './wav.js';export class Recorder {constructor(){this.state='idle';}async start(_device,options={}){await options.beforeCapture?.();this.state='recording';return true;}cancel(){this.state='idle';}stop(){this.cancel();return new Uint8Array();}snapshotSince(cursor){return {audio:encodeWav([new Float32Array(16000)],8000),cursor:cursor+16000,dropped:false};}}`;
+const fakeRecorder=`import {encodeWav} from './wav.js';export class Recorder {constructor(){this.state='idle';}async start(_device,options={}){await options.beforeCapture?.();this.state='recording';return true;}cancel(){this.state='idle';}stop(){this.cancel();return new Uint8Array();}snapshotSince(cursor,{separate=false}={}){return {audio:separate?encodeWav([new Float32Array(64000)],16000,2):encodeWav([new Float32Array(16000)],8000),cursor:cursor+16000,dropped:false};}}`;
 const server=createServer(async(req,res)=>{
  try {
   const path=new URL(req.url,'http://localhost').pathname;
@@ -37,7 +37,7 @@ try {
  await page.exposeBinding('fixtureCall',async(_,name,args)=>{
   calls.push({name,args});
   if(name==='settings')settings=structuredClone(args[0]);
-  if(name==='meeting-live-start')return live.start(settings);
+  if(name==='meeting-live-start')return live.start(settings,{echoFilter:args[0]});
   if(name==='meeting-live-update')return live.update(args[0],Uint8Array.from(args[1]).buffer,args[2]);
   if(name==='meeting-live-catchup')return live.catchUp(args[0]);
   if(name==='meeting-live-stop'){if(stopGate)await stopGate;return live.stop(args[0]);}
@@ -80,7 +80,12 @@ try {
  await page.screenshot({path:resolve(artifacts,'echo-desktop.png')});
  await page.setViewportSize({width:760,height:620});assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
  await page.screenshot({path:resolve(artifacts,'echo-small.png')});
+ await enable.check();
  await page.locator('#meeting-record').click();assert.equal(await page.locator('#meeting-source').isDisabled(),true);
+ await page.waitForFunction(()=>!document.querySelector('#meeting-live-refresh').disabled);
+ await page.locator('#meeting-live-refresh').click();
+ await page.waitForFunction(()=>window.liveUpdates===3&&!document.querySelector('#meeting-live-refresh').disabled);
+ assert.equal(calls.filter(call=>call.name==='meeting-live-start').at(-1).args[0],true);
  await page.locator('#meeting-record').click();await page.waitForFunction(()=>!document.querySelector('#meeting-source').disabled);
  assert.equal(calls.filter(call=>call.name==='meeting-audio').at(-1).args[1].echoFilter,true);
  assert.match(await page.locator('#status').textContent(),/Echo-Filter nicht verfügbar/);

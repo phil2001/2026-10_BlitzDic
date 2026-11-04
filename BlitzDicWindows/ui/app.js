@@ -130,9 +130,9 @@ function liveControls() {
 }
 async function startLiveNotes() {
   if (!$('meeting-live-enabled').checked) return;
-  const token = {id:null,cursor:0,busy:false,display:++liveDisplayEpoch}; livePreview = token;
+  const token = {id:null,cursor:0,busy:false,echoFilter:speakerOptions.echoFilter===true,display:++liveDisplayEpoch}; livePreview = token;
   $('meeting-live-notes').value = ''; $('meeting-live-recap-label').hidden = true; $('meeting-live-copy').disabled = true;
-  token.started = api['meeting-live-start']();
+  token.started = api['meeting-live-start'](token.echoFilter);
   try {
     const state = await token.started;
     if (livePreview !== token) return;
@@ -155,7 +155,7 @@ async function stopLiveNotes() {
 async function updateLiveNotes() {
   const token = livePreview;
   if (!token?.id || token.busy || !['recording','limit'].includes(meetingRecorder.state)) return;
-  const chunk = meetingRecorder.snapshotSince(token.cursor);
+  const chunk = meetingRecorder.snapshotSince(token.cursor,{separate:token.echoFilter});
   if (!chunk) {$('meeting-live-status').textContent = 'Für Live-Notizen mindestens zwei Sekunden aufnehmen.';return;}
   token.busy = true; liveControls(); $('meeting-live-status').textContent = 'Live-Notizen werden aktualisiert …';
   try {

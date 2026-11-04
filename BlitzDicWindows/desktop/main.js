@@ -278,12 +278,12 @@ else app.whenReady().then(async () => {
     return escapeJob(() => meetings.summarize(transcript, title, names));
   });
   handle('meetings-clear', () => store.clearMeetings());
-  handle('meeting-live-start', async () => {
+  handle('meeting-live-start', async (echoFilter = false) => {
     const epoch=captureEpoch;
     const settings=await store.settings();
     if(liveNotes.session?.stopped&&liveNotes.session.job)await liveNotes.session.job;
     if(epoch!==captureEpoch||recordingKind!=='meeting'||(!recording&&!recordingStarting))throw new Error('Keine laufende Meeting-Aufnahme.');
-    return liveNotes.start(settings);
+    return liveNotes.start(settings,{echoFilter});
   });
   handle('meeting-live-update', (id,bytes,options) => {
     if(!recording||recordingKind!=='meeting')throw new Error('Keine laufende Meeting-Aufnahme.');

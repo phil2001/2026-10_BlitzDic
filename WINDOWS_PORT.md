@@ -1381,3 +1381,21 @@ Both frozen models passed the echo fixture with diarization using system-only
 PATH. Ordinary recognition, diarization and live-notes loopback checks passed.
 Both packaged models also passed the German fixture with ordered word timings.
 Nine ASAR files matched source, and all 111 native and 88 notice hashes matched.
+
+## Live echo filtering
+
+Version 0.3.10-dev.7 uses the recording section's echo setting for live notes
+and catch-up. With filtering enabled the snapshot retains both synchronized 16 kHz
+channels, and local recognition uses the same echo filter as the final transcript.
+The provider receives filtered text. The live filter compares words within each
+snapshot, so a delay spanning two snapshots can leave a duplicate in the preview.
+A fallback to mixed recognition leaves a warning visible for the session.
+
+Both bundled models passed the live echo fixture and ordinary live notes against
+a loopback LLM fixture. The renderer fixture covered the echo setting and the real
+Web Audio fixture verified identical channels in the stereo preview and final WAV.
+Physical audio and a clean Windows installation remain to be verified.
+
+The installer is `dist/windows-2026-11-04T05-38-51-082Z-2f3109/BlitzDic Setup 0.3.10-dev.7.exe`
+(1,148,508,494 bytes). SHA-256 is
+`A14AF0EE6C3B8A35E410927406949BFCA4D203D445BB7176403BB1A2B7FFD509`.

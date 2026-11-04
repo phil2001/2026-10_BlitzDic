@@ -7,7 +7,7 @@
 - Experimentelles Stummschalten: echte Windows-Änderung/Wiederherstellung und
   vollständigen Diktatablauf im Paket prüfen.
 - Live-Meeting-Notizen mit echter Aufnahme und echtem LLM im vollständigen Paket prüfen.
-- Echo-Filter mit physischen Quellen prüfen und auch in Live-Notizen integrieren.
+- Echo-Filter im Abschlusstranskript und in Live-Notizen mit physischen Quellen prüfen.
 - Oberfläche visuell abschließen und Zugänglichkeit prüfen.
 - Vollständige Drittanbieter-Lizenzen bündeln und Installer auf sauberem Windows testen.
 - Aktuellen Windows-Build im Zielrepository veröffentlichen.
@@ -57,5 +57,7 @@ Version 0.3.10-dev.6 ergänzt synchrone Zweispuraufnahme (Mikrofon links,
 Systemaudio rechts), tatsächliche Wort-/Tokenzeitpunkte und den portierten Echo-
 Filter für das abschließende Meeting-Transkript. Echte Web-Audio-Knoten mit
 künstlichen Streams und beide echten Modelle bestehen die Tests mit Echo und
-späterer eigener Antwort, auch mit Sprechertrennung. Die native Aufnahmekette,
-physisches Echo und die bislang gemischten Live-Notizen bleiben zu prüfen.
+späterer eigener Antwort, auch mit Sprechertrennung. Die native Aufnahmekette
+und physisches Echo bleiben zu prüfen. Version 0.3.10-dev.7 verwendet dieselbe
+Filtereinstellung für die Live-Notizen. Echofragmente an Abschnittsgrenzen können
+in der Vorschau stehen bleiben.
