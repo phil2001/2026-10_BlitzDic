@@ -3,7 +3,8 @@ import { resolve, dirname, sep } from 'node:path';
 import { access, readFile } from 'node:fs/promises';
 import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
-import {createServer} from 'node:http';
+import {createServer as createHttpServer} from 'node:http';
+import {createServer as createHttpsServer} from 'node:https';
 const root = resolve(import.meta.dirname, '..');
 const executablePath = process.env.BLITZDIC_TEST_EXECUTABLE;
 if (!executablePath) throw new Error('BLITZDIC_TEST_EXECUTABLE muss auf die installierte BlitzDic.exe zeigen.');
@@ -56,6 +57,14 @@ if (process.argv.includes('--payload-only')) {
   process.exit(0);
 }
 const env = {...process.env}; delete env.ELECTRON_RUN_AS_NODE;
+// Optional test-only certificate and key. Trust is scoped to the launched app.
+const tlsFixture = process.env.BLITZDIC_TEST_TLS_FIXTURE;
+const apiKey = tlsFixture ? 'blitzdic-fixture-key' : '';
+let tlsOptions;
+if (tlsFixture) {
+  env.NODE_EXTRA_CA_CERTS = resolve(tlsFixture, 'cert.pem');
+  tlsOptions = {cert: await readFile(env.NODE_EXTRA_CA_CERTS), key: await readFile(resolve(tlsFixture, 'key.pem'))};
+}
 const app = await electron.launch({executablePath,
   args: [`--user-data-dir=${root}/.runtime/installed-smoke-${Date.now()}`], env});
 try {
@@ -70,32 +79,38 @@ try {
   }, `${root}/.runtime/test-speech.wav`);
   const requests = [];
   const rewrittenText = 'The meeting starts tomorrow at 9.';
-  const server = createServer(async (request, response) => {
+  const handleRequest = async (request, response) => {
     const chunks = [];
     for await (const chunk of request) chunks.push(chunk);
     const body = chunks.length ? JSON.parse(Buffer.concat(chunks).toString('utf8')) : null;
-    requests.push({method: request.method, url: request.url, body});
+    requests.push({method: request.method, url: request.url, body, authorization: request.headers.authorization});
     response.setHeader('Content-Type', 'application/json');
     response.end(JSON.stringify(request.method === 'GET'
       ? {data: [{id: 'packaged-fixture'}]}
       : {choices: [{message: {content: body?.messages?.at(-1)?.content === 'Test' ? 'OK' : rewrittenText}}]}));
-  });
+  };
+  const server = tlsOptions ? createHttpsServer(tlsOptions, handleRequest) : createHttpServer(handleRequest);
   await new Promise((resolve, reject) => {
     server.once('error', reject);
     server.listen(0, '127.0.0.1', resolve);
   });
   try {
-    const address = `http://127.0.0.1:${server.address().port}`;
+    const routePrefix = tlsFixture ? '/compat/v1' : '/v1';
+    const address = tlsFixture
+      ? `https://127.0.0.1:${server.address().port}${routePrefix}`
+      : `http://127.0.0.1:${server.address().port}`;
     await page.locator('nav button[data-page="connections"]').click();
-    await page.locator('#provider').selectOption('lmstudio');
+    await page.locator('#provider').selectOption(tlsFixture ? 'custom' : 'lmstudio');
+    assert.equal(await page.locator('#location').inputValue(), tlsFixture ? 'api' : 'local');
     await page.locator('#baseURL').fill(address);
+    await page.locator('#apiKey').fill(apiKey);
     await page.locator('#discover').click();
     await page.locator('#model-list option[value="packaged-fixture"]').waitFor({state: 'attached'});
     await page.locator('#model').fill('packaged-fixture');
     await page.locator('#test').click();
     await page.waitForFunction(() => document.querySelector('#status').textContent === 'Verbindung funktioniert.');
     assert.deepEqual(requests.map(({method, url}) => [method, url]), [
-      ['GET', '/v1/models'], ['POST', '/v1/chat/completions'],
+      ['GET', `${routePrefix}/models`], ['POST', `${routePrefix}/chat/completions`],
     ]);
     assert.equal(requests[1].body.model, 'packaged-fixture');
     await page.locator('#save-provider').click();
@@ -103,16 +118,17 @@ try {
     const {settings} = await page.evaluate(() => window.blitz.load());
     assert.equal(settings.provider.baseURL, address);
     assert.equal(settings.provider.model, 'packaged-fixture');
-    console.log('PASS: packaged LM Studio model discovery, connection test and settings persistence');
+    console.log(`PASS: packaged ${tlsFixture ? 'HTTPS API' : 'LM Studio'} discovery, connection and settings persistence`);
     await page.locator('nav button[data-page="dictation"]').click();
     await page.locator('#mode').selectOption('clean');
     await page.locator('#import').click();
     await page.waitForFunction(text => document.querySelector('#result').value === text, rewrittenText, {timeout: 60000});
     assert.equal(requests.length, 3);
     assert.equal(requests[2].method, 'POST');
-    assert.equal(requests[2].url, '/v1/chat/completions');
+    assert.equal(requests[2].url, `${routePrefix}/chat/completions`);
     assert.equal(requests[2].body.model, 'packaged-fixture');
     assert.match(requests[2].body.messages.at(-1).content, /local speech recognition test/i);
+    assert.ok(requests.every(request => request.authorization === (tlsFixture ? `Bearer ${apiKey}` : undefined)));
     await page.locator('#mode').selectOption('verbatim');
     console.log('PASS: packaged WAV import, local transcription, and LLM rewrite shown in the editor');
   } finally {
