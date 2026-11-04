@@ -1441,6 +1441,14 @@ Berlin. It also reported that no deadline had been agreed. Both test sessions
 stopped their loopback server and unloaded the test model.
 LAN and external API acceptance still require real endpoints.
 
+The API-mode transport was exercised against an isolated HTTPS loopback
+fixture with synthetic text and credentials. Plain HTTP and an untrusted
+certificate were rejected before the server received an HTTP request.
+After trusting the ephemeral certificate in the test process, model discovery
+and chat completion succeeded under `/compat/v1` with the expected bearer
+header. This checks TLS and the API protocol. External provider acceptance
+remains open.
+
 The installer is `dist/windows-2026-11-04T05-55-55-513Z-3abb43/BlitzDic Setup 0.3.10-dev.9.exe`
 (1,148,514,308 bytes). SHA-256 is
 `78F0075E10D8B6A032244193DA655824B0B75D01D181894DB0D54B8928BAA2D8`.

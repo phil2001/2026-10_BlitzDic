@@ -244,8 +244,9 @@ Der verfügbare Installer ist daher kein Nachweis der Fertigstellung.
 
 ## Herkunft und Lizenz
 
-Windows-Fork von [cmagnussen/blitztext-app](https://github.com/cmagnussen/blitztext-app).
-Die ursprüngliche Git-Historie bleibt erhalten. BlitzDic verwendet einen eigenen
-Namen und eigene Oberfläche. Dieses Repository entwickelt ausschließlich Windows 11.
+BlitzDic ist eine Windows-Weiterentwicklung mit gemeinsamer Git-Historie bis
+zum Commit `ebd5c84`. GitHub führt dieses Projekt als eigenständiges Repository.
+BlitzDic verwendet einen eigenen Namen und eine eigene Oberfläche. Dieses
+Repository entwickelt ausschließlich Windows 11. [Blitztext-Original](https://github.com/cmagnussen/blitztext-app)
 MIT-Lizenz: [LICENSE](LICENSE). Modelle und Abhängigkeiten haben eigene
 [Lizenzhinweise](THIRD_PARTY_NOTICES.md).

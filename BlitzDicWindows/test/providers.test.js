@@ -44,6 +44,18 @@ test('real HTTP model discovery and rewriting preserve path, roles and model', a
   assert.equal(await complete(serverAddress, 'instruction', 'dictation'), 'Corrected text.');
 });
 
+test('API mode rejects plaintext before sending text or credentials', async t => {
+  let requests = 0;
+  const local = await server(t, (_req, res) => {
+    requests++;
+    res.end('{}');
+  });
+  const config = { ...local, provider: 'custom', location: 'api', apiKey: 'test-key' };
+  await assert.rejects(listModels(config), /HTTPS/);
+  await assert.rejects(complete(config, 'instruction', 'test text'), /HTTPS/);
+  assert.equal(requests, 0);
+});
+
 test('server errors do not leak echoed sensitive text', async t => {
   const config = await server(t, (req, res) => { res.writeHead(401); res.end('secret transcript'); });
   await assert.rejects(complete(config, 'private', 'private'), { message: 'API-Key wurde abgelehnt.' });
