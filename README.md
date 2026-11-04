@@ -64,7 +64,7 @@ erhalten und werden bei geänderten Namen als veraltet gekennzeichnet.
 
 1. Nach Installation BlitzDic öffnen und unter **Modelle** Whisper oder Parakeet wählen.
 2. Unter **Diktat** Mikrofon und Schreibmodus wählen, Aufnahme starten und beenden.
-   Der aktuelle Quellstand merkt sich die Mikrofonwahl für Diktate und Meetings.
+   Ab 0.3.10-dev.10 merkt sich BlitzDic die Mikrofonwahl für Diktate und Meetings.
    Falls das Gerät fehlt, es erneut verbinden oder **Standardmikrofon** wählen.
 3. Für Schreibmodi außer Wortgenau unter **Verbindungen** einen LLM-Server einrichten.
    LM Studio verwendet üblicherweise `http://127.0.0.1:1234/v1`,
@@ -121,7 +121,7 @@ müssen auf Zuordnung von Aufgaben, Zahlen und offenen Fragen geprüft werden.
 
 ## Entwicklung unter Windows 11
 
-Der Quellstand **0.3.10-dev.9** enthält zusätzlich Website-Regeln. Unter
+Der Quellstand **0.3.10-dev.10** enthält zusätzlich Website-Regeln. Unter
 **Einstellungen → Schreibmodus pro Website** etwa
 `example.com => clean` und `mail.example.com => calm` eintragen. Eine Domain
 umfasst ihre Unterdomains; die spezifischste Website-Regel hat Vorrang vor der
@@ -136,7 +136,7 @@ LLM bis zum Einfügen bestanden, auch mit der gepackten App 0.3.10-dev.3.
 Chrome/Whisper und Word/klassische Felder bleiben im neuen Paket zu prüfen.
 Der Quellstand prüft Fenster und Prozess vor der erneuten Feldlesung zum Einfügen.
 Ein neuer Build liegt unter
-`BlitzDicWindows/dist/windows-2026-11-04T05-55-55-513Z-3abb43/BlitzDic Setup 0.3.10-dev.9.exe`.
+`BlitzDicWindows/dist/windows-2026-11-04T06-06-33-405Z-aa3e05/BlitzDic Setup 0.3.10-dev.10.exe`.
 Beide gebündelten ASR-Engines und die Sprechertrennung sind im neuen Worker
 geprüft; die native Browser-Abnahme steht noch aus.
 

@@ -1468,3 +1468,16 @@ revision `d90ca5fe260221311c53c58e660288d3deb8d356` into an ignored local folder
 The same worker recognized the fixture through custom mode using this distinct
 model. Tiny remains a user-supplied option. The two bundled presets are unchanged.
 [Whisper Tiny model card](https://huggingface.co/Systran/faster-whisper-tiny/tree/d90ca5fe260221311c53c58e660288d3deb8d356)
+
+## Current Windows development package
+
+Dev.10 includes persistent microphone selection and the measured system
+requirements. The renderer fixture passed preference persistence on reload
+and device removal. The packaged ASAR files matched source. Resource, license
+and native origin checks passed. Both bundled models and speaker diarization
+passed using the packaged worker with a system-only PATH.
+
+The installer is `dist/windows-2026-11-04T06-06-33-405Z-aa3e05/BlitzDic Setup 0.3.10-dev.10.exe`
+(1,148,515,616 bytes). SHA-256 is
+`26CBF0080E5AC3995AC1B4E56F53CDABD1CBB7CF74519926B4E19C5F1B5246F6`.
+Installation on a fresh Windows 11 system remains unverified.
