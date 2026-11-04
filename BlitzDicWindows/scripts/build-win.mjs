@@ -1,4 +1,4 @@
-import { mkdir, readFile, writeFile, access, realpath } from 'node:fs/promises';
+import { mkdir, readFile, writeFile, realpath } from 'node:fs/promises';
 import { spawn } from 'node:child_process';
 import { resolve, sep } from 'node:path';
 import { randomBytes } from 'node:crypto';
@@ -19,8 +19,7 @@ async function run(command, args) {
     child.on('exit', code => code === 0 ? accept() : reject(new Error(`${command} failed (${code})`)));
   });
 }
-for (const file of ['models/whisper/model.bin', 'models/parakeet-ultra/encoder-model.int8.onnx',
-  'models/parakeet-ultra/decoder_joint-model.int8.onnx']) await access(resolve(root, file));
+await run(process.execPath, ['scripts/verify-models.mjs']);
 await mkdir(resolve(root, buildRoot), {recursive: true});
 console.log(`Build: ${id}\nInstaller output: ${output}`);
 await run(python, ['scripts/setup-diarization.py', '--verify-only']);

@@ -176,10 +176,15 @@ owned foreground editor. It does not relax any foreground or preheld-key guard.
 
 Whisper: OpenAI (MIT), CTranslate2 export by Systran, faster-whisper runtime.
 Parakeet Ultra: NVIDIA base model, Moondream post-training, Masterx ONNX
-conversion, CC-BY-4.0. Runtime: onnx-asr / ONNX Runtime.
+conversion and INT8 quantization using the ONNX graphs from istupakov,
+CC-BY-4.0. Runtime: onnx-asr / ONNX Runtime.
+The installer build verifies the exact model files against the pinned
+SHA-256 manifest, which is included as `Speech-model-provenance.json`.
 Model source and license links:
 
 - https://huggingface.co/Systran/faster-whisper-small
+- https://huggingface.co/nvidia/parakeet-tdt-0.6b-v3
 - https://huggingface.co/moondream/parakeet-ultra
+- https://huggingface.co/istupakov/parakeet-tdt-0.6b-v3-onnx
 - https://huggingface.co/Masterx/parakeet-tdt-0.6b-ultra-onnx
 - https://creativecommons.org/licenses/by/4.0/

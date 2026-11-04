@@ -26,6 +26,8 @@ extraResources:
     to: licenses/BlitzDic-LICENSE.txt
   - from: speech/README.md
     to: licenses/Speech-model-attribution.md
+  - from: licenses/speech-models.json
+    to: licenses/Speech-model-provenance.json
 win:
   target:
     - target: nsis
