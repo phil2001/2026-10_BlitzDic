@@ -33,6 +33,9 @@ PRESETS = {
 
 
 def run(request):
+    if request['action'] == 'transcribe-meeting':
+        from dual_meeting import run as transcribe_meeting
+        return transcribe_meeting(request, run)
     if request['action'] in ('wait-shortcut-release', 'validate-hold-shortcuts'):
         from keyboard_hold import run as hold_keys
         return hold_keys(request)
@@ -78,16 +81,27 @@ def run(request):
     os.environ["HF_HUB_OFFLINE"] = "1"
     if engine == "whisper":
         model = load_whisper(str(root))
+        timed = request.get('wordTimestamps') is True
         segments, info = model.transcribe(audio, language=request.get("language") or None,
-                                          vad_filter=True, condition_on_previous_text=False)
-        items = [{"start": s.start, "end": s.end, "text": s.text.strip()} for s in segments]
-        return {"text": " ".join(s["text"] for s in items), "segments": items, "language": info.language}
+                                          vad_filter=True, condition_on_previous_text=False,
+                                          word_timestamps=timed)
+        items, words = [], []
+        for segment in segments:
+            items.append({'start': segment.start, 'end': segment.end, 'text': segment.text.strip()})
+            if timed:
+                words.extend({'text': word.word.strip(), 'start': float(word.start), 'end': float(word.end)}
+                             for word in (segment.words or []) if word.word.strip())
+        return {"text": " ".join(s["text"] for s in items), "segments": items, "language": info.language,
+                **({'words': words} if timed else {})}
     import numpy as np
     from audio_decode import decode_audio
     waveform, rate = decode_audio(audio)
     model = load_parakeet(str(root))
     # Bound encoder memory. Prefer a quiet boundary near 20 seconds.
-    items = []
+    items, words = [], []
+    timed = request.get('wordTimestamps') is True
+    if timed:
+        model = model.with_timestamps()
     start = 0
     while start < len(waveform):
         end = min(start + 20 * rate, len(waveform))
@@ -96,10 +110,17 @@ def run(request):
             end = min(candidates, key=lambda i: float(np.mean(waveform[i:i + rate // 10] ** 2)))
         chunk = waveform[start:end]
         if len(chunk) and float(np.max(np.abs(chunk))) > 0.001:
-            text = model.recognize(chunk, sample_rate=rate)
+            result = model.recognize(chunk, sample_rate=rate)
+            if timed:
+                from word_timing import token_words
+                text = result.text
+                words.extend(token_words(result.tokens, result.timestamps, len(chunk) / rate, start / rate))
+            else:
+                text = result
             items.append({"start": start / rate, "end": end / rate, "text": text.strip()})
         start = end
-    return {"text": " ".join(s["text"] for s in items), "segments": items, "language": None}
+    return {"text": " ".join(s["text"] for s in items), "segments": items, "language": None,
+            **({'words': words} if timed else {})}
 
 
 if __name__ == "__main__":

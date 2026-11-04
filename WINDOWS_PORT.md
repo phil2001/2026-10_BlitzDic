@@ -1315,3 +1315,69 @@ PATH. The live-notes HTTP smoke also passed with both new packaged engines.
 Seven ASAR implementation files are byte-identical to source; production package
 name/version/type/main match (electron-builder strips development metadata).
 The installer remains unsigned, uninstalled and unpublished.
+
+
+## Dual-track meeting transcript echo filter, 2026-11-02
+
+Source 0.3.10-dev.6 ports the original MIT EchoFilter.swift behavior, including
+its 2-second offset search, 0.6-second word tolerance, consecutive-match rule,
+garbled-word bridging and guarded fragment pruning. It runs on separate actual
+ASR word times rather than distributing segment text uniformly across time.
+Whisper supplies word alignment; Parakeet supplies token onsets through onnx-asr
+with_timestamps(). Token pieces are joined at word separators. Parakeet word ends
+are estimates (last lexical token + 80 ms, capped by next onset/audio end), not
+native word end measurements. Delayed punctuation stays in text without assigning
+the intervening silence to the preceding word. Reference:
+[onnx-asr timestamp adapter](https://istupakov.github.io/onnx-asr/usage/).
+
+For source=both, one worklet receives microphone at input 0 and system at input 1;
+it emits frame-aligned interleaved stereo with silence for a missing input. The
+AudioContext runs at 16 kHz. PCM16 left is microphone and right is system. This
+keeps two-track 30-minute audio below the existing IPC limit and bounds buffer
+memory. Single-source/dictation paths remain mono. Preview snapshots still mix
+both channels non-destructively; preview cursor/duration remain frame-based.
+
+The final-transcript checkbox is shown only for both sources, initially checked,
+and frozen for each section. Source/echo controls lock during capture/processing.
+Both tracks are recognized in one worker with shared cached model instances. The
+microphone transcript is filtered; all recognized system words are retained.
+With optional diarization, the system track is clustered; surviving microphone
+words form one source cluster, not a real-world speaker identity. Speaker count
+refers to system audio. Unmatched system words keep a generic source label.
+Timing/ASR/diarization failures fall back to the complete mixed recording and
+return a warning through Dictation and the meeting renderer. Invalid stereo
+layout is rejected before recognition. Cancellation still owns/kills one worker.
+
+Evidence:
+- Source Node suite: 69 passed, two optional ASR tests skipped. Added stereo WAV,
+  worklet source-gap/channel-position and Dictation routing/fallback warning tests.
+- Python: four word-timing tests, five echo-filter tests covering all original
+  behavioral cases and an additional trailing digit, four dual-meeting tests.
+  Existing single-source and mute tests remain in CI; no added runtime dependency.
+- Real Whisper and Parakeet each removed 13 echo words from a 300-ms-delayed,
+  attenuated synthetic copy, while retaining the original system transcript and
+  a later complete microphone reply. The same fixture also passed both models
+  with actual speaker diarization: system speaker plus separate microphone source.
+- Headless Chrome with real Recorder/AudioWorklet/Web Audio, generated media
+  streams and silent output passed mic-left/system-right level/frame/rate checks,
+  mono preview and resource shutdown. It requests no microphone/system capture.
+- Real renderer with simulated recorder/IPC/ASR/LLM passed echo-option visibility,
+  default, source locking, remote speaker-count label, opt-out and warning display,
+  plus existing live-notes update/catch-up/cancel tests. No page/console errors or
+  horizontal overflow. Inspected 760x620 screenshot:
+  .runtime/live-notes-ui-1793636872900/echo-small.png; desktop also recorded.
+  Browser plugin unavailable; headless Playwright avoids desktop focus.
+
+Limits: physical microphones/loudspeakers, Windows loopback and full Electron
+Main/renderer capture have not been accepted for this change. Echo filtering of
+live notes is not yet connected: they explicitly use the mixed preview. This
+heuristic can remove an intentional simultaneous repetition; the option can be
+disabled. Existing licensing, clean-install and release gates remain open.
+
+The dev.6 installer is `dist/windows-2026-11-02T16-28-34-655Z-af01e6/BlitzDic Setup 0.3.10-dev.6.exe`
+(1,148,508,079 bytes). SHA-256 is
+`3704A33E4554CAEACA1138B14D768210C31B74552C36BFCF9830C1CDD77A8C8C`.
+Both frozen models passed the echo fixture with diarization using system-only
+PATH. Ordinary recognition, diarization and live-notes loopback checks passed.
+Both packaged models also passed the German fixture with ordered word timings.
+Nine ASAR files matched source, and all 111 native and 88 notice hashes matched.

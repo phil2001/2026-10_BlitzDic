@@ -12,7 +12,7 @@ export class Dictation extends EventEmitter {
   }
   transition(state) { this.state = state; this.emit('state', state); }
   cancel() { this.active?.abort(); }
-  async process(audioPath, modeOverride, { saveHistory = true, diarize = false, speakerCount = -1 } = {}) {
+  async process(audioPath, modeOverride, { saveHistory = true, diarize = false, speakerCount = -1, echoFilter = false } = {}) {
     if (this.active) throw new Error('Eine Aufnahme wird bereits verarbeitet.');
     const controller = new AbortController(); this.active = controller;
     const { signal } = controller;
@@ -26,7 +26,8 @@ export class Dictation extends EventEmitter {
       const modelDirectory = preset ? join(this.modelRoot, preset.id) : settings.speech.modelDirectory;
       if (!modelDirectory) throw new Error('Bitte einen lokalen Modellordner auswählen.');
       this.transition('transcribing');
-      const recognized = await this.transcribe({ action: diarize ? 'transcribe-speakers' : 'transcribe', preset: preset?.id,
+      const recognized = await this.transcribe({ action: echoFilter ? 'transcribe-meeting' : diarize ? 'transcribe-speakers' : 'transcribe', preset: preset?.id,
+        ...(echoFilter ? {diarize} : {}),
         ...(diarize ? {diarizationDirectory: join(this.modelRoot, 'diarization'), speakerCount} : {}),
         engine: preset?.engine ?? settings.speech.engine, modelDirectory,
         ...(Buffer.isBuffer(audioPath) ? { audioBase64: audioPath.toString('base64') } : { audioPath }),
@@ -36,7 +37,7 @@ export class Dictation extends EventEmitter {
       if (typeof recognized.text !== 'string') throw new Error('Ungültiges Transkript.');
       const entry = { id: randomUUID(), createdAt: new Date().toISOString(), mode,
         original: recognized.text, text: recognized.text, segments: recognized.segments ?? [],
-        language: recognized.language, speechModel: preset?.id ?? 'custom', warning: null };
+        language: recognized.language, speechModel: preset?.id ?? 'custom', warning: recognized.warning ?? null };
       if (entry.original.trim() && mode !== 'verbatim') this.transition('rewriting');
       try {
         entry.text = await this.rewriteText(entry.original, mode, settings.modeSettings, settings.provider, { signal });

@@ -8,6 +8,7 @@ export class Recorder {
     if (this.state !== 'idle') throw new Error('Aufnahme läuft bereits.');
     if (!['microphone', 'system', 'both'].includes(source)) throw new Error('Unbekannte Audioquelle.');
     this.state = 'starting'; this.chunks = []; this.samples = 0;
+    this.channels = source === 'both' ? 2 : 1;
     const session = {streams: [], sources: []}; this.session = session;
     const current = () => this.session === session;
     session.onEnded = () => {
@@ -45,21 +46,22 @@ export class Recorder {
       await beforeCapture();
       if (!current()) { this.release(session); return false; }
       checkSource();
-      session.context = new AudioContext();
+      session.context = new AudioContext(source === 'both' ? {sampleRate:16000} : {});
       await session.context.audioWorklet.addModule(new URL('./recorder-worklet.js', import.meta.url));
       if (!current()) { this.release(session); return false; }
       checkSource();
-      session.node = new AudioWorkletNode(session.context, 'blitzdic-capture');
+      session.node = new AudioWorkletNode(session.context, 'blitzdic-capture', {
+        numberOfInputs:this.channels, processorOptions:{separate:this.channels===2},
+      });
       for (const stream of session.streams) {
         const input = session.context.createMediaStreamSource(stream);
-        const gain = session.context.createGain(); gain.gain.value = 1 / session.streams.length;
-        input.connect(gain); gain.connect(session.node);
-        session.sources.push(input, gain);
+        input.connect(session.node, 0, source === 'both' && stream !== session.stream ? 1 : 0);
+        session.sources.push(input);
       }
       session.mute = session.context.createGain(); session.mute.gain.value = 0;
       session.node.port.onmessage = ({ data }) => {
         if (!current() || this.state !== 'recording') return;
-        this.chunks.push(data); this.samples += data.length;
+        this.chunks.push(data); this.samples += data.length / this.channels;
         this.onLevel(Math.sqrt(data.reduce((sum, x) => sum + x * x, 0) / data.length));
         if (this.samples >= session.context.sampleRate * 60 * 30) {
           this.state = 'limit'; this.onLimit();
@@ -82,7 +84,7 @@ export class Recorder {
   stop() {
     if (!['recording', 'limit'].includes(this.state)) throw new Error('Keine aktive Aufnahme.');
     this.state = 'stopping';
-    try { return encodeWav(this.chunks, this.session.context.sampleRate); }
+    try { return encodeWav(this.chunks, this.session.context.sampleRate, this.channels); }
     finally { this.cancel(); }
   }
   snapshotSince(cursor=0) {
@@ -91,7 +93,16 @@ export class Recorder {
     const rate=this.session.context.sampleRate,end=this.samples,start=Math.max(cursor,end-rate*300);
     if(end-start<rate*2)return null;
     const parts=[];let offset=0;
-    for(const chunk of this.chunks){const next=offset+chunk.length;if(next>start)parts.push(chunk.subarray(Math.max(0,start-offset)));offset=next;}
+    const channels=this.channels||1;
+    for(const chunk of this.chunks){
+      const next=offset+chunk.length/channels;
+      if(next>start){
+        const tail=chunk.subarray(Math.max(0,start-offset)*channels);
+        if(channels===1)parts.push(tail);
+        else parts.push(Float32Array.from({length:tail.length/2},(_,i)=>(tail[i*2]+tail[i*2+1])/2));
+      }
+      offset=next;
+    }
     return {audio:encodeWav(parts,rate),cursor:end,dropped:start>cursor};
   }
   cancel() {

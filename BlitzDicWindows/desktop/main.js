@@ -260,7 +260,7 @@ else app.whenReady().then(async () => {
     if (meetings.active) throw new Error('Eine Meeting-Zusammenfassung läuft bereits.');
     if (!(bytes instanceof ArrayBuffer) || bytes.byteLength > 350 * 1024 * 1024) throw new Error('Ungültige Aufnahme.');
     if (!options || typeof options !== 'object') throw new Error('Ungültige Sprecheroptionen.');
-    const diarize = options.enabled === true, speakerCount = options.speakerCount ?? -1;
+    const diarize = options.enabled === true, speakerCount = options.speakerCount ?? -1, echoFilter = options.echoFilter === true;
     if (!Number.isInteger(speakerCount) || (speakerCount !== -1 && (speakerCount < 1 || speakerCount > 20)))
       throw new Error('Sprecherzahl muss automatisch oder zwischen 1 und 20 sein.');
     if (diarize && !await speakerModelsAvailable()) throw new Error('Dieses Paket enthält keine lokalen Sprecherzuordnungsmodelle.');
@@ -270,7 +270,7 @@ else app.whenReady().then(async () => {
     if (epoch !== captureEpoch) throw new Error('Abgebrochen.');
     return escapeJob(() => {
       processingPending = false;
-      return flow.process(Buffer.from(bytes), 'verbatim', {saveHistory: false, diarize, speakerCount});
+      return flow.process(Buffer.from(bytes), 'verbatim', {saveHistory: false, diarize, speakerCount, echoFilter});
     });
   });
   handle('meeting-summary', (transcript, title, names) => {

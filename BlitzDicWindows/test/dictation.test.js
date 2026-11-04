@@ -40,6 +40,16 @@ test('rewrite failure preserves transcription with explicit warning', async () =
   assert.equal(result.original, 'Hallo Welt'); assert.equal(result.text, 'Hallo Welt');
   assert.match(result.warning, /offline/); assert.equal(result.mode, 'verbatim');
 });
+
+test('dual-source meetings route echo/speaker options and retain fallback warnings without history',async()=>{
+  let request;const {flow,history}=fixture({transcribe:async value=>{
+    request=value;return {text:'Complete mixed transcript.',warning:'Echo filter unavailable.'};
+  }});
+  const entry=await flow.process(Buffer.from('stereo audio'),'verbatim',{saveHistory:false,echoFilter:true,diarize:true,speakerCount:3});
+  assert.equal(request.action,'transcribe-meeting');assert.equal(request.diarize,true);assert.equal(request.speakerCount,3);
+  assert.match(request.diarizationDirectory,/diarization$/);assert.equal(entry.original,'Complete mixed transcript.');
+  assert.equal(entry.warning,'Echo filter unavailable.');assert.equal(history.length,0);
+});
 test('cancellation blocks late results and overlapping work', async () => {
   let release; let entered;
   const started = new Promise(resolve => { entered = resolve; });

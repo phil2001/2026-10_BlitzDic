@@ -7,7 +7,7 @@
 - Experimentelles Stummschalten: echte Windows-Änderung/Wiederherstellung und
   vollständigen Diktatablauf im Paket prüfen.
 - Live-Meeting-Notizen mit echter Aufnahme und echtem LLM im vollständigen Paket prüfen.
-- Weitere Meeting-Funktionen des Originals prüfen: Echo-Unterdrückung.
+- Echo-Filter mit physischen Quellen prüfen und auch in Live-Notizen integrieren.
 - Oberfläche visuell abschließen und Zugänglichkeit prüfen.
 - Vollständige Drittanbieter-Lizenzen bündeln und Installer auf sauberem Windows testen.
 - Aktuellen Windows-Build im Zielrepository veröffentlichen.
@@ -52,3 +52,10 @@ Rückblick. Die Aktivierung gilt jeweils für einen Aufnahmeabschnitt; lokaler,
 LAN- oder API-Anbieter wird dabei festgehalten. Vollständiges Endtranskript und
 Live-Vorschau bleiben getrennt. Renderer mit simuliertem Audio/LLM und echte
 gebündelte ASR mit HTTP-Fixture sind geprüft; echte Aufnahme-/LLM-Abnahme bleibt offen.
+
+Version 0.3.10-dev.6 ergänzt synchrone Zweispuraufnahme (Mikrofon links,
+Systemaudio rechts), tatsächliche Wort-/Tokenzeitpunkte und den portierten Echo-
+Filter für das abschließende Meeting-Transkript. Echte Web-Audio-Knoten mit
+künstlichen Streams und beide echten Modelle bestehen die Tests mit Echo und
+späterer eigener Antwort, auch mit Sprechertrennung. Die native Aufnahmekette,
+physisches Echo und die bislang gemischten Live-Notizen bleiben zu prüfen.

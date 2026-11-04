@@ -1,6 +1,6 @@
 {
   "name": "blitzdic-windows",
-  "version": "0.3.10-dev.5",
+  "version": "0.3.10-dev.6",
   "private": true,
   "type": "module",
   "main": "desktop/main.js",

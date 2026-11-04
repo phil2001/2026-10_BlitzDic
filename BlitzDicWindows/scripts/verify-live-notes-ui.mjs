@@ -42,7 +42,7 @@ try {
   if(name==='meeting-live-catchup')return live.catchUp(args[0]);
   if(name==='meeting-live-stop'){if(stopGate)await stopGate;return live.stop(args[0]);}
   if(name==='cancel'){live.cancel();return;}
-  if(name==='meeting-audio')return {original:'Complete recording fixture.'};
+  if(name==='meeting-audio')return {original:'Complete recording fixture.',warning:args[1]?.echoFilter?'Echo-Filter nicht verfügbar. Fixture-Warnung.':null};
   return name==='meetings'?[]:undefined;
  });
  await page.addInitScript(()=>{
@@ -73,6 +73,21 @@ try {
  await page.waitForFunction(()=>document.querySelector('#meeting-record').textContent==='Meeting aufnehmen');
  await page.waitForTimeout(100);
  assert.equal(calls.filter(call=>call.name==='meeting-audio').length,1,'Cancellation during live stop must not start a late full transcription');
+ assert.equal(await page.locator('#meeting-echo-option').isVisible(),false);
+ await page.locator('#meeting-source').selectOption('both');assert.equal(await page.locator('#meeting-echo').isChecked(),true);
+ assert.match(await page.locator('#meeting-speaker-count-label').textContent(),/im Systemaudio/);
+ await page.setViewportSize({width:1200,height:820});await page.locator('#meeting-echo-hint').scrollIntoViewIfNeeded();
+ await page.screenshot({path:resolve(artifacts,'echo-desktop.png')});
+ await page.setViewportSize({width:760,height:620});assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
+ await page.screenshot({path:resolve(artifacts,'echo-small.png')});
+ await page.locator('#meeting-record').click();assert.equal(await page.locator('#meeting-source').isDisabled(),true);
+ await page.locator('#meeting-record').click();await page.waitForFunction(()=>!document.querySelector('#meeting-source').disabled);
+ assert.equal(calls.filter(call=>call.name==='meeting-audio').at(-1).args[1].echoFilter,true);
+ assert.match(await page.locator('#status').textContent(),/Echo-Filter nicht verfügbar/);
+ await page.locator('#meeting-echo').uncheck();assert.equal(await page.locator('#meeting-speaker-count-label').textContent(),'Sprecherzahl');
+ await page.locator('#meeting-record').click();await page.locator('#meeting-record').click();
+ await page.waitForFunction(()=>!document.querySelector('#meeting-source').disabled);
+ assert.equal(calls.filter(call=>call.name==='meeting-audio').at(-1).args[1].echoFilter,false);
  assert.deepEqual(errors,[]);
  console.log(`PASS: real renderer + LiveNotes service with simulated ASR/LLM/IPC: explicit opt-in, manual + timed update, catch-up, connection display, full transcript separate, cancelled stop cannot restart ASR, screenshots/no overflow/no console errors. Artifacts: ${artifacts}`);
 } finally {await browser.close();server.closeAllConnections();await new Promise(resolve=>server.close(resolve));}

@@ -175,9 +175,16 @@ $('meeting-live-catchup').onclick = attempt(async () => {
   finally {token.busy = false;liveControls();}
 });
 $('meeting-live-copy').onclick = attempt(async () => {await api.copy($('meeting-live-notes').value);status('Live-Notizen kopiert.');});
+function meetingEchoUI() {
+  const both = $('meeting-source').value === 'both';
+  $('meeting-echo-option').hidden = !both; $('meeting-echo-hint').hidden = !both;
+  $('meeting-speaker-count-label').textContent = both && $('meeting-echo').checked ? 'Sprecherzahl im Systemaudio' : 'Sprecherzahl';
+}
+$('meeting-source').onchange = meetingEchoUI; $('meeting-echo').onchange = meetingEchoUI;
 function meetingRecordingUI(active, processing = false) {
   meetingEditingUI(meetingBusy);
   $('meeting-live-enabled').disabled = active || meetingBusy;
+  $('meeting-source').disabled = active || meetingBusy; $('meeting-echo').disabled = active || meetingBusy;
   api['recording-state'](active, processing, 'meeting').then(result => {if (result?.warning) status(result.warning);}).catch(error => status(error.message));
   $('meeting-record').textContent = active ? 'Aufnahme beenden und transkribieren' : 'Meeting aufnehmen';
   $('meeting-level').hidden = !active;
@@ -210,18 +217,20 @@ $('meeting-record').onclick = attempt(async () => {
       }
       setMeetingDraft(combined, draft.names);
       setMeetingSummary({});
-      status('Meeting lokal transkribiert. ' + (meetingSourceEnded ? 'Die Audioquelle wurde beendet; der vorhandene Abschnitt wurde verarbeitet.' : 'Die Zusammenfassung kann jetzt gestartet werden.'));
+      status((entry.warning ? entry.warning + ' ' : '') + 'Meeting lokal transkribiert. ' + (meetingSourceEnded ? 'Die Audioquelle wurde beendet; der vorhandene Abschnitt wurde verarbeitet.' : 'Die Zusammenfassung kann jetzt gestartet werden.'));
     } finally { meetingBusy = false; meetingRecordingUI(false); }
   } else {
     if ($('meeting-transcript').value.length > 500000) throw new Error('Transkript vor weiterem Aufnehmen auf höchstens 500.000 Zeichen kürzen oder aufteilen.');
     meetingSourceEnded = false;
-    speakerOptions = {enabled: $('meeting-diarize').checked, speakerCount: Number($('meeting-speaker-count').value)};
+    const source = $('meeting-source').value;
+    speakerOptions = {enabled: $('meeting-diarize').checked, speakerCount: Number($('meeting-speaker-count').value), echoFilter: source === 'both' && $('meeting-echo').checked};
+    $('meeting-source').disabled = true; $('meeting-echo').disabled = true;
     $('meeting-cancel').hidden = false; status('Mikrofon wird gestartet …');
     const startup = {cancelled: false}; meetingStartup = startup;
     try {
       await api['recording-starting']('meeting');
       if (startup.cancelled) return;
-      if (!await meetingRecorder.start($('microphone').value, {source: $('meeting-source').value})) return;
+      if (!await meetingRecorder.start($('microphone').value, {source})) return;
     }
     catch (error) {
       if (startup.cancelled) return;
