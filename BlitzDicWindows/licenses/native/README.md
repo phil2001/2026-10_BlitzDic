@@ -2,8 +2,29 @@
 
 The [Python standalone runtime notices](python-standalone-20260127/README.md)
 record the source and notices for the bundled OpenSSL, SQLite and libffi DLLs.
-The Microsoft C++ DLLs still require review of the distributor's rights under
-the applicable terms. Two DLLs in dev.7 came directly from System32.
+
+## Microsoft C++ runtime in 0.3.10-dev.11
+
+The frozen speech worker ships five Microsoft C++ runtime DLLs. A PE scan of
+the unpacked installer checked direct and delay-loaded imports. All five files
+passed Windows Authenticode verification.
+
+| Packaged DLL | File version | Build input | Importing binaries |
+| --- | --- | --- | ---: |
+| `msvcp140.dll` | 14.51.36247.0 | Build host System32 | 5 |
+| `msvcp140_1.dll` | 14.51.36247.0 | Build host System32 | 2 |
+| `vcruntime140.dll` | 14.44.35211.0 | Python standalone 3.12.12 build 20260127 | 95 |
+| `vcruntime140_1.dll` | 14.44.35211.0 | Python standalone 3.12.12 build 20260127 | 8 |
+| `numpy.libs/msvcp140-a4c2229bdc2a2a630acdc095b4d86008.dll` | 14.40.33810.0 | NumPy 2.5.4 wheel | 2 |
+
+On the development PC, both Whisper Small and Parakeet Ultra transcribed the
+synthetic test recording with PATH limited to Windows directories. Windows
+process-module sampling observed all five DLLs loaded from the speech package
+in each run. This verifies package-local resolution on that host. A fresh
+Windows 11 install test remains open.
+
+The two System32 inputs still need a verified redistributable source. The
+distributor's rights to ship all five files also remain under review.
 [Microsoft redistribution documentation](https://learn.microsoft.com/en-us/cpp/windows/redistributing-visual-cpp-files)
 
 ## CPU package changes in 0.3.6
