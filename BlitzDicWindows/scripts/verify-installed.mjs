@@ -65,15 +65,20 @@ try {
   assert.equal((await page.evaluate(() => window.blitz.load())).modelsBundled, true);
   assert.equal(await app.evaluate(({app}) => app.isPackaged), true);
   console.log('Packaged version:', await app.evaluate(({app}) => app.getVersion()));
+  await app.evaluate(({dialog}, file) => {
+    dialog.showOpenDialog = async () => ({canceled: false, filePaths: [file]});
+  }, `${root}/.runtime/test-speech.wav`);
   const requests = [];
+  const rewrittenText = 'The meeting starts tomorrow at 9.';
   const server = createServer(async (request, response) => {
     const chunks = [];
     for await (const chunk of request) chunks.push(chunk);
-    requests.push({method: request.method, url: request.url, body: Buffer.concat(chunks).toString('utf8')});
+    const body = chunks.length ? JSON.parse(Buffer.concat(chunks).toString('utf8')) : null;
+    requests.push({method: request.method, url: request.url, body});
     response.setHeader('Content-Type', 'application/json');
     response.end(JSON.stringify(request.method === 'GET'
       ? {data: [{id: 'packaged-fixture'}]}
-      : {choices: [{message: {content: 'OK'}}]}));
+      : {choices: [{message: {content: body?.messages?.at(-1)?.content === 'Test' ? 'OK' : rewrittenText}}]}));
   });
   await new Promise((resolve, reject) => {
     server.once('error', reject);
@@ -92,13 +97,24 @@ try {
     assert.deepEqual(requests.map(({method, url}) => [method, url]), [
       ['GET', '/v1/models'], ['POST', '/v1/chat/completions'],
     ]);
-    assert.equal(JSON.parse(requests[1].body).model, 'packaged-fixture');
+    assert.equal(requests[1].body.model, 'packaged-fixture');
     await page.locator('#save-provider').click();
     await page.waitForFunction(() => document.querySelector('#status').textContent === 'Verbindung gespeichert.');
     const {settings} = await page.evaluate(() => window.blitz.load());
     assert.equal(settings.provider.baseURL, address);
     assert.equal(settings.provider.model, 'packaged-fixture');
     console.log('PASS: packaged LM Studio model discovery, connection test and settings persistence');
+    await page.locator('nav button[data-page="dictation"]').click();
+    await page.locator('#mode').selectOption('clean');
+    await page.locator('#import').click();
+    await page.waitForFunction(text => document.querySelector('#result').value === text, rewrittenText, {timeout: 60000});
+    assert.equal(requests.length, 3);
+    assert.equal(requests[2].method, 'POST');
+    assert.equal(requests[2].url, '/v1/chat/completions');
+    assert.equal(requests[2].body.model, 'packaged-fixture');
+    assert.match(requests[2].body.messages.at(-1).content, /local speech recognition test/i);
+    await page.locator('#mode').selectOption('verbatim');
+    console.log('PASS: packaged WAV import, local transcription, and LLM rewrite shown in the editor');
   } finally {
     server.closeAllConnections();
     await new Promise(resolve => server.close(resolve));
@@ -115,9 +131,6 @@ try {
   assert.equal(await app.evaluate(() => globalThis.blitzLicenseTestPath), resolve(resources, 'licenses'));
   console.log('PASS: bundled corresponding FFmpeg source, clean runtime inventory and scoped license-folder button');
   await page.locator('nav button[data-page="dictation"]').click();
-  await app.evaluate(({dialog}, file) => {
-    dialog.showOpenDialog = async () => ({canceled: false, filePaths: [file]});
-  }, `${root}/.runtime/test-speech.wav`);
   for (const preset of ['whisper', 'parakeet-ultra']) {
     await page.evaluate(async preset => {
       const {settings} = await window.blitz.load(); settings.speech.preset = preset;
