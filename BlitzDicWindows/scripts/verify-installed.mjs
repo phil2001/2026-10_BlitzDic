@@ -128,6 +128,28 @@ try {
     await page.waitForFunction(() => document.querySelector('#result').value.includes('local speech recognition test'), {}, {timeout: 60000});
     console.log(`PASS: installed ${preset}: ${await page.locator('#result').inputValue()}`);
   }
+  if (process.env.BLITZDIC_TEST_CUSTOM_WHISPER) {
+    const directory = resolve(process.env.BLITZDIC_TEST_CUSTOM_WHISPER);
+    await app.evaluate(({dialog}, {directory, audio}) => {
+      dialog.showOpenDialog = async (_window, options) => ({
+        canceled: false,
+        filePaths: [options.properties?.includes('openDirectory') ? directory : audio],
+      });
+    }, {directory, audio: `${root}/.runtime/test-speech.wav`});
+    await page.locator('nav button[data-page="models"]').click();
+    await page.locator('#speech-model').selectOption('custom');
+    await page.getByRole('button', {name: 'Modellordner auswählen'}).click();
+    await page.waitForFunction(() => document.querySelector('#status').textContent === 'Eigenes Modell gespeichert.');
+    const {settings} = await page.evaluate(() => window.blitz.load());
+    assert.equal(settings.speech.preset, 'custom');
+    assert.equal(settings.speech.engine, 'whisper');
+    assert.equal(settings.speech.modelDirectory, directory);
+    await page.locator('nav button[data-page="dictation"]').click();
+    await page.locator('#result').evaluate(element => { element.value = ''; });
+    await page.locator('#import').click();
+    await page.waitForFunction(() => document.querySelector('#result').value.includes('local speech recognition test'), {}, {timeout: 60000});
+    console.log('PASS: custom Whisper folder selected, saved and used by the packaged app');
+  }
   assert.deepEqual(errors, []);
   console.log('PASS: installed app, fresh profile, both bundled models and speech runtime');
 } finally { await app.close(); }

@@ -76,6 +76,14 @@ erhalten und werden bei geänderten Namen als veraltet gekennzeichnet.
 4. Modellnamen abrufen oder eingeben, Verbindung testen und speichern.
 5. Text kopieren. Beim Schließen bleibt die App im Infobereich; dort lässt sie sich beenden.
 
+Ein weiteres Sprachmodell bindest du unter **Modelle → Eigenes kompatibles
+Modell** ein. Wähle **Whisper / CTranslate2** für einen vollständigen
+CTranslate2-Modellordner oder **Parakeet TDT / ONNX INT8** für einen vollständigen
+ONNX-Export im onnx-asr-Format. Klicke dann auf **Modellordner auswählen** und
+wähle den Ordner, der die Gewichte und die zugehörigen Konfigurations- und
+Tokenizerdateien enthält. BlitzDic lädt das gewählte Modell lokal aus diesem
+Ordner.
+
 Standard-Tastenkürzel: Strg+Umschalt+1 bis 4 für die vier Modi.
 Einmal drücken startet, erneut drücken beendet die Aufnahme.
 Zum Einfügen den Cursor zuerst im Zielprogramm setzen und dort das Kürzel benutzen.
