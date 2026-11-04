@@ -1542,3 +1542,11 @@ for installer packaging.
 The standalone package test also passed with German and English WAV inputs
 for both models in the staged dev.11 package. This mode does not require an
 installed Windows speech synthesis voice.
+
+The dev.11 NSIS executable was also tested by extracting its embedded x64
+archive on Windows 11 Pro (build 26200). All 1,109 files matched the staged
+package by relative path and SHA-256. The resource, native-origin and notice
+checks passed on the extracted payload. Both bundled models transcribed the
+German fixture from that payload with a Windows-only PATH and offline model
+loading. This exercise checks the exact installer payload. The NSIS wizard
+on a separate clean Windows 11 machine remains untested.
