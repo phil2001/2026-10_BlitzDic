@@ -1527,3 +1527,10 @@ The installer is `dist/windows-2026-11-04T12-16-15-585Z-23ed47/BlitzDic Setup 0.
 `6F8D5D95562278689758379BAE507425301ED394DB9C1E335EF07059528AC586`.
 Microsoft runtime terms, other native dependencies and clean Windows 11
 installation remain separate release checks.
+
+The pinned wheel recipe is also available as a manual workflow on `main`.
+`setup-speech.ps1 -RuyArtifactDirectory <directory>` checks the artifact
+manifest and creates a new environment under `.runtime`. Setup from the
+verified artifact and rejection of an altered checksum both passed under
+Windows PowerShell. Set `BLITZDIC_BUILD_PYTHON` to the reported interpreter
+for installer packaging.

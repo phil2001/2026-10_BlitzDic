@@ -220,7 +220,16 @@ npm.cmd start
 npm.cmd test
 ```
 
-Installer bauen:
+Für den Ruy-Build wie in dev.11 das Wheel aus dem Workflow **Build Windows
+Whisper runtime with Ruy** herunterladen. Falls das Artefakt abgelaufen ist,
+den Workflow erneut auslösen. `scripts/setup-speech.ps1 -RuyArtifactDirectory`
+erwartet den entpackten Artefaktordner mit Wheel und `build-provenance.txt`.
+Das Skript prüft Quellstand, Buildprofil und Prüfsumme und gibt den Pfad zur
+neuen Python-Umgebung aus. Diesen Pfad als `BLITZDIC_BUILD_PYTHON` setzen und
+in den folgenden Befehlen statt `.runtime/venv/Scripts/python.exe` verwenden.
+[Ruy-Build auf GitHub](https://github.com/phil2001/2026-10_BlitzDic/actions/workflows/ct2-ruy.yml)
+
+Der Standard-Entwicklungsbuild verwendet die normale Python-Umgebung.
 
 ```powershell
 uv pip install --python .runtime/venv/Scripts/python.exe pyinstaller==6.22.3
