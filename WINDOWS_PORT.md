@@ -1454,3 +1454,17 @@ The installer is `dist/windows-2026-11-04T05-55-55-513Z-3abb43/BlitzDic Setup 0.
 `78F0075E10D8B6A032244193DA655824B0B75D01D181894DB0D54B8928BAA2D8`.
 Packaged provider, meeting and UI files matched source. The resource checks
 and both bundled speech models and diarization passed from the staged package.
+
+## Manually selected models
+
+The dev.9 frozen worker accepted both supported formats through Dictation's
+`custom` mode. Test copies of the Whisper and Parakeet models were placed in
+separate Windows directories with spaces, umlauts and an emoji. Both recognized
+the synthetic fixture through the selected path with no available bundled model
+root. Selecting custom mode without a folder returned the expected error.
+
+A separate test downloaded Systran's Whisper Tiny CTranslate2 conversion at
+revision `d90ca5fe260221311c53c58e660288d3deb8d356` into an ignored local folder.
+The same worker recognized the fixture through custom mode using this distinct
+model. Tiny remains a user-supplied option. The two bundled presets are unchanged.
+[Whisper Tiny model card](https://huggingface.co/Systran/faster-whisper-tiny/tree/d90ca5fe260221311c53c58e660288d3deb8d356)

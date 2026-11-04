@@ -1,7 +1,7 @@
 # Roadmap für Windows 11
 
 - Physische Mikrofontests, weitere Office-/Browser-Versionen und ein frisches Windows 11 prüfen.
-- Echte LAN- und Cloud-Anbieter zusätzlich zu lokalen Servern und Protokoll-Fixtures prüfen.
+- Echten LAN-Modellserver prüfen, sobald er bereitsteht. Die Konfiguration für den späteren Server ist verfügbar. Externe API mit einem echten Anbieter prüfen.
 - Website-Regeln: abschließendes Paket einschließlich Whisper/Chrome prüfen;
   die erweiterte Fensterbindung auch mit Word und klassischen Feldern prüfen.
 - Experimentelles Stummschalten: echte Windows-Änderung/Wiederherstellung und
