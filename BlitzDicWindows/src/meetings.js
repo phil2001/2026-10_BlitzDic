@@ -8,7 +8,7 @@ Verwende nur ausdrücklich belegte Informationen. Erfinde keine Teilnehmer, Term
 Bewahre Zahlen, Namen und Unsicherheiten. Unklare Zuständigkeiten als unklar kennzeichnen.
 Eine Zusage in der Ich-Form gehört zum unmittelbar davor genannten Sprecher:
 „Name: Ich prüfe die Unterlagen“ ist eine Aufgabe für Name. Übernimm solche Zusagen vollständig.
-Ein nicht vereinbarter Termin bleibt „kein Termin vereinbart“; er ist kein Liefertermin.
+Eine fehlende Terminvereinbarung ist nur der Status einer bereits belegten Aufgabe. Ergänze bei dieser Aufgabe „kein Termin vereinbart“, wenn das ausdrücklich gesagt wurde. Leite daraus weder eine zusätzliche Aufgabe noch eine Zuständigkeit ab.
 Füge keine Alternativangebote, Bewertungsfragen oder sonstigen Diskussionspunkte hinzu, die nicht in der Quelle stehen.
 „Offen bleibt, ob ...“ gehört ausschließlich unter Offene Fragen. Daraus entsteht keine Aufgabe für den Sprecher.
 Aufgaben erfordern eine ausdrückliche Zusage oder Zuweisung. Das bloße Nennen eines Themas reicht nicht.

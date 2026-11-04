@@ -1,9 +1,13 @@
 import assert from 'node:assert/strict';
 import { Meetings } from '../src/meetings.js';
 
-const provider = {provider: 'lmstudio', location: 'local',
-  baseURL: process.env.BLITZDIC_TEST_LLM_URL || 'http://127.0.0.1:1234/v1',
-  model: process.env.BLITZDIC_TEST_LLM_MODEL || 'blitzdic-summary-test', apiKey: ''};
+const provider = {
+  provider: process.env.BLITZDIC_TEST_LLM_PROVIDER || 'lmstudio',
+  location: process.env.BLITZDIC_TEST_LLM_LOCATION || 'local',
+  baseURL: process.env.BLITZDIC_TEST_LLM_URL || '',
+  model: process.env.BLITZDIC_TEST_LLM_MODEL || 'blitzdic-summary-test',
+  apiKey: process.env.BLITZDIC_TEST_LLM_API_KEY || '',
+};
 const transcript = 'Anna: Wir entscheiden uns für Angebot B. Das Budget beträgt 2500 Euro. '
   + 'Ben: Ich prüfe die technischen Unterlagen. Ein Abgabetermin wurde nicht vereinbart. '
   + 'Anna: Offen bleibt, ob die Lieferung nach Berlin möglich ist.';
@@ -21,4 +25,4 @@ const tasks = entry.summary.split(/Aufgaben\s*:?/i)[1]?.split(/Offene Fragen/i)[
 assert.match(tasks, /Ben/);
 assert.doesNotMatch(tasks, /Anna/);
 console.log('SYNTHETIC FIXTURE SUMMARY:\n' + entry.summary);
-console.log('PASS: real local model, key facts retained, original preserved, save invoked');
+console.log(`PASS: real model (${provider.location}), key facts retained, original preserved, save invoked`);

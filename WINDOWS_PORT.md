@@ -1418,3 +1418,31 @@ remains open.
 The installer is `dist/windows-2026-11-04T05-48-41-607Z-9c3773/BlitzDic Setup 0.3.10-dev.8.exe`
 (1,148,513,872 bytes). SHA-256 is
 `3BE4D87C51CEB83F766A9EF2302C9D47045D37AC7083464BC88BE509F3FFF2DE`.
+
+## Real LLM acceptance fixture
+
+Run `node scripts/verify-real-meeting-model.mjs` from `BlitzDicWindows` against
+a running model server. The fixture submits a synthetic meeting and checks the
+decision, budget, task owner and open question, as well as the save callback.
+Use `BLITZDIC_TEST_LLM_PROVIDER` (`lmstudio`, `ollama`, `custom` or a configured
+API provider), `BLITZDIC_TEST_LLM_LOCATION` (`local`, `lan` or `api`),
+`BLITZDIC_TEST_LLM_URL` and `BLITZDIC_TEST_LLM_MODEL` to select the endpoint.
+If the server requires a key, supply it through `BLITZDIC_TEST_LLM_API_KEY`
+in the test process environment. The fixture prints its synthetic result and
+does not read BlitzDic's saved connections or send existing dictation text.
+
+Dev.9 includes the simplified LAN connection settings and a more explicit
+instruction about unagreed deadlines. The local LM Studio server successfully
+returned text for a URL supplied without `/v1`. Qwen 2.5 Coder 3B failed all
+three post-change factual checks, including omissions and invented task owners.
+Gemma 4 E4B passed the same fixture on the local server. It retained offer B,
+the budget of 2,500 euros, Ben's task and the open question about delivery to
+Berlin. It also reported that no deadline had been agreed. Both test sessions
+stopped their loopback server and unloaded the test model.
+LAN and external API acceptance still require real endpoints.
+
+The installer is `dist/windows-2026-11-04T05-55-55-513Z-3abb43/BlitzDic Setup 0.3.10-dev.9.exe`
+(1,148,514,308 bytes). SHA-256 is
+`78F0075E10D8B6A032244193DA655824B0B75D01D181894DB0D54B8928BAA2D8`.
+Packaged provider, meeting and UI files matched source. The resource checks
+and both bundled speech models and diarization passed from the staged package.
