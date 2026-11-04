@@ -9,6 +9,9 @@ Copyright-Hinweise bleiben in LICENSE erhalten; die Git-Historie dokumentiert
 - OpenAI Whisper Small, MIT: https://github.com/openai/whisper
 - CTranslate2-Konvertierung von Systran, MIT:
   https://huggingface.co/Systran/faster-whisper-small
+- Die von Systran referenzierte Transformers-Ausgabe von Whisper Small
+  ist auf der Modellseite als Apache-2.0 gekennzeichnet.
+  https://huggingface.co/openai/whisper-small
 - NVIDIA Parakeet TDT 0.6B v3 als Grundlage, CC-BY-4.0:
   https://huggingface.co/nvidia/parakeet-tdt-0.6b-v3
 - Moondream Parakeet Ultra, Nachtraining, CC-BY-4.0:

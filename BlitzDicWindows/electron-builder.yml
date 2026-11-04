@@ -28,6 +28,8 @@ extraResources:
     to: licenses/Speech-model-attribution.md
   - from: licenses/speech-models.json
     to: licenses/Speech-model-provenance.json
+  - from: licenses/speech-models
+    to: licenses/speech-models
 win:
   target:
     - target: nsis

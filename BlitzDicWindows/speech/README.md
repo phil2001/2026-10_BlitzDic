@@ -174,7 +174,11 @@ owned foreground editor. It does not relax any foreground or preheld-key guard.
 
 ## Attribution
 
-Whisper: OpenAI (MIT), CTranslate2 export by Systran, faster-whisper runtime.
+Whisper: OpenAI model, CTranslate2 export by Systran, faster-whisper runtime.
+Systran marks the bundled export MIT. OpenAI publishes its original Whisper
+repository and weights under MIT. The Transformers model card that Systran
+names as its conversion input is marked Apache-2.0. The installer preserves
+both reference license texts in `licenses/speech-models`.
 Parakeet Ultra: NVIDIA base model, Moondream post-training, Masterx ONNX
 conversion and INT8 quantization using the ONNX graphs from istupakov,
 CC-BY-4.0. Runtime: onnx-asr / ONNX Runtime.
@@ -183,6 +187,9 @@ SHA-256 manifest, which is included as `Speech-model-provenance.json`.
 Model source and license links:
 
 - https://huggingface.co/Systran/faster-whisper-small
+- https://huggingface.co/openai/whisper-small
+- https://github.com/openai/whisper/blob/86098128c0b4f24f0e2aa2994de830614b474227/LICENSE
+- https://www.apache.org/licenses/LICENSE-2.0.txt
 - https://huggingface.co/nvidia/parakeet-tdt-0.6b-v3
 - https://huggingface.co/moondream/parakeet-ultra
 - https://huggingface.co/istupakov/parakeet-tdt-0.6b-v3-onnx
