@@ -230,7 +230,7 @@ $('meeting-record').onclick = attempt(async () => {
     try {
       await api['recording-starting']('meeting');
       if (startup.cancelled) return;
-      if (!await meetingRecorder.start($('microphone').value, {source})) return;
+      if (!await meetingRecorder.start(settings.speech.microphone, {source})) return;
     }
     catch (error) {
       if (startup.cancelled) return;
@@ -238,6 +238,7 @@ $('meeting-record').onclick = attempt(async () => {
     }
     finally {if (meetingStartup === startup) meetingStartup = null;}
     meetingRecordingUI(true); status('Meeting-Aufnahme läuft …'); startLiveNotes();
+    if (source !== 'system') await refreshMicrophones();
   }
 });
 function recordingUI(active, processing = false) {
@@ -247,6 +248,23 @@ function recordingUI(active, processing = false) {
   $('level').hidden = !active; $('cancel').hidden = !active && !busy;
 }
 async function save() { await api.settings(settings); }
+async function refreshMicrophones() {
+  let devices;
+  try { devices = await navigator.mediaDevices.enumerateDevices(); }
+  catch { return; }
+  const picker = $('microphone');
+  const selected = settings.speech.microphone || '';
+  picker.replaceChildren(new Option('Standardmikrofon', ''));
+  for (const device of devices) {
+    if (device.kind === 'audioinput' && device.deviceId && device.deviceId !== 'default') {
+      picker.add(new Option(device.label || 'Mikrofon', device.deviceId));
+    }
+  }
+  if (selected && !Array.from(picker.options).some(option => option.value === selected)) {
+    picker.add(new Option('Gespeichertes Mikrofon (nicht in der Geräteliste)', selected));
+  }
+  picker.value = selected;
+}
 async function result(entry) {
   if (!entry) return;
   lastOriginal = entry.original;
@@ -333,7 +351,7 @@ $('record').onclick = attempt(async () => {
     try {
       await api['recording-starting']();
       if (startup.cancelled) return;
-      if (!await recorder.start($('microphone').value, {beforeCapture: async () => {startup.outputWarning = (await api['prepare-output']())?.warning;}})) return;
+      if (!await recorder.start(settings.speech.microphone, {beforeCapture: async () => {startup.outputWarning = (await api['prepare-output']())?.warning;}})) return;
     } catch (error) {
       if (startup.cancelled) return;
       if (heldGesture === startingGesture) heldGesture = null;
@@ -341,16 +359,16 @@ $('record').onclick = attempt(async () => {
     }
     finally {if (dictationStartup === startup) dictationStartup = null;}
     recordingUI(true); status(startup.outputWarning || '');
-    const devices = await navigator.mediaDevices.enumerateDevices();
-    const selected = $('microphone').value;
-    $('microphone').replaceChildren(new Option('Standardmikrofon', ''));
-    devices.filter(d => d.kind === 'audioinput').forEach(d => $('microphone').add(new Option(d.label || 'Mikrofon', d.deviceId)));
-    $('microphone').value = selected;
+    await refreshMicrophones();
   }
 });
 $('import').onclick = attempt(async () => { if (!busy && !meetingBusy && meetingRecorder.state === 'idle' && recorder.state === 'idle') await result(await api.import($('mode').value)); });
 $('cancel').onclick = attempt(async () => { meetingCaptureEpoch++; cancelStartup(); heldGesture = null; recorder.cancel(); meetingRecorder.cancel(); await stopLiveNotes(); await api.cancel(); recordingUI(false); meetingRecordingUI(false); status('Abgebrochen.'); });
 $('copy').onclick = attempt(async () => { await api.copy($('result').value); status('Text kopiert.'); });
+$('microphone').onchange = attempt(async () => {
+  settings.speech.microphone = $('microphone').value;
+  await save();
+});
 $('mode').onchange = attempt(async () => { settings.mode = $('mode').value; await save(); });
 $('speech-model').onchange = attempt(async () => { settings.speech.preset = $('speech-model').value; await save(); updateLocation(); });
 function updateLocation() { $('processing-location').textContent = `Spracherkennung: ${{ whisper: 'Whisper', 'parakeet-ultra': 'Parakeet Ultra', custom: 'Eigenes Modell' }[settings.speech.preset]} · Lokal auf diesem Computer.`; }
@@ -549,4 +567,6 @@ try {
   $('mute-output-enabled').checked = settings.muteOutputWhileRecording === true;
   $('terms').value = settings.modeSettings.customTerms.join('\n'); $('instruction').value = settings.modeSettings.systemPrompt || '';
   updateLocation(); previewLiveDestination(); await refreshHistory(); await refreshMeetings();
+  navigator.mediaDevices?.addEventListener('devicechange', refreshMicrophones);
+  await refreshMicrophones();
 } catch (error) { status(error.message); }

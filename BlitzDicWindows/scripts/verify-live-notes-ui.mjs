@@ -47,11 +47,19 @@ try {
  });
  await page.addInitScript(()=>{
   window.blitz=new Proxy({}, {get:(_,name)=>name==='load'?()=>window.fixtureLoad():String(name).startsWith('on')?()=>()=>{}:(...args)=>{if(name==='meeting-live-update'){window.liveUpdates=(window.liveUpdates||0)+1;args[1]=Array.from(new Uint8Array(args[1]));}return window.fixtureCall(name,args);}});
-  navigator.mediaDevices.enumerateDevices=async()=>[];
+  window.fixtureMicrophones=[{kind:'audioinput',deviceId:'fixture-mic',label:'Testmikrofon'}];
+  navigator.mediaDevices.enumerateDevices=async()=>window.fixtureMicrophones;
  });
  const url=`http://127.0.0.1:${server.address().port}/ui/index.html`;
  await page.goto(url);assert.equal(page.url(),url);assert.equal(await page.title(),'BlitzDic');
  await page.waitForSelector('#app-version',{state:'attached'});
+ await page.locator('#microphone').selectOption('fixture-mic');
+ await page.waitForFunction(async()=> (await window.fixtureLoad()).settings.speech.microphone==='fixture-mic');
+ await page.reload();
+ await page.waitForFunction(()=>document.querySelector('#microphone').value==='fixture-mic');
+ await page.evaluate(()=>{window.fixtureMicrophones=[];navigator.mediaDevices.dispatchEvent(new Event('devicechange'));});
+ await page.locator('#microphone option:checked').filter({hasText:'nicht in der Geräteliste'}).waitFor({state:'attached'});
+ assert.equal(await page.locator('#microphone').inputValue(),'fixture-mic');
  await page.locator('[data-page=connections]').click();
  await page.locator('#provider').selectOption('ollama');
  await page.locator('#location').selectOption('lan');

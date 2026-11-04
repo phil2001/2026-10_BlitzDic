@@ -64,6 +64,8 @@ erhalten und werden bei geänderten Namen als veraltet gekennzeichnet.
 
 1. Nach Installation BlitzDic öffnen und unter **Modelle** Whisper oder Parakeet wählen.
 2. Unter **Diktat** Mikrofon und Schreibmodus wählen, Aufnahme starten und beenden.
+   Der aktuelle Quellstand merkt sich die Mikrofonwahl für Diktate und Meetings.
+   Falls das Gerät fehlt, es erneut verbinden oder **Standardmikrofon** wählen.
 3. Für Schreibmodi außer Wortgenau unter **Verbindungen** einen LLM-Server einrichten.
    LM Studio verwendet üblicherweise `http://127.0.0.1:1234/v1`,
    Ollama `http://127.0.0.1:11434/v1`. Für einen Netzwerk-PC **KI-Computer im Netzwerk**

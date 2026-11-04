@@ -2,6 +2,25 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Recorder } from '../src/recorder.js';
 
+test('an unavailable selected microphone never opens the default device', async () => {
+  const original = Object.getOwnPropertyDescriptor(globalThis, 'navigator');
+  const requests = [];
+  Object.defineProperty(globalThis, 'navigator', {configurable:true,value:{mediaDevices:{
+    async getUserMedia(options) {
+      requests.push(options);
+      throw new DOMException('Missing', 'OverconstrainedError');
+    },
+  }}});
+  try {
+    const recorder = new Recorder();
+    await assert.rejects(recorder.start('saved-mic'), /gewählte Mikrofon ist nicht verfügbar/);
+    assert.deepEqual(requests.map(options => options.audio.deviceId), [{exact:'saved-mic'}]);
+    assert.equal(recorder.state, 'idle');
+  } finally {
+    if (original) Object.defineProperty(globalThis, 'navigator', original); else delete globalThis.navigator;
+  }
+});
+
 test('ended audio sources finalize buffered audio once and fail cleanly during startup', async () => {
   class Track extends EventTarget {
     readyState = 'live';

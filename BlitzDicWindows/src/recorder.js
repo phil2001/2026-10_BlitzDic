@@ -34,11 +34,18 @@ export class Recorder {
           throw new Error('Windows hat keinen Systemaudio-Stream geliefert. Audioausgabegerät prüfen.');
       }
       if (source !== 'system') {
-      session.stream = await navigator.mediaDevices.getUserMedia({ audio: {
-        deviceId: deviceId ? { exact: deviceId } : undefined,
-        channelCount: 1, echoCancellation: true, noiseSuppression: true,
-      } });
-      watch(session.stream);
+        try {
+          session.stream = await navigator.mediaDevices.getUserMedia({ audio: {
+            deviceId: deviceId ? { exact: deviceId } : undefined,
+            channelCount: 1, echoCancellation: true, noiseSuppression: true,
+          } });
+        } catch (error) {
+          if (deviceId && ['NotFoundError', 'OverconstrainedError'].includes(error.name)) {
+            throw new Error('Das gewählte Mikrofon ist nicht verfügbar. Bitte erneut verbinden oder unter Diktat ein anderes Mikrofon wählen.');
+          }
+          throw error;
+        }
+        watch(session.stream);
       }
       if (!current()) { this.release(session); return false; }
       checkSource();
