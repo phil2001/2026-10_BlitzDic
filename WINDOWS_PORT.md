@@ -1550,3 +1550,17 @@ checks passed on the extracted payload. Both bundled models transcribed the
 German fixture from that payload with a Windows-only PATH and offline model
 loading. This exercise checks the exact installer payload. The NSIS wizard
 on a separate clean Windows 11 machine remains untested.
+
+## Development package 0.3.10-dev.12
+
+This package includes the provider validation from commit `c009e7d` and uses
+the Ruy wheel from manual workflow run `41828636061`. The staged ASAR contained
+the expected version and a byte-for-byte copy of the updated provider module.
+The resource and notice checks passed, with 110 native files mapped to their
+build inputs. Both bundled models transcribed the German fixture offline
+from the staged package with a Windows-only PATH.
+
+The unsigned installer is
+`dist/windows-2026-11-04T12-35-28-787Z-8d4952/BlitzDic Setup 0.3.10-dev.12.exe`
+(1,137,798,650 bytes). SHA-256 is
+`F4B9E07F6874645244E406BC8DE7744BF696CA640EF347F14BCB3DFD12E7C1A6`.
