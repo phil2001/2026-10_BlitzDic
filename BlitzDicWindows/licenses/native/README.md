@@ -23,8 +23,22 @@ process-module sampling observed all five DLLs loaded from the speech package
 in each run. This verifies package-local resolution on that host. A fresh
 Windows 11 install test remains open.
 
-The two System32 inputs still need a verified redistributable source. The
-distributor's rights to ship all five files also remain under review.
+Both System32 inputs match the corresponding x64 DLLs in Microsoft's signed
+[Visual C++ Redistributable 14.51.36247](https://aka.ms/vs/18/release/14.51.36247/VC_redist.x64.exe)
+byte for byte. The downloaded bundle passed Authenticode verification with
+Microsoft Corporation as the signer. It was extracted without running the
+installer. The Burn manifest maps the `vcRuntimeMinimum_amd64/cab1.cab` payload
+to `a4`. The following hashes were measured with SHA-256.
+
+| File | SHA-256 |
+| --- | --- |
+| `VC_redist.x64.exe` | `843068991DAAA1F73AD9F6239BCE4D0F6A07A51F18C37EA2A867E9BECA71295C` |
+| `msvcp140.dll_amd64` | `7C26614E1D733892C2DEAC7E245CE115504B1D80592DD0A01B08E3E5A55F89CA` |
+| `msvcp140_1.dll_amd64` | `206C931BF90FDAD8816DE3B5E2EF80B2BCAA9406C89ECC05FE6FDDFFE251E982` |
+
+Builds still resolve these two DLLs from the host. A different host or runtime
+version requires a new comparison. The distributor's rights to ship all five
+files remain under review.
 [Microsoft redistribution documentation](https://learn.microsoft.com/en-us/cpp/windows/redistributing-visual-cpp-files)
 
 ## CPU package changes in 0.3.6
