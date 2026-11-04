@@ -1607,3 +1607,11 @@ The unsigned installer is
 `dist/windows-2026-11-04T12-48-43-236Z-b7603d/BlitzDic Setup 0.3.10-dev.14.exe`
 (1,137,806,244 bytes). SHA-256 is
 `A9567FF714584EC4D450563D6089CB6B416B948C48AE3763AA04A913FDC5B75D`.
+
+The staged dev.14 worker also passed a 122.2-second German fixture from a WAV
+path containing an umlaut and an emoji. Whisper returned 194 timestamped
+words and Parakeet Ultra returned 192. Both preserved the expected umlaut
+phrase and final sentence in all eight repetitions. Word starts were ordered
+and word intervals stayed within the recording. The worker accepted a UTF-8
+request and returned ASCII-escaped JSON that decoded to the expected German
+text.
