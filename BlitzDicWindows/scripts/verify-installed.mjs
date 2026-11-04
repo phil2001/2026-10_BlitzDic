@@ -3,6 +3,7 @@ import { resolve, dirname, sep } from 'node:path';
 import { access, readFile } from 'node:fs/promises';
 import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
+import {createServer} from 'node:http';
 const root = resolve(import.meta.dirname, '..');
 const executablePath = process.env.BLITZDIC_TEST_EXECUTABLE;
 if (!executablePath) throw new Error('BLITZDIC_TEST_EXECUTABLE muss auf die installierte BlitzDic.exe zeigen.');
@@ -64,6 +65,44 @@ try {
   assert.equal((await page.evaluate(() => window.blitz.load())).modelsBundled, true);
   assert.equal(await app.evaluate(({app}) => app.isPackaged), true);
   console.log('Packaged version:', await app.evaluate(({app}) => app.getVersion()));
+  const requests = [];
+  const server = createServer(async (request, response) => {
+    const chunks = [];
+    for await (const chunk of request) chunks.push(chunk);
+    requests.push({method: request.method, url: request.url, body: Buffer.concat(chunks).toString('utf8')});
+    response.setHeader('Content-Type', 'application/json');
+    response.end(JSON.stringify(request.method === 'GET'
+      ? {data: [{id: 'packaged-fixture'}]}
+      : {choices: [{message: {content: 'OK'}}]}));
+  });
+  await new Promise((resolve, reject) => {
+    server.once('error', reject);
+    server.listen(0, '127.0.0.1', resolve);
+  });
+  try {
+    const address = `http://127.0.0.1:${server.address().port}`;
+    await page.locator('nav button[data-page="connections"]').click();
+    await page.locator('#provider').selectOption('lmstudio');
+    await page.locator('#baseURL').fill(address);
+    await page.locator('#discover').click();
+    await page.locator('#model-list option[value="packaged-fixture"]').waitFor({state: 'attached'});
+    await page.locator('#model').fill('packaged-fixture');
+    await page.locator('#test').click();
+    await page.waitForFunction(() => document.querySelector('#status').textContent === 'Verbindung funktioniert.');
+    assert.deepEqual(requests.map(({method, url}) => [method, url]), [
+      ['GET', '/v1/models'], ['POST', '/v1/chat/completions'],
+    ]);
+    assert.equal(JSON.parse(requests[1].body).model, 'packaged-fixture');
+    await page.locator('#save-provider').click();
+    await page.waitForFunction(() => document.querySelector('#status').textContent === 'Verbindung gespeichert.');
+    const {settings} = await page.evaluate(() => window.blitz.load());
+    assert.equal(settings.provider.baseURL, address);
+    assert.equal(settings.provider.model, 'packaged-fixture');
+    console.log('PASS: packaged LM Studio model discovery, connection test and settings persistence');
+  } finally {
+    server.closeAllConnections();
+    await new Promise(resolve => server.close(resolve));
+  }
   await page.locator('nav button[data-page="meetings"]').click();
   assert.equal(await page.locator('#meeting-source option').count(), 3);
   await page.screenshot({path: `${root}/.runtime/packaged-meetings.png`});
