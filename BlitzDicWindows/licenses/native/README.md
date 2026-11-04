@@ -1,5 +1,11 @@
 # Native dependency review
 
+The [Python standalone runtime notices](python-standalone-20260127/README.md)
+record the source and notices for the bundled OpenSSL, SQLite and libffi DLLs.
+The Microsoft C++ DLLs still require review of the distributor's rights under
+the applicable terms. Two DLLs in dev.7 came directly from System32.
+[Microsoft redistribution documentation](https://learn.microsoft.com/en-us/cpp/windows/redistributing-visual-cpp-files)
+
 ## CPU package changes in 0.3.6
 
 Internal speaker-turn WAV encoding now uses the Python standard library.

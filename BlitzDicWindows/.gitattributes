@@ -3,3 +3,4 @@ licenses/native/intel-openmp/Intel-EULA-August-2024.txt binary
 # Preserve supplier bytes, legacy encoding and line endings for hash verification.
 licenses/native/onednn-3.1.1/*.txt binary
 licenses/native/numpy-openblas/SUPPLIER-LICENSE.txt binary
+licenses/native/python-standalone-20260127/LICENSE.*.txt binary
