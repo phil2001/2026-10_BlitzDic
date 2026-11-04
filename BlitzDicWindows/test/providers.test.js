@@ -1,14 +1,26 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createServer } from 'node:http';
+import { networkInterfaces } from 'node:os';
 import { complete, listModels, validateConfig } from '../src/providers.js';
 
-async function server(t, handler) {
+async function server(t, handler, host = '127.0.0.1') {
   const instance = createServer(handler);
-  await new Promise(resolve => instance.listen(0, '127.0.0.1', resolve));
+  await new Promise((resolve, reject) => {
+    instance.once('error', reject);
+    instance.listen(0, host, resolve);
+  });
   t.after(() => new Promise(resolve => { instance.closeAllConnections(); instance.close(resolve); }));
-  return { provider: 'ollama', location: 'local', model: 'installed-model', baseURL: `http://127.0.0.1:${instance.address().port}/v1` };
+  return { provider: 'ollama', location: 'local', model: 'installed-model', baseURL: `http://${host}:${instance.address().port}/v1` };
 }
+
+test('only explicitly supported providers can be selected', () => {
+  for (const provider of ['constructor', '__proto__', 'toString']) {
+    assert.throws(() => validateConfig({
+      provider, location: 'local', model: 'm', baseURL: 'http://localhost/v1',
+    }), /Unbekannter Anbieter/);
+  }
+});
 
 test('local mode rejects remote destinations and malformed URLs', () => {
   for (const baseURL of ['https://example.com/v1', 'file:///tmp/model', 'http://user:key@localhost/v1', 'http://localhost/v1?key=secret']) {
@@ -42,6 +54,30 @@ test('real HTTP model discovery and rewriting preserve path, roles and model', a
   const serverAddress = { ...config, baseURL: new URL(config.baseURL).origin };
   assert.deepEqual(await listModels(serverAddress), ['a', 'b']);
   assert.equal(await complete(serverAddress, 'instruction', 'dictation'), 'Corrected text.');
+});
+
+test('LM Studio LAN mode discovers a model and sends text to a non-loopback address', async t => {
+  const lan = Object.values(networkInterfaces()).flat()
+    .find(address => address.family === 'IPv4' && !address.internal);
+  if (!lan) return t.skip('No non-loopback IPv4 interface available');
+
+  const fixture = await server(t, async (req, res) => {
+    res.setHeader('Content-Type', 'application/json');
+    if (req.method === 'GET' && req.url === '/v1/models') {
+      return res.end(JSON.stringify({ data: [{ id: 'lan-model' }] }));
+    }
+    assert.equal(req.method, 'POST');
+    assert.equal(req.url, '/v1/chat/completions');
+    const chunks = [];
+    for await (const chunk of req) chunks.push(chunk);
+    const body = JSON.parse(Buffer.concat(chunks).toString('utf8'));
+    assert.equal(body.model, 'lan-model');
+    assert.equal(body.messages[1].content, 'synthetic LAN fixture');
+    res.end(JSON.stringify({ choices: [{ message: { content: 'LAN reply' } }] }));
+  }, lan.address);
+  const config = { provider: 'lmstudio', location: 'lan', baseURL: new URL(fixture.baseURL).origin };
+  const [model] = await listModels(config);
+  assert.equal(await complete({ ...config, model }, 'instruction', 'synthetic LAN fixture'), 'LAN reply');
 });
 
 test('API mode rejects plaintext before sending text or credentials', async t => {

@@ -11,8 +11,8 @@ export const providers = Object.freeze({
 });
 
 export function validateConfig(config, { requireModel = true } = {}) {
+  if (!Object.hasOwn(providers, config.provider)) throw new Error('Unbekannter Anbieter.');
   const provider = providers[config.provider];
-  if (!provider) throw new Error('Unbekannter Anbieter.');
   const suppliedAddress = config.baseURL?.trim();
   if (config.location === 'lan' && !suppliedAddress)
     throw new Error('Bitte die Adresse des KI-Computers im Netzwerk eingeben.');
