@@ -1564,3 +1564,13 @@ The unsigned installer is
 `dist/windows-2026-11-04T12-35-28-787Z-8d4952/BlitzDic Setup 0.3.10-dev.12.exe`
 (1,137,798,650 bytes). SHA-256 is
 `F4B9E07F6874645244E406BC8DE7744BF696CA640EF347F14BCB3DFD12E7C1A6`.
+
+Extracting the x64 archive from this exact setup file yielded 1,097 files,
+all identical to the staged package by path and SHA-256. The twelve paths
+absent compared with dev.11 were `INSTALLER` and `REQUESTED` metadata markers
+from six Python distributions. Resource, native-origin and notice checks
+passed on the extracted package. Both models transcribed through the last
+section of the 105.2-second English fixture with offline model loading.
+[Windows CI for the package source](https://github.com/phil2001/2026-10_BlitzDic/actions/runs/41830883286)
+also passed. The setup wizard and microphone remain to be tested on a clean
+Windows 11 system.
