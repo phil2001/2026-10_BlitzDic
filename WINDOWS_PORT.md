@@ -1582,3 +1582,16 @@ PC. The packaged app started, rendered its settings and meeting pages, and
 transcribed the WAV through the app's import action with both bundled models.
 The test substituted the file picker and license-folder opener. No renderer
 errors were captured during the check.
+
+## Development package 0.3.10-dev.13
+
+The build checked the four files for each bundled model before packaging.
+The staged Windows application contains an identical copy of the model
+provenance manifest. All eight packaged model hashes, the notice inventory
+and the 110 native origin records passed verification. Both models
+transcribed the German fixture offline from the staged package.
+
+The unsigned installer is
+`dist/windows-2026-11-04T12-45-08-259Z-e4e534/BlitzDic Setup 0.3.10-dev.13.exe`
+(1,137,801,702 bytes). SHA-256 is
+`D81130E81384B3ABC3F85662B469DBC2BE20CBF99859668D41820E097F375542`.
