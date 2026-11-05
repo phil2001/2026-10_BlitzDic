@@ -23,6 +23,7 @@ await run(process.execPath, ['scripts/verify-models.mjs']);
 await mkdir(resolve(root, buildRoot), {recursive: true});
 console.log(`Build: ${id}\nInstaller output: ${output}`);
 await run(python, ['scripts/setup-diarization.py', '--verify-only']);
+await run(python, ['scripts/verify-electron-runtime.py', '--distribution', 'node_modules/electron/dist']);
 await run(python, ['scripts/collect-licenses.py', `${buildRoot}/licenses`]);
 await run(process.execPath, ['scripts/create-installer-license.mjs', `${buildRoot}/licenses/Installer-LICENSE.txt`]);
 await run(python, ['scripts/native-inventory.py', `${buildRoot}/licenses/native-binaries.json`, '--require-clean-ffmpeg']);
@@ -43,5 +44,6 @@ await run(process.execPath, ['node_modules/electron-builder/cli.js', '--win', '-
 const version = JSON.parse(await readFile(resolve(root, 'package.json'), 'utf8')).version;
 await run(python, ['scripts/verify-installer-license.py', `${output}/BlitzDic Setup ${version}.exe`,
   `${buildRoot}/licenses/Installer-LICENSE.txt`]);
+await run(python, ['scripts/verify-electron-runtime.py', '--application', `${output}/win-unpacked`]);
 await writeFile(resolve(root, `${buildRoot}/build-result.json`), JSON.stringify({id, output, speechOutput}, null, 2));
 console.log(`Windows package built in ${output}. License inventory: ${buildRoot}/licenses/inventory.json`);

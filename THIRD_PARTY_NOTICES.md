@@ -37,6 +37,16 @@ BlitzDicWindows/licenses/upstream. Das Build-Inventar dokumentiert Herkunft und
 Prüfsummen. Eingebettete native Bibliotheken und deren Quellcodepflichten müssen
 vor der fertigen Veröffentlichung zusätzlich geprüft werden.
 
+Die Electron-Laufzeit enthält eine eigene FFmpeg-DLL zusätzlich zu derjenigen
+der Spracherkennung. Die gebündelten Quellarchive unter
+`licenses/native/electron-45.2.1/source` enthalten die festgelegten Electron-
+und Chromium-FFmpeg-Quellstände mit Bauhinweisen, Patchreihe und LGPL-Text.
+Die Windows-DLLs und die ausführbaren Abschnitte des App-Programms werden beim
+Bau gegen das offizielle Electron-Lieferarchiv geprüft; die für Branding und
+ASAR-Integrität geänderten Programmressourcen sind dabei gesondert ausgewiesen.
+Die Quellen dienen der Nachvollziehbarkeit und Ausübung der Bibliotheksrechte.
+Anwender benötigen dafür keine weitere Installation auf ihren Arbeitsplätzen.
+
 Ab Windows 0.3.5 verwendet die Paketierung das private PyAV-Wheel
 16.0.1+blitzdic.1 mit FFmpeg 8.0.3, dynamisch unter LGPL v2.1 oder später,
 ohne aktivierte GPL-/Nonfree-Komponenten. Die ausführbaren PyAV-Codeabschnitte

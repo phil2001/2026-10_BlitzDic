@@ -1789,3 +1789,50 @@ The unsigned installer is
 The existing installed app remains dev.14. A clean Windows 11 installation,
 interactive inspection of the new license page, and remaining redistribution
 review remain unverified.
+
+## Development package 0.3.10-dev.19: Electron FFmpeg source bundle
+
+The platform runtime is now recorded separately from the 111 speech-runtime
+DLL/PYD files. The six Windows Electron DLLs match the complete official
+Electron 45.2.1 archive, whose SHA-256 matches the published release digest.
+All executable sections except `.rsrc` also match the supplier; electron-builder
+changes that resource section for branding, version and ASAR integrity.
+The Electron MIT and Chromium notice files match the supplier archive as well.
+The separately offered FFmpeg ZIP contains a different library and was not
+used to identify the packaged DLL.
+
+The source chain was verified from Electron commit
+`f81ca3d4f09f57667238120adacb01239d5ecd89` through Chromium 156.0.8078.75
+to FFmpeg commit `9db86ce5b5b454dfc96c435f9f0723012980c37f`.
+The complete Electron and Chromium FFmpeg source archives are bundled with
+their release recipes, original LGPL text, copyright credits and patch series.
+For both archives, reconstructed Git trees matched the authoritative commit
+trees. Electron's Chromium patches do not modify DEPS; its only FFmpeg patch
+changes the macOS loader path and is retained as original upstream material.
+The pinned Windows x64 Chrome FFmpeg config sets GPL, nonfree and version3
+to zero. This establishes supplier identity and source-recipe correspondence,
+not an independent Electron rebuild or a patent clearance.
+
+The Windows build checks this source bundle and the distribution before
+packaging, then verifies the actual staged runtime again after NSIS compilation.
+The dev.19 build passed those checks and the compiled first-license-page check.
+Its fresh-profile app smoke test passed connection discovery/test/save,
+WAV import followed by a fixture rewrite, both bundled models and the manually
+selected Whisper Tiny folder. The smoke profile alone disables global shortcuts.
+No microphone or native external-app input was exercised by this smoke test.
+
+The unsigned installer is
+`dist/windows-2026-11-05T09-31-11-011Z-328d3d/BlitzDic Setup 0.3.10-dev.19.exe`
+(1,186,151,258 bytes), SHA-256
+`6E754BB5B73AE390905EA793237F1515612680ED5895AFB31781D8F62D06AE50`.
+The extra source archives are license/build material, not additional runtime
+installation requirements for workstations.
+
+The supplier's `d3dcompiler_47.dll` has a valid Microsoft signature and is
+listed for Classic Windows app redistribution in the Windows SDK list.
+Its SDK publisher/end-user conditions remain a distinct review item from
+the Visual C++ V14 runtime terms already included in the installer.
+The user installation remains dev.14; the pending upgrade request concerns
+the retained dev.18 installer and has not been interpreted as approval for dev.19.
+Clean Windows 11 installation and the outstanding native Chrome/Word/classic
+field acceptance tests remain open.

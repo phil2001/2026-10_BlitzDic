@@ -1,0 +1,200 @@
+{
+  "version": "45.2.1",
+  "electronCommit": "f81ca3d4f09f57667238120adacb01239d5ecd89",
+  "chromiumVersion": "156.0.8078.75",
+  "chromiumCommit": "861389936bf33ea77529ee5dcc0605e68f6bb620",
+  "ffmpegCommit": "9db86ce5b5b454dfc96c435f9f0723012980c37f",
+  "supplierArchiveURL": "https://github.com/electron/electron/releases/download/v45.2.1/electron-v45.2.1-win32-x64.zip",
+  "supplierArchiveSha256": "7c342aee45d5b4ccafe5dfe9037028796b082735a576e21e2b4e2d8422ebb727",
+  "runtimeDlls": [
+    {
+      "path": "ffmpeg.dll",
+      "sha256": "f035e9879a6d43519467a8d761d2ea643ac63ed89d448eab9aac86bc38c4809f",
+      "bytes": 3097600
+    },
+    {
+      "path": "vulkan-1.dll",
+      "sha256": "f23002eefe4824cf6724d7ae63e9f2dd1f5119d53a64b542394ab528c64b0d2b",
+      "bytes": 957440
+    },
+    {
+      "path": "dxcompiler.dll",
+      "sha256": "f9423f08212401e1a8f4b3213c6ebb1b9a37e212f0533e5989d90780141aa35d",
+      "bytes": 25779200
+    },
+    {
+      "path": "vk_swiftshader.dll",
+      "sha256": "2601880d950b0f76d3d44b2fa23b9076b722c2be6f2d1e2972f1c1c2cf176c16",
+      "bytes": 5453312
+    },
+    {
+      "path": "electron_wer.dll",
+      "sha256": "9ebd83426b4990f66bf2bff1537e102e6b6517cc7d08141e9cec1a411dd8af68",
+      "bytes": 425472
+    },
+    {
+      "path": "d3dcompiler_47.dll",
+      "sha256": "f5c95e919b4ffa1ac71049cd45b9f986d2965e6888395ca2806337985334fa56",
+      "bytes": 4753864
+    }
+  ],
+  "executableSections": [
+    {
+      "name": ".text",
+      "sha256": "f8b863db098de41e3f4a50da035ac37e0c7601734eaa3489624a4c6b787f34d5"
+    },
+    {
+      "name": ".rdata",
+      "sha256": "930a9a945b22514f682ad48357c926d142dd20fb9a19d53f4bb8ae14309fc6fd"
+    },
+    {
+      "name": ".data",
+      "sha256": "5f77d48f24f5a3483e86b78e199b79f6c6d0f773a2303447643b268a23ef462a"
+    },
+    {
+      "name": ".pdata",
+      "sha256": "92c4371b766082e64e1f5e7ac9da1d7c4a19991ddc4a84ff037397cf09e405d0"
+    },
+    {
+      "name": ".eh_fram",
+      "sha256": "a189774394c9cd13d2bbbe572e3b64e02ae22b1e7156462bf433546736cf10da"
+    },
+    {
+      "name": ".fptable",
+      "sha256": "076a27c79e5ace2a3d47f9dd2e83e4ff6ea8872b3c2218f66c92b89b55f36560"
+    },
+    {
+      "name": ".rodata",
+      "sha256": "cdf3e57264afb622ab190551e1b61ce1310e46e9f579068ef0c8f712f096acf8"
+    },
+    {
+      "name": ".tls",
+      "sha256": "c955773f4e1a87b7a69a5460eb910a5b760aeaaa805f818535023148f0375ebb"
+    },
+    {
+      "name": "CPADinfo",
+      "sha256": "911d1a12eca8935990172cfcd6768f9c6351ed94b700833b2cf0cf457a1d752d"
+    },
+    {
+      "name": "LZMADEC",
+      "sha256": "caf8ae633e0f04bd3d5bd49c4b30a5ab0bde47e1d3b1a3540d65dea6223c9329"
+    },
+    {
+      "name": "_RDATA",
+      "sha256": "e25bdfa44fbf8b8bdb6a6550bf6357a84ebb6ae5e2426caca1b7f4d13a3f99b6"
+    },
+    {
+      "name": "malloc_h",
+      "sha256": "a2e09f3272927b273ea82eb4ca1d40f6e02a8915e33023e92275625fe88d7d9c"
+    },
+    {
+      "name": "prot",
+      "sha256": "076a27c79e5ace2a3d47f9dd2e83e4ff6ea8872b3c2218f66c92b89b55f36560"
+    },
+    {
+      "name": ".reloc",
+      "sha256": "f06ad9bdf04fce788e9067c14b898217ba94d386ad9539aa72644f3840985e66"
+    }
+  ],
+  "excludedExecutableSections": [
+    ".rsrc"
+  ],
+  "notices": [
+    {
+      "path": "Electron-LICENSE.txt",
+      "sha256": "5154e165bd6c2cc0cfbcd8916498c7abab0497923bafcd5cb07673fe8480087d"
+    },
+    {
+      "path": "Chromium-LICENSES.html",
+      "sha256": "7dac8267ac6da8d959cfe88f5f055b18a397f10230380b5329125e167bf5639b"
+    }
+  ],
+  "files": [
+    {
+      "path": "source-recipe/Electron-DEPS",
+      "sha256": "576898234b34b92bd7386b54ae005407a67132d32cfb115a6643b3b6eb66397d",
+      "gitBlobSha1": "9eade0a031bd3b38dd128d8f17a371d8f5601fa9",
+      "url": "https://github.com/electron/electron/blob/f81ca3d4f09f57667238120adacb01239d5ecd89/DEPS"
+    },
+    {
+      "path": "source-recipe/electron-release.gn",
+      "sha256": "b4490cee911e0ed136a6d095c69a7914cb3f4aa2d5517e3f987a2b5f45d3cd56",
+      "gitBlobSha1": "59326deae7980cbbe82e6305eb939e0a668ec20d",
+      "url": "https://github.com/electron/electron/blob/f81ca3d4f09f57667238120adacb01239d5ecd89/build/args/release.gn"
+    },
+    {
+      "path": "source-recipe/electron-all.gn",
+      "sha256": "3b375c2f45b6bf9b3221e53e779b9f4666f472493f957b6894127ccf766d44ea",
+      "gitBlobSha1": "b6f0a871542a38ab8456fb4bc7ec28fcf9e61399",
+      "url": "https://github.com/electron/electron/blob/f81ca3d4f09f57667238120adacb01239d5ecd89/build/args/all.gn"
+    },
+    {
+      "path": "source-recipe/electron-patch-config.json",
+      "sha256": "e3b25e692631a8116db8e858acf0ea1736ffb79617da3d4bfe57b7dbf814ce4d",
+      "gitBlobSha1": "d6b1ea9a6f94a1cdb2b351dffce802fd1a7f0f28",
+      "url": "https://github.com/electron/electron/blob/f81ca3d4f09f57667238120adacb01239d5ecd89/patches/config.json"
+    },
+    {
+      "path": "source-recipe/ffmpeg-patch-list.txt",
+      "sha256": "eb2ff86699f3aa0f6ac1b484a8c8a117a3149465273699e136e132024e38e7c6",
+      "gitBlobSha1": "31dc878c5b29cffe0cc6ec03861f25880f913b80",
+      "url": "https://github.com/electron/electron/blob/f81ca3d4f09f57667238120adacb01239d5ecd89/patches/ffmpeg/.patches"
+    },
+    {
+      "path": "source-recipe/link_with_loader_path.patch",
+      "sha256": "e2f63a2036ffa803db9a50dfec74c4f5628abc476cb44a5ede9d7e775bc7b238",
+      "gitBlobSha1": "6805e4bd2a679a83ed0ff4527fbd4e3c7765e5fe",
+      "url": "https://github.com/electron/electron/blob/f81ca3d4f09f57667238120adacb01239d5ecd89/patches/ffmpeg/link_with_loader_path.patch"
+    },
+    {
+      "path": "source-recipe/Chromium-DEPS",
+      "sha256": "8778ffaa9a30b9e825b291978804c6c2e55a3ae829ff387b025592ffb9090e8e",
+      "gitBlobSha1": "df3e18e474dfe7882b09b711be0dd391e952f61d",
+      "url": "https://github.com/chromium/chromium/blob/861389936bf33ea77529ee5dcc0605e68f6bb620/DEPS"
+    },
+    {
+      "path": "ffmpeg/COPYING.LGPLv2.1",
+      "sha256": "246041b6ecf9bc32d718a62c57877c78b5eb397b6467e74ed7ae2626ab189c30",
+      "url": "https://chromium.googlesource.com/chromium/third_party/ffmpeg/+/9db86ce5b5b454dfc96c435f9f0723012980c37f/COPYING.LGPLv2.1"
+    },
+    {
+      "path": "ffmpeg/LICENSE.md",
+      "sha256": "2e1d16c72fd74e12063776371da757322f8b77589386532f4fd8634bde7de1af",
+      "url": "https://chromium.googlesource.com/chromium/third_party/ffmpeg/+/9db86ce5b5b454dfc96c435f9f0723012980c37f/LICENSE.md"
+    },
+    {
+      "path": "ffmpeg/CREDITS.chromium",
+      "sha256": "903a6faa336b60d419bc6eb2bcffe4ca8bd9446735e5de4fcc901c80e9f22327",
+      "url": "https://chromium.googlesource.com/chromium/third_party/ffmpeg/+/9db86ce5b5b454dfc96c435f9f0723012980c37f/CREDITS.chromium"
+    },
+    {
+      "path": "ffmpeg/README.chromium",
+      "sha256": "78cb962e613ae190194e1632533ad5cf85bbe15635ee5152781b2ac63dbf8232",
+      "url": "https://chromium.googlesource.com/chromium/third_party/ffmpeg/+/9db86ce5b5b454dfc96c435f9f0723012980c37f/README.chromium"
+    },
+    {
+      "path": "ffmpeg/chromium/config/Chrome/win/x64/config.h",
+      "sha256": "fc42f237b764b456eb25e4dfbc511b7682315d7bcf14ffa307af95f6152cdc7d",
+      "url": "https://chromium.googlesource.com/chromium/third_party/ffmpeg/+/9db86ce5b5b454dfc96c435f9f0723012980c37f/chromium/config/Chrome/win/x64/config.h"
+    }
+  ],
+  "sourceArchives": [
+    {
+      "path": "source/chromium-ffmpeg-9db86ce5.tar.gz",
+      "sha256": "3637584ff0175b5f0b7a7d86e1f71db5e265b03f3bc956e52fb4515557b6dfa3",
+      "url": "https://chromium.googlesource.com/chromium/third_party/ffmpeg/+archive/9db86ce5b5b454dfc96c435f9f0723012980c37f.tar.gz",
+      "commit": "9db86ce5b5b454dfc96c435f9f0723012980c37f",
+      "gitTreeSha1": "92494155280ad804b8f3da29425fb0b32b6c27e4",
+      "gitTreeVerified": true
+    },
+    {
+      "path": "source/electron-source-f81ca3d4.tar.gz",
+      "sha256": "68553daae380ca6f13b55a83f629dc4b37b7e511faa9a5d22faef409e262e104",
+      "url": "https://codeload.github.com/electron/electron/tar.gz/f81ca3d4f09f57667238120adacb01239d5ecd89",
+      "commit": "f81ca3d4f09f57667238120adacb01239d5ecd89",
+      "gitTreeSha1": "84f7c44f80dc652ed62c876ec240b4a272406ec1",
+      "gitTreeVerified": true
+    }
+  ],
+  "reviewScope": "Unmodified DLLs and executable sections except application branding/resources, supplier source pins and matching source archives. No independent Electron rebuild or complete patent assessment."
+}

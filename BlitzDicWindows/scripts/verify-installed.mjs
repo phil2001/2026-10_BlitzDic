@@ -16,6 +16,21 @@ for (const relative of ['models/whisper/model.bin', 'models/parakeet-ultra/encod
   await access(resolve(resources, relative));
 const inventory = JSON.parse(await readFile(resolve(resources, 'licenses/dependencies/inventory.json'), 'utf8'));
 assert.deepEqual(inventory.missingPackageNotices, []);
+const electronSourceRoot = resolve(licenseRoot, 'native/electron-45.2.1');
+const electronOrigin = JSON.parse(await readFile(resolve(electronSourceRoot, 'provenance.json'), 'utf8'));
+assert.equal(electronOrigin.version, '45.2.1');
+for (const item of [...electronOrigin.files, ...electronOrigin.sourceArchives]) {
+  const path = resolve(electronSourceRoot, item.path);
+  assert.ok(path.startsWith(electronSourceRoot + sep));
+  assert.equal(createHash('sha256').update(await readFile(path)).digest('hex'), item.sha256);
+}
+for (const item of electronOrigin.runtimeDlls) {
+  const path = resolve(dirname(executablePath), item.path);
+  assert.ok(path.startsWith(resolve(dirname(executablePath)) + sep));
+  assert.equal(createHash('sha256').update(await readFile(path)).digest('hex'), item.sha256);
+}
+for (const item of electronOrigin.notices)
+  assert.equal(createHash('sha256').update(await readFile(resolve(licenseRoot, item.path))).digest('hex'), item.sha256);
 const installerLicense = await readFile(resolve(licenseRoot, 'Installer-LICENSE.txt'));
 const installerLicenseOrigin = JSON.parse(await readFile(resolve(licenseRoot, 'Installer-license-provenance.json'), 'utf8'));
 assert.equal(createHash('sha256').update(installerLicense).digest('hex'), installerLicenseOrigin.sha256);
