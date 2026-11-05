@@ -54,9 +54,9 @@ does not close the complete checklist above.
   Its corresponding Chrome/Whisper full-path run and the expanded target guards
   with owned Word/classic fields still require final acceptance. Later package
   smoke tests exercise imports, not native key delivery or external insertion.
-- The installed user copy remains dev.14. Upgrading that concrete installation
-  awaits approval for the concrete newer installer and shortcut update. The
-  unanswered earlier request covered dev.18, not later versions.
+- The approved test installation has been upgraded to dev.20; installer exit,
+  installed package version, both model workers and Unicode shortcut targets
+  passed verification. The physical microphone result below still concerns dev.14.
 - A fresh Windows 11 installation is still unavailable and untested. A fresh
   app profile on the development PC is not a substitute for this gate.
 - The new license page is verified statically in the actual dev.20 installer;
@@ -1892,3 +1892,45 @@ not a BlitzDic prerequisite, and lists the existing WAV argument alternative.
 The improved error was reproduced and checked; application binaries are unchanged.
 The active application/instructions contain no macOS installation path; upstream
 platform material remains only where required in original third-party sources.
+
+### Approved dev.20 installation and rendered UI verification
+
+The user explicitly approved replacing dev.14 in
+`.runtime/Installiert Grüße 🌍 0.3.6` and updating its desktop/Start-menu links.
+The installer SHA-256 matched the recorded dev.20 artifact. The canonical target
+was checked against that exact approved directory before execution. No BlitzDic
+process was running. NSIS completed with exit code 0. The installed ASAR package
+and HKCU uninstall entry both report `0.3.10-dev.20`.
+
+Both shortcut targets matched the installed executable using IShellLinkW,
+including the emoji. WScript's ANSI path projection showed question marks and
+was not used as proof of a broken link. The installed frozen worker passed both
+Whisper and Parakeet with the test WAV, offline flag and Windows-only PATH.
+Log: `.runtime/installed-dev20-wav.log`. This is an update on the development PC,
+not a new Windows installation or another physical microphone acceptance test.
+
+Browser plugin not available: Playwright's Electron integration was used with
+a separate profile on an isolated Windows desktop, without switching the user's
+input desktop or editing other applications. The installed app's ASAR URL and
+title were checked. The page rendered without an error overlay or blank shell;
+no page errors or error-level console messages were captured.
+
+Rendered checks passed for the two bundled model presets plus manual custom
+selection, the bundled/no-extra-installation message, disabled download button,
+LM Studio LAN configuration saved and restored after reload, OpenAI selecting
+external API processing, and the password-type key field. No real LAN or cloud
+request was made in this UI run. Provider addresses are stored as entered;
+standard `/v1` inference is performed by request validation, not by storage.
+
+Screenshots were inspected at the default 1184 x 781 content viewport and the
+minimum 744 x 581 content viewport (760 x 620 outer window). All six sections
+had no horizontal overflow at minimum size; vertical scrolling is necessary
+and the save control remained focusable and reachable. This is limited layout
+and flow verification, not a full accessibility or upstream visual-parity audit.
+Native shortcuts were disabled only in the isolated test profile.
+
+Screenshots, the temporary QA script and `blitzdic-ui-qa.json` remain outside
+the repository under the authorized Codex visualizations workspace. A previous
+extra run was not executed when automatic approval review hit its usage limit;
+after the user's continuation, review succeeded and the installed-app run above
+completed. Application binaries were unchanged by this verification.

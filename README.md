@@ -52,7 +52,8 @@ Der aktuelle lokale Entwicklungsinstaller ist **0.3.10-dev.20** unter
 Der Installer ist noch nicht signiert; eine fertige Release-Datei ist noch nicht
 veröffentlicht. Die gebaute App wurde auf dem Entwicklungs-PC mit einem frischen
 Testprofil geprüft. Eine Neuinstallation auf einem frischen Windows-11-PC bleibt
-zu prüfen. Die installierte Testversion auf dem Entwicklungs-PC bleibt dev.14.
+zu prüfen. Die Testinstallation auf dem Entwicklungs-PC wurde nach Freigabe auf
+dev.20 aktualisiert; beide enthaltenen Modelle und die Oberfläche sind dort geprüft.
 Details zu Build, Prüfsumme und Tests stehen im [Arbeitsstand](WINDOWS_PORT.md).
 Das Setup enthält jetzt eine Lizenzseite. Die MIT-Lizenz für den eigenen Code
 und die Bedingungen für enthaltene Microsoft-Laufzeitdateien sind dort getrennt
