@@ -6,6 +6,7 @@ licenses/native/numpy-openblas/SUPPLIER-LICENSE.txt binary
 licenses/native/python-standalone-20260127/LICENSE.*.txt binary
 licenses/native/sherpa-onnx-2.0.1/**/LICENSE* binary
 licenses/native/sherpa-onnx-2.0.1/**/build-recipe.cmake binary
+licenses/native/sherpa-onnx-2.0.1/**/ThirdPartyNotices.txt binary
 licenses/speech-models/*.txt binary
 licenses/native/tokenizers-0.23.3/** binary
 licenses/native/tokenizers-0.23.3/README.md text diff eol=lf

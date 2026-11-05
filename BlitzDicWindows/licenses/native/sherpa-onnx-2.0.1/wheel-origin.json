@@ -1,0 +1,25 @@
+{
+  "wheelURL": "https://files.pythonhosted.org/packages/68/ea/8f02cc34c19d956697dda2f2c470c14cd6b7af77f3ae855c514a86039b68/sherpa_onnx_core-2.0.1-py3-none-win_amd64.whl",
+  "wheelSha256": "08890e9ea23ed2f59f81d5840c63b6b5cc8674d0f6e48d9069126a848aa0e022",
+  "nativeFiles": [
+    {
+      "path": "sherpa_onnx/lib/onnxruntime.dll",
+      "sha256": "7f66f939a881baf4f46a2216496798edf4a1429878b646d12674aa62f27d8a25"
+    },
+    {
+      "path": "sherpa_onnx/lib/sherpa-onnx-c-api.dll",
+      "sha256": "5dd36dbd3572846b72c4a40a4017c5a770160ee8e00da5053bebc8b2632501e8"
+    },
+    {
+      "path": "sherpa_onnx/lib/sherpa-onnx-cxx-api.dll",
+      "sha256": "4c56327796cdb980dcbf90025c28093d89ca286088fb74c3b107f2f633e67ffe"
+    }
+  ],
+  "reportedGitSha1": "af2d8d81",
+  "reportedVersion": "2.0.1",
+  "reportedOnnxruntimeVersion": "1.28.2",
+  "sourceRevision": "af2d8d81dbfa61c4cea4c568da78f3982edca005",
+  "sourceWorkflow": "https://github.com/k2-fsa/sherpa-onnx/blob/af2d8d81dbfa61c4cea4c568da78f3982edca005/.github/workflows/build-wheels-win-x64.yaml",
+  "pypiAttestationAvailable": false,
+  "comparisonPackage": "0.3.10-dev.15"
+}

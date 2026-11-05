@@ -68,5 +68,25 @@
         "sha256": "e361d842da1d290351860ad6dcce2673a1e42e4f873a3ae1ff4eb92c6adaa882"
       }
     ]
+  },
+  {
+    "component": "onnxruntime",
+    "archiveURL": "https://github.com/csukuangfj/onnxruntime-libs/releases/download/v1.28.2/onnxruntime-win-x64-MT-Release-1.28.2.tar.bz2",
+    "archiveSha256": "cd7f757f7a38ce14238bc9198bee197a9430b42ec3ecadea3408dd2e832eb02e",
+    "recipeURL": "https://raw.githubusercontent.com/k2-fsa/sherpa-onnx/af2d8d81dbfa61c4cea4c568da78f3982edca005/cmake/onnxruntime-win-x64.cmake",
+    "recipeSha256": "d80f82ef73673dd273533cd3ecb9b8844cbb6cbf20fa65012db17a3d96e2edc0",
+    "notices": [
+      {
+        "path": "onnxruntime-1.28.2/LICENSE",
+        "archivePath": "onnxruntime-win-x64-MT-Release-1.28.2/LICENSE",
+        "sha256": "c250d6278f0b47a6439fb7592b08b58a55eb9f535aa49a1db63211c3f982b674"
+      },
+      {
+        "path": "onnxruntime-1.28.2/ThirdPartyNotices.txt",
+        "archivePath": "onnxruntime-win-x64-MT-Release-1.28.2/ThirdPartyNotices.txt",
+        "sha256": "fb0af774b4d7cffc5b9d046f2aaeade2f37df2f80abf8033c95dfffcc77a8866"
+      }
+    ],
+    "packagedDllSha256": "7f66f939a881baf4f46a2216496798edf4a1429878b646d12674aa62f27d8a25"
   }
 ]
