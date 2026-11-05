@@ -1660,3 +1660,18 @@ failed results and the selected device were observed in the app.
 The changed device selection and speaking conditions were not controlled
 independently, so this does not establish the cause of the earlier errors or
 an accuracy guarantee for other recordings.
+
+## Development package 0.3.10-dev.15
+
+The new package includes the Tokenizers and Sherpa source dependency notices.
+All 307 recorded component notice hashes matched their packaged copies.
+The eight bundled model files, the general notice inventory and all 110
+native origin records passed verification. Both bundled speech models
+transcribed the German fixture offline from the staged app package.
+
+The unsigned installer is
+`dist/windows-2026-11-05T06-18-33-821Z-e6460a/BlitzDic Setup 0.3.10-dev.15.exe`
+(1,138,460,399 bytes). SHA-256 is
+`9104ECD96E80B40F3DBC49DF94E496DF0859B2ECA629CA411B19563093A64F30`.
+The installed test version remains dev.14. Source-to-wheel attribution and
+the Microsoft runtime redistribution review remain open.
