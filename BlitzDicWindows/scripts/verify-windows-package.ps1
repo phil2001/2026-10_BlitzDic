@@ -46,6 +46,11 @@ if ($PSCmdlet.ParameterSetName -eq 'Recording') {
         $synth.Speak($sentence)
         $synth.SetOutputToNull()
         $audio = [Convert]::ToBase64String($wave.ToArray())
+    } catch {
+        throw ('Windows konnte keine Testaufnahme mit einer installierten Stimme erzeugen. ' +
+            'BlitzDic benoetigt diese Stimme nicht. Das Pruefskript stattdessen mit ' +
+            '-WavePath, -Language (de oder en) und -ExpectedText fuer eine vorhandene WAV-Testaufnahme ausfuehren. ' +
+            'Ursache: ' + $_.Exception.Message)
     } finally {
         $synth.Dispose()
         $wave.Dispose()

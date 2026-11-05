@@ -1874,3 +1874,21 @@ Artifact:
 `57990C2D549F09714BEDECCC093645D154D8F4D3115F18206A1A80E5BB869797`.
 The installed copy remains dev.14. The acceptance limits above, including
 clean Windows installation and native target-app tests, remain open.
+
+### Minimal-PATH verification of dev.20
+
+The standalone Windows PowerShell package checker passed both bundled engines
+against `.runtime/test-speech.wav` with `PATH` restricted in each worker to
+Windows System32 and the Windows directory, and `HF_HUB_OFFLINE=1`.
+Both returned the expected speech-recognition sentence. This exercises the
+actual frozen worker without Python, Node, LM Studio or CUDA on its search path.
+Log: `.runtime/minimal-path-dev20-wav.log`. It does not remove installed system
+DLLs and is therefore additional evidence, not a clean-PC installation test.
+
+Generating the fixture through System.Speech failed at GetInstalledVoices in
+the restricted environment before the worker started. A supplied WAV succeeded.
+The checker now explains that Windows voices are a fixture-generation option,
+not a BlitzDic prerequisite, and lists the existing WAV argument alternative.
+The improved error was reproduced and checked; application binaries are unchanged.
+The active application/instructions contain no macOS installation path; upstream
+platform material remains only where required in original third-party sources.
