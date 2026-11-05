@@ -1643,4 +1643,20 @@ IShellLinkW. WScript.Shell's returned path replaced the emoji with question
 marks, so it was insufficient for this Unicode target check.
 
 This verifies an in-place installer upgrade on the development PC. A fresh
-Windows 11 installation and physical audio input remain unverified.
+Windows 11 installation remains unverified.
+
+## Manual microphone check on 2026-11-05
+
+The user recorded the requested German test sentence in the installed app.
+The UI showed completed microphone transcription with Whisper Small, followed
+by Parakeet Ultra. Initial attempts contained substitutions around the phrase
+"Anna prüft die Unterlagen". The microphone selection was changed from the
+default alias to the explicitly listed Realtek USB MIC. The user then reported
+the correct result, "Die Besprechung beginnt um neun Uhr, Anna prüft die
+Unterlagen." This confirms one successful physical microphone transcription
+with Parakeet Ultra. The successful final result is user-reported. Earlier
+failed results and the selected device were observed in the app.
+
+The changed device selection and speaking conditions were not controlled
+independently, so this does not establish the cause of the earlier errors or
+an accuracy guarantee for other recordings.
