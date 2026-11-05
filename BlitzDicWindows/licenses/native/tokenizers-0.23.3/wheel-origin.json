@@ -1,0 +1,15 @@
+{
+  "wheelURL": "https://files.pythonhosted.org/packages/d1/6c/24f074c9a0efb98e61b20aafe6b2641922d5db24e447d5d6daffd9e17555/tokenizers-0.23.3-cp310-abi3-win_amd64.whl",
+  "wheelSha256": "1f0823bb00c5fdc98e487354d54dd55a03848d61a1a0bf29a68c77f24f3b26c3",
+  "nativeFile": "tokenizers/tokenizers.pyd",
+  "nativeSha256": "cef9accc734aed0f2095ba7c073a48f90cb2f6dfd50e02b22f9f7d75727aadd9",
+  "publisherRepository": "huggingface/tokenizers",
+  "publisherRevision": "301277072263fb3830eb66eec7e47adadf76f1dc",
+  "publisherWorkflow": "python-release.yml",
+  "attestationURL": "https://pypi.org/integrity/tokenizers/0.23.3/tokenizers-0.23.3-cp310-abi3-win_amd64.whl/provenance",
+  "attestationSha256": "c75bad4480b17724d27522c987b4b9ed4867972d03037ae14f7122d4cf557ccc",
+  "verifier": "pypi-attestations 0.0.31",
+  "verification": "verify pypi --repository https://github.com/huggingface/tokenizers <wheelURL> returned OK",
+  "testedPackage": "0.3.10-dev.15",
+  "lockfileMatchesPublisherRevision": true
+}

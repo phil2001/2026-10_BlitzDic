@@ -10,3 +10,4 @@ licenses/speech-models/*.txt binary
 licenses/native/tokenizers-0.23.3/** binary
 licenses/native/tokenizers-0.23.3/README.md text diff eol=lf
 licenses/native/tokenizers-0.23.3/provenance.json text diff eol=lf
+licenses/native/tokenizers-0.23.3/wheel-origin.json text diff eol=lf
