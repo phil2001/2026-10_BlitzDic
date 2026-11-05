@@ -46,30 +46,14 @@ Ein zusätzliches lokales LLM hat eigene RAM-/VRAM-Anforderungen.
 
 ## Installation und Bedienung
 
-Der zuletzt vollständig im nativen Test geprüfte lokale Entwicklungsinstaller ist
-**0.3.10-dev.1** unter
-`BlitzDicWindows/dist/windows-2026-11-01T06-58-02-880Z-ac79d7-verified/BlitzDic Setup 0.3.10-dev.1.exe`
-(etwa 1,15 GB). Er ist nicht signiert. Eine fertige Release-Datei ist noch nicht
-veröffentlicht. Ältere Testbuilds bitte durch diesen Stand ersetzen: 0.3.4 behebt
-die UTF-8-Verarbeitung von Umlauten und Emoji in der gebündelten Sprachlaufzeit.
-0.3.5 enthält den eigenen FFmpeg-Build mit zugehörigem Quellcode und einen
-Lizenzordner-Zugriff unter **Einstellungen**. Die Prüfung anderer nativer
-Bibliotheken ist noch nicht abgeschlossen.
-0.3.6 benötigt kein libsndfile/SoundFile mehr und lässt die ungenutzte
-cuDNN-Bibliothek im CPU-Paket weg. Unterstützte Audioimporte und beide Sprachmodelle
-bleiben verfügbar; die gepackte Meeting-Sprechertranskription wurde geprüft.
-0.3.7 passt beim automatischen Einfügen Abstände und Satzanfänge an den Text
-um den Cursor an. Diese Regeln arbeiten lokal, auch ohne LLM. Das Transkript im
-Ergebnis und Verlauf bleibt erhalten. Die installierte Testversion ist weiterhin
-0.3.6; der neue Installer wurde noch nicht als Upgrade ausgeführt.
-0.3.8 ergänzt eine kleine Aufnahmeanzeige über den übrigen Fenstern. Sie zeigt
-Pegel und Laufzeit, ohne den Fokus des Zielprogramms zu übernehmen. Am linken
-Griff lässt sie sich verschieben, ein Klick auf die Anzeige beendet das Diktat
-oder den Meeting-Abschnitt. × oder Rechtsklick blendet sie für die laufende
-Aufnahme aus; unter **Einstellungen** ist sie dauerhaft abschaltbar.
-0.3.9 ergänzt abschnittsgebundene Sprechernamen. Bei gespeicherten Meetings werden
-die Namen im selben Archiveintrag aktualisiert. Frühere Zusammenfassungen bleiben
-erhalten und werden bei geänderten Namen als veraltet gekennzeichnet.
+Der aktuelle lokale Entwicklungsinstaller ist **0.3.10-dev.17** unter
+`BlitzDicWindows/dist/windows-2026-11-05T08-22-27-958Z-bb3b6a/BlitzDic Setup 0.3.10-dev.17.exe`
+(etwa 1,15 GB). Er enthält beide Sprachmodelle und die lokale Sprachlaufzeit.
+Der Installer ist noch nicht signiert; eine fertige Release-Datei ist noch nicht
+veröffentlicht. Die gebaute App wurde auf dem Entwicklungs-PC mit einem frischen
+Testprofil geprüft. Eine Neuinstallation auf einem frischen Windows-11-PC bleibt
+zu prüfen. Die installierte Testversion auf dem Entwicklungs-PC bleibt dev.14.
+Details zu Build, Prüfsumme und Tests stehen im [Arbeitsstand](WINDOWS_PORT.md).
 
 1. Nach Installation BlitzDic öffnen und unter **Modelle** Whisper oder Parakeet wählen.
 2. Unter **Diktat** Mikrofon und Schreibmodus wählen, Aufnahme starten und beenden.

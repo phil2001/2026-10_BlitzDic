@@ -60,8 +60,10 @@ jobs:
           Copy-Item sherpa-source/dist/*.whl sherpa-wheel/
           git -C sherpa-source diff -- setup.py MANIFEST.in cmake/cmake_extension.py |
             Set-Content -Encoding utf8 sherpa-wheel/packaging-changes.patch
-          Get-ChildItem sherpa-source/build -Recurse -Filter CMakeCache.txt |
-            ForEach-Object { Copy-Item $_.FullName sherpa-wheel/CMakeCache.txt }
+          $mainCaches = @(Get-ChildItem sherpa-source/build -Recurse -Filter CMakeCache.txt |
+            Where-Object { $_.FullName -notmatch '[\\/]_deps[\\/]' })
+          if ($mainCaches.Count -ne 1) { throw 'Expected exactly one top-level CMake cache' }
+          Copy-Item $mainCaches[0].FullName sherpa-wheel/CMakeCache.txt
           $wheel = Get-ChildItem sherpa-wheel/*.whl | Select-Object -First 1
           @(
             'Experimental Windows x64 speaker runtime built from source.'

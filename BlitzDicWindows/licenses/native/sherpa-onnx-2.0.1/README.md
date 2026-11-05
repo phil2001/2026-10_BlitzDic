@@ -18,7 +18,7 @@ in this directory. File hashes and source URLs are in provenance.json.
 | pybind11 | 3.0.0 |
 | KissFFT | febd4caeed32e33ad8b2e0bb5ea77542c40f18ec |
 | kaldifst | 1.8.0 |
-| Eigen | 3.4.0 |
+| Eigen | 5.0.1 in the recorded source build; 3.4.0 from the transitive fallback recipe retained separately |
 
 The main source recipe includes the first four components. It includes
 hclust-cpp when speaker diarization is enabled.
@@ -36,9 +36,12 @@ the pinned Windows build recipe. Its original LICENSE and ThirdPartyNotices.txt
 are preserved here. This covers the embedded 1.28.2 DLL independently of the
 separate top-level ONNX Runtime Python package.
 
-KissFFT comes from kaldi-native-fbank's recipe. Kaldifst and Eigen come
-from kaldi-decoder's recipe. The original Eigen source archive is included
-beside its notices and verified against the recipe hash.
+KissFFT comes from kaldi-native-fbank's recipe. Kaldifst comes from
+kaldi-decoder's recipe. The recorded source build selects Eigen 5.0.1 through
+Sherpa's own `cmake/eigen.cmake`, overriding the transitive 3.4.0 recipe.
+Both original Eigen source archives are retained beside their notices and
+verified against their respective recipe hashes. The 5.0.1 archive is the
+corresponding source for the recorded source-built speaker wheel.
 
 This collection follows the declared source dependencies. The exact static
 composition of the supplier binaries still requires verification. Optional

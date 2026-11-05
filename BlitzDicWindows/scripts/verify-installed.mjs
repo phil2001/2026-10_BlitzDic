@@ -27,6 +27,23 @@ assert.equal(createHash('sha256').update(await readFile(ffmpegSource)).digest('h
 const nativeInventory = JSON.parse(await readFile(resolve(resources, 'licenses/dependencies/native-binaries.json'), 'utf8'));
 assert.equal(nativeInventory.cleanFfmpegGatePassed, true);
 assert.ok(nativeInventory.ffmpegReports.every(report => report.license === 'LGPL version 2.1 or later'));
+const speakerNoticeRoot = resolve(licenseRoot, 'native/sherpa-onnx-2.0.1');
+const speakerSources = JSON.parse(await readFile(resolve(speakerNoticeRoot, 'provenance.json'), 'utf8'));
+for (const component of speakerSources) {
+  for (const notice of component.notices) {
+    const path = resolve(speakerNoticeRoot, notice.path);
+    assert.ok(path.startsWith(speakerNoticeRoot + sep));
+    assert.equal(createHash('sha256').update(await readFile(path)).digest('hex'), notice.sha256);
+  }
+  if (component.sourceArchive) {
+    const path = resolve(speakerNoticeRoot, component.sourceArchive);
+    assert.ok(path.startsWith(speakerNoticeRoot + sep));
+    assert.equal(createHash('sha256').update(await readFile(path)).digest('hex'), component.archiveSha256);
+  }
+}
+if (!inventory.packages.some(item => item.name === 'sherpa-onnx-core'))
+  assert.ok(speakerSources.some(item => item.component === 'eigen-5.0.1' && item.sourceArchive),
+    'The source-built speaker wheel needs its actual Eigen 5.0.1 corresponding source');
 const nativeMap = JSON.parse(await readFile(resolve(resources, 'licenses/dependencies/native-package-map.json'), 'utf8'));
 assert.deepEqual(nativeMap.unresolvedBuildOrigins, []);
 assert.deepEqual(nativeMap.externalBuildOrigins, []);
@@ -74,6 +91,15 @@ try {
   assert.equal((await page.evaluate(() => window.blitz.load())).modelsBundled, true);
   assert.equal(await app.evaluate(({app}) => app.isPackaged), true);
   console.log('Packaged version:', await app.evaluate(({app}) => app.getVersion()));
+  // This smoke test covers provider/model/storage integration, not native
+  // shortcut delivery. Keep an already-running user instance's keys untouched.
+  await page.evaluate(async () => {
+    const {settings} = await window.blitz.load();
+    await window.blitz.settings({...settings, shortcuts: {}});
+  });
+  await page.reload();
+  await page.waitForSelector('#provider option', {state: 'attached'});
+  console.log('Native shortcuts disabled in the isolated smoke-test profile only.');
   await app.evaluate(({dialog}, file) => {
     dialog.showOpenDialog = async () => ({canceled: false, filePaths: [file]});
   }, `${root}/.runtime/test-speech.wav`);
@@ -114,7 +140,11 @@ try {
     ]);
     assert.equal(requests[1].body.model, 'packaged-fixture');
     await page.locator('#save-provider').click();
-    await page.waitForFunction(() => document.querySelector('#status').textContent === 'Verbindung gespeichert.');
+    await page.waitForFunction(() => document.querySelector('#status').textContent === 'Verbindung gespeichert.')
+      .catch(async error => {
+        const status = await page.locator('#status').textContent();
+        throw new Error(`Provider save did not report success: ${status}`, {cause: error});
+      });
     const {settings} = await page.evaluate(() => window.blitz.load());
     assert.equal(settings.provider.baseURL, address);
     assert.equal(settings.provider.model, 'packaged-fixture');
@@ -155,7 +185,7 @@ try {
     }, preset);
     await page.locator('#import').click();
     await page.waitForFunction(() => document.querySelector('#result').value.includes('local speech recognition test'), {}, {timeout: 60000});
-    console.log(`PASS: installed ${preset}: ${await page.locator('#result').inputValue()}`);
+    console.log(`PASS: packaged ${preset}: ${await page.locator('#result').inputValue()}`);
   }
   if (process.env.BLITZDIC_TEST_CUSTOM_WHISPER) {
     const directory = resolve(process.env.BLITZDIC_TEST_CUSTOM_WHISPER);
@@ -180,5 +210,5 @@ try {
     console.log('PASS: custom Whisper folder selected, saved and used by the packaged app');
   }
   assert.deepEqual(errors, []);
-  console.log('PASS: installed app, fresh profile, both bundled models and speech runtime');
+  console.log('PASS: packaged app, fresh profile, both bundled models and speech runtime');
 } finally { await app.close(); }

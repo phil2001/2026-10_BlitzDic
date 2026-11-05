@@ -1675,3 +1675,56 @@ The unsigned installer is
 `9104ECD96E80B40F3DBC49DF94E496DF0859B2ECA629CA411B19563093A64F30`.
 The installed test version remains dev.14. Source-to-wheel attribution and
 the Microsoft runtime redistribution review remain open.
+
+## Source-built speaker runtime and development package 0.3.10-dev.17
+
+Sherpa-ONNX 2.0.1 was built from pinned source
+`af2d8d81dbfa61c4cea4c568da78f3982edca005`. The first retained wheel build
+failed a subsequent version check because upstream's `version.cc` contains
+the older literal `96255a1b`. The checkout and CMake log identify the pinned
+source. The corrected check verifies the source literal separately from
+the checkout and wheel provenance. Reverification of the existing artifact
+passed in [CI run 41992637746](https://github.com/phil2001/2026-10_BlitzDic/actions/runs/41992637746),
+including real inference through the normal BlitzDic worker.
+
+The actual source build selected Eigen 5.0.1 through Sherpa's own recipe.
+Its hash-verified original source archive and license files supplement the
+previously collected transitive Eigen 3.4.0 fallback material. Future source
+builds also retain the main CMake cache rather than a dependency's cache.
+
+The dev.16 frozen worker passed both bundled ASR presets with PATH limited
+to Windows directories, four-speaker diarization, and German recognition
+with word timestamps. Combined diarization/transcription returned ten
+Whisper turns covering four speaker IDs and thirty Parakeet turns across
+the 105-second English fixture. These are fixture checks, not accuracy
+guarantees on real meetings. Dev.17's 111 actual DLL/PYD files match that
+tested runtime byte for byte; every packaged native file's hash was checked.
+
+The staged dev.17 app passed the fresh-profile package smoke test on a
+separate, non-visible desktop: provider discovery, connection test, encrypted
+settings persistence, imported WAV transcription followed by a rewrite via
+the local protocol fixture, and both bundled models through the UI. The
+file picker and license-folder opener were replaced with test doubles.
+All eight bundled model-file hashes, native origin records, 27 Sherpa
+supplementary notice hashes and declared corresponding-source archive hashes
+passed verification. No missing Python package notices were reported.
+
+The installed dev.14 user instance occupied the standard global shortcuts.
+The smoke test therefore disables shortcuts only in its fresh test profile.
+It does not close the user's app or claim native key-delivery coverage.
+The user's prior successful microphone check still concerns installed dev.14.
+
+The unsigned dev.17 installer is
+`dist/windows-2026-11-05T08-22-27-958Z-bb3b6a/BlitzDic Setup 0.3.10-dev.17.exe`
+(1,147,234,724 bytes), SHA-256
+`E6B72041504A298E483BF7D13D20D91C20A0C6AF6601D2F165A922D5DA3C05CB`.
+The existing installed test copy remains dev.14; dev.17 has not been installed
+as an upgrade or on a clean Windows 11 system.
+
+At the user's request, Visual Studio Community 2026 Stable 18.11.3 was installed
+on the development PC, including acceptance of its terms. Setup completed
+successfully with code 3010 and requested a restart; no restart was performed.
+This addresses the Community acquisition step. End-user redistribution terms
+for the installer and remaining native component obligations still require
+completion. The practice PCs are intended to receive the complete BlitzDic
+installer without separate developer-tool, Python, CUDA or C++ runtime setup.

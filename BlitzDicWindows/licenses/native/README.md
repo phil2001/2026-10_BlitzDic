@@ -4,9 +4,10 @@ The [Python standalone runtime notices](python-standalone-20260127/README.md)
 record the source and notices for the bundled OpenSSL, SQLite and libffi DLLs.
 
 The [Sherpa-ONNX source dependency notices](sherpa-onnx-2.0.1/README.md)
-preserve five original license files from archives verified against the
-v2.0.1 build recipe. The supplier wheel's exact static configuration remains
-to be matched to that recipe.
+preserve original license files from archives verified against the
+v2.0.1 build recipe. The [source-built speaker runtime](sherpa-onnx-2.0.1/BUILD.md)
+records its CMake configuration and passed local speaker inference.
+The supplier wheel's exact static configuration remains a separate review.
 
 The [Tokenizers source dependency notices](tokenizers-0.23.3/README.md)
 cover all registry crates in the published Python source archive's lockfile.
