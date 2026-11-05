@@ -33,6 +33,8 @@ PRESETS = {
 
 
 def run(request):
+    from language_options import prepare_language
+    request = prepare_language(request)
     if request['action'] == 'transcribe-meeting':
         from dual_meeting import run as transcribe_meeting
         return transcribe_meeting(request, run)
@@ -82,7 +84,11 @@ def run(request):
     if engine == "whisper":
         model = load_whisper(str(root))
         timed = request.get('wordTimestamps') is True
-        segments, info = model.transcribe(audio, language=request.get("language") or None,
+        from language_options import whisper_language_options
+        language_options = whisper_language_options(request)
+        if language_options['language'] not in (None, 'en') and not model.model.is_multilingual:
+            raise ValueError('Dieses Whisper-Modell unterstützt nur Englisch. Englisch wählen oder ein mehrsprachiges Modell verwenden.')
+        segments, info = model.transcribe(audio, **language_options,
                                           vad_filter=True, condition_on_previous_text=False,
                                           word_timestamps=timed)
         items, words = [], []

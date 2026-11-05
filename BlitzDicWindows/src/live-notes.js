@@ -78,7 +78,9 @@ export class LiveNotes {
       try {
         signal.throwIfAborted();
         const recognized=await this.recognize({action:s.echoFilter?'transcribe-meeting':'transcribe',preset:s.preset?.id,engine:s.preset?.engine??s.snapshot.speech.engine,
-          modelDirectory:s.directory,language:s.snapshot.speech.language,audioBase64:audio.toString('base64')},{pythonPath:this.pythonPath,signal});
+          modelDirectory:s.directory,language:s.snapshot.speech.language,
+          ...(s.snapshot.speech.language==='de-medical'?{medicalTerms:s.snapshot.modeSettings.customTerms??[]}:{}),
+          audioBase64:audio.toString('base64')},{pythonPath:this.pythonPath,signal});
         signal.throwIfAborted();if(typeof recognized.text!=='string')throw new Error('Ungültiges Live-Transkript.');
         const text=await rewrite(recognized.text,'verbatim',s.snapshot.modeSettings,s.config,{signal});signal.throwIfAborted();
         consumed=true;

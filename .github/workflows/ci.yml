@@ -23,6 +23,7 @@ jobs:
           python-version: '3.12'
       - run: python -m pip install numpy==2.5.4
       - run: python scripts/test-wav-encode.py
+      - run: python scripts/test-language-options.py
       - run: python scripts/test-hold-keys.py
       - run: python scripts/test-escape-control.py
       - run: python scripts/test-target-scope.py

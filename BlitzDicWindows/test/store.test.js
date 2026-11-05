@@ -6,6 +6,18 @@ import { randomBytes, createCipheriv, createDecipheriv } from 'node:crypto';
 import { PrivateStore } from '../src/store.js';
 import { mkdir } from 'node:fs/promises';
 
+test('fixed language preferences migrate automatic mode and preserve explicit German/English choices', async () => {
+  const {store} = await fixture();
+  assert.equal((await store.settings()).speech.language, 'de-medical');
+  for (const [saved, expected] of [['', 'de-medical'], ['de', 'de'], ['en', 'en'], ['de-medical', 'de-medical']]) {
+    await store.saveSettings({speech: {language: saved, microphone: 'chosen-mic'}, mode: 'verbatim'});
+    const settings = await store.settings();
+    assert.equal(settings.speech.language, expected);
+    assert.equal(settings.speech.microphone, 'chosen-mic');
+    assert.equal(settings.mode, 'verbatim');
+  }
+});
+
 async function fixture() {
   // Keep test artifacts inside the project; no recursive deletion.
   await mkdir('.runtime/store-tests', { recursive: true });

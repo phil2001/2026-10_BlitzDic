@@ -3,7 +3,7 @@ import { join } from 'node:path';
 
 export const defaultSettings = () => ({
   version: 1,
-  speech: { preset: 'whisper', language: '', microphone: '' },
+  speech: { preset: 'whisper', language: 'de-medical', microphone: '' },
   provider: { provider: 'ollama', location: 'local', baseURL: 'http://127.0.0.1:11434/v1', model: '', apiKey: '' },
   mode: 'verbatim', modeSettings: { customTerms: [], replacements: [] },
   appModes: [],
@@ -44,7 +44,10 @@ export class PrivateStore {
   async settings() {
     const defaults = defaultSettings();
     const saved = await this.read('settings', defaults);
-    return { ...defaults, ...saved, speech: { ...defaults.speech, ...saved.speech }, provider: { ...defaults.provider, ...saved.provider } };
+    const speech = { ...defaults.speech, ...saved.speech };
+    // Migrate the former automatic/empty preference to the requested German default.
+    if (!['de', 'en', 'de-medical'].includes(speech.language)) speech.language = 'de-medical';
+    return { ...defaults, ...saved, speech, provider: { ...defaults.provider, ...saved.provider } };
   }
   saveSettings(settings) { return this.update('settings', defaultSettings(), () => settings); }
   history() { return this.read('history', []); }

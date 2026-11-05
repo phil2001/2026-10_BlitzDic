@@ -374,8 +374,21 @@ $('microphone').onchange = attempt(async () => {
   await save();
 });
 $('mode').onchange = attempt(async () => { settings.mode = $('mode').value; await save(); });
+$('speech-language').onchange = attempt(async () => {
+  settings.speech.language = $('speech-language').value;
+  await save(); updateLocation(); status('Diktatsprache gespeichert.');
+});
 $('speech-model').onchange = attempt(async () => { settings.speech.preset = $('speech-model').value; await save(); updateLocation(); });
-function updateLocation() { $('processing-location').textContent = `Spracherkennung: ${{ whisper: 'Whisper', 'parakeet-ultra': 'Parakeet Ultra', custom: 'Eigenes Modell' }[settings.speech.preset]} · Lokal auf diesem Computer.`; }
+function updateLocation() {
+  const whisper = settings.speech.preset === 'whisper' || (settings.speech.preset === 'custom' && (settings.speech.engine || 'whisper') === 'whisper');
+  const language = {de: 'Deutsch', en: 'Englisch', 'de-medical': 'Medizinisches Deutsch'}[settings.speech.language] || 'Medizinisches Deutsch';
+  $('speech-language').disabled = !whisper;
+  $('speech-language-hint').textContent = whisper ? (settings.speech.language === 'de-medical' ?
+    'Sprache fest auf Deutsch. Medizinischer Kontexthinweis und eigene Begriffe aus Einstellungen unterstützen Whisper. Kein separat medizinisch trainiertes Modell; Fachbegriffe, Zahlen und Einheiten prüfen.' :
+    `Sprache fest auf ${language}; keine automatische Sprachauswahl.`) :
+    'Parakeet bestimmt die Sprache modellintern. Feste Sprachwahl und medizinische Kontexthinweise gelten für Whisper; wähle dafür Whisper unter Modelle.';
+  $('processing-location').textContent = `Spracherkennung: ${{ whisper: 'Whisper', 'parakeet-ultra': 'Parakeet Ultra', custom: 'Eigenes Modell' }[settings.speech.preset]} · ${whisper ? language : 'Sprache modellintern'} · Lokal auf diesem Computer.`;
+}
 $('download').onclick = attempt(async () => {
   $('download').disabled = true; status('Modell wird heruntergeladen …');
   try { await api.download($('speech-model').value); status('Modell ist bereit.'); } finally { $('download').disabled = false; }
@@ -585,7 +598,7 @@ try {
     settings.speech.modelDirectory = path; settings.speech.engine = engine.value;
     await save(); directory.textContent = path; status('Eigenes Modell gespeichert.');
   });
-  engine.onchange = attempt(async () => { settings.speech.engine = engine.value; await save(); });
+  engine.onchange = attempt(async () => { settings.speech.engine = engine.value; await save(); updateLocation(); });
   const note = document.createElement('p'); note.textContent = 'Weitere Modelle werden nicht vorbelegt. Verwende einen vollständigen lokalen Modellordner im gewählten Format. Andere Architekturen benötigen einen eigenen Adapter.';
   customBox.append(engineLabel, directory, choose, note); $('models').append(customBox);
   const customVisibility = () => { customBox.hidden = $('speech-model').value !== 'custom'; $('download').hidden = !customBox.hidden; };
@@ -595,6 +608,7 @@ try {
   for (const id of ['provider', 'location', 'baseURL', 'model', 'apiKey']) $(id).value = settings.provider[id] || '';
   updateServerPlaceholder();
   $('mode').value = settings.mode; $('speech-model').value = settings.speech.preset;
+  $('speech-language').value = settings.speech.language;
   customVisibility();
   $('history-enabled').checked = settings.historyEnabled;
   $('recording-indicator-enabled').checked = settings.recordingIndicator !== false;

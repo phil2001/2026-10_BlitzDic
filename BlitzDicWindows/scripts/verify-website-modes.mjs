@@ -55,7 +55,7 @@ try {
    syncBuiltinESMExports();
   });
   await ui.evaluate(async({preset,hold,name,baseURL})=>{
-   const {settings}=await window.blitz.load();settings.speech.preset=preset;settings.shortcutBehavior=hold?'hold':'toggle';
+   const {settings}=await window.blitz.load();settings.speech.preset=preset;settings.speech.language='en';settings.shortcutBehavior=hold?'hold':'toggle';
    settings.websiteModes=[{host:'blitzdic.test',mode:'clean'},{host:'mail.blitzdic.test',mode:'calm'}];
    settings.appModes=[{executable:name==='edge'?'msedge.exe':'chrome.exe',mode:'emoji'}];
    settings.provider={provider:'custom',location:'local',model:'website-fixture',baseURL,apiKey:''};await window.blitz.settings(settings);

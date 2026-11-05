@@ -10,6 +10,19 @@ function fixture(overrides = {}) {
     transcribe: async () => ({ text: 'Hallo Welt', segments: [] }), ...overrides });
   return { flow, settings, history };
 }
+
+test('medical German and user terms reach ASR, while plain English does not receive medical context', async () => {
+  const requests=[];
+  const {flow,settings}=fixture({transcribe:async request=>{requests.push(request);return {text:'Befund',language:'de'};}});
+  settings.modeSettings.customTerms=['Fachwort'];
+  await flow.process('audio.wav');
+  assert.equal(requests[0].language,'de-medical');
+  assert.deepEqual(requests[0].medicalTerms,['Fachwort']);
+  settings.speech.language='en';
+  await flow.process('audio.wav');
+  assert.equal(requests[1].language,'en');
+  assert.equal(Object.hasOwn(requests[1],'medicalTerms'),false);
+});
 test('verbatim transcript reaches history without configured LLM', async () => {
   const { flow, history } = fixture(); const states = [];
   flow.on('state', state => states.push(state));

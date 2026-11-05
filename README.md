@@ -56,8 +56,8 @@ Ein zusätzliches lokales LLM hat eigene RAM-/VRAM-Anforderungen.
 
 ## Installation und Bedienung
 
-Der aktuelle lokale Entwicklungsinstaller ist **0.3.10-dev.23** unter
-`BlitzDicWindows/dist/windows-2026-11-05T13-36-46-150Z-8c733b/BlitzDic Setup 0.3.10-dev.23.exe`
+Der aktuelle lokale Entwicklungsinstaller ist **0.3.10-dev.24** unter
+`BlitzDicWindows/dist/windows-2026-11-05T16-05-07-487Z-cefee8/BlitzDic Setup 0.3.10-dev.24.exe`
 (etwa 1,19 GB). Er enthält beide Sprachmodelle und die lokale Sprachlaufzeit.
 Der Installer ist noch nicht signiert; eine fertige Release-Datei ist noch nicht
 veröffentlicht. Die gebaute App wurde auf dem Entwicklungs-PC mit einem frischen
@@ -83,7 +83,11 @@ Die passenden Electron-/FFmpeg-Originalquellen und Bauhinweise werden ebenfalls
 mitgeliefert. Sie benötigen auf den Arbeitsplätzen keine Entwicklungswerkzeuge.
 
 1. Nach Installation BlitzDic öffnen und unter **Modelle** Whisper oder Parakeet wählen.
-2. Unter **Diktat** Mikrofon und Schreibmodus wählen, Aufnahme starten und beenden.
+2. Unter **Diktat** Mikrofon, Schreibmodus und **Diktatsprache** wählen, Aufnahme starten und beenden.
+   Whisper bietet festes **Deutsch**, **Englisch** und **Medizinisches Deutsch** (Standard).
+   Medizinisches Deutsch ergänzt einen Kontexthinweis und eigene Begriffe aus Einstellungen;
+   es ist kein separat medizinisch trainiertes Modell. Fachbegriffe, Zahlen und Einheiten prüfen.
+   Parakeet bestimmt die Sprache modellintern; für feste Sprachwahl Whisper verwenden.
    Ab 0.3.10-dev.10 merkt sich BlitzDic die Mikrofonwahl für Diktate und Meetings.
    Falls das Gerät fehlt, es erneut verbinden oder **Standardmikrofon** wählen.
 3. Für Schreibmodi außer Wortgenau unter **Verbindungen** einen LLM-Server einrichten.

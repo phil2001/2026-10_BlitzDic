@@ -2175,3 +2175,27 @@ release `435267059`. Draft/prerelease remain true and the source target is the
 exact tested commit. GitHub's installer size/SHA-256 and checksum-file digest
 match the local artifacts. Evidence: `.runtime/release-dev23/upload-evidence.json`.
 The draft is not a final publication; installed dev.20 is unchanged.
+
+## 2026-11-05: dev.24 — fixed dictation language profiles
+
+User-requested scope: German, English and medical German; medical German is the
+default and migrates old automatic settings. Whisper receives de/en explicitly.
+Medical German adds local context and bounded existing custom terms, not a new
+medical model. Parakeet cannot force language in the current API; its selector is
+disabled with an explanation. No new dependencies or models.
+
+Build: `windows-2026-11-05T16-05-07-487Z-cefee8`.
+Installer SHA-256: `5b07356d0e21005fd2e3e6646c80cd3484205c96faa2980bdf25010b214526dc`.
+Node tests: 81 passed, two skipped, none failed. Python language tests: three passed.
+Packaged UI tests: all three profiles persist and recognize synthetic audio with
+expected de/en/de languages; medical fixture transcribed Anamnese, Befund, Diagnose,
+Therapie and Verlauf correctly. No Arabic script, no page errors; minimum-window
+layout and explicit Parakeet limitation checked. Existing packaged smoke test with
+`--without-intel-openmp` passed for both models, fresh profile, inventory, settings
+and fixture rewrite. The first invocation without that required runtime flag
+failed its Intel-OpenMP assertion; no runtime failure was involved.
+
+Local handoff uses the staged standalone app, not an update of installed dev.20.
+User authorized restarting the open app; normal profile is Wortgenau, Whisper,
+de-medical with bundled models. Only the project shortcut is updated.
+No VM, clinical validation or universal Windows-PC certification was added.

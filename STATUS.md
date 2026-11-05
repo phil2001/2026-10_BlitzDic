@@ -8,50 +8,42 @@ Die lokale Diktier-App mit Whisper und Parakeet steht im Vordergrund. Keine neue
 Test-VM, keine zusätzlichen Funktionen und keine umfangreiche Testinfrastruktur.
 Weitere Arbeiten werden nach Rückmeldung zur Benutzung festgelegt.
 
-- Lokale Ausgabe: **0.3.10-dev.23**, Windows 11 **x64**.
+- Lokale Ausgabe: **0.3.10-dev.24**, Windows 11 **x64**.
 - Start auf diesem Rechner: **BlitzDic Lokal.lnk** im Projektordner.
-- Voreinstellung bei Übergabe: **Wortgenau**, **Whisper Small**.
+- Voreinstellung bei Übergabe: **Wortgenau**, **Whisper Small**, **Medizinisches Deutsch**.
 - **Parakeet Ultra (NVIDIA / Moondream)** ist unter **Modelle** auswählbar.
 - Beide Modelle und die Sprachlaufzeit sind enthalten. Für Diktate sind kein
   zusätzliches Python, Visual Studio, CUDA, LM Studio oder OpenAI-Konto nötig.
 - Die lokale Ausgabe wurde direkt gestartet; die ältere registrierte
   Testinstallation dev.20 wurde dabei nicht entfernt oder aktualisiert.
-- Vollständiger Installer und Prüfsumme liegen als privater GitHub-Release-Entwurf
-  vor. Der Installer ist unsigniert; eine Freigabe für alle Ordinations-PCs ist
+- Dev.24-Installer und Prüfsumme sind lokal vorhanden; dev.23 liegt zusätzlich
+  als privater GitHub-Release-Entwurf vor. Der Installer ist unsigniert; eine Freigabe für alle Ordinations-PCs ist
   damit noch nicht belegt.
 
-## Priorität 1: unerwarteter Sprachwechsel
+## Sprachwahl: umgesetzt in dev.24
 
-**Neue Benutzerrückmeldung:** Eine lokale Aufnahme ergab arabischen Text, eine
-andere deutschen Text. Noch nicht reproduziert. Modell, genaue Aufnahme und
-erkannte Sprachkennung der beiden Vorgänge wurden nicht ausgelesen.
+Unter **Diktat → Diktatsprache** stehen **Medizinisches Deutsch** (Standard),
+**Deutsch** und **Englisch** zur Auswahl. Alte automatische Spracheinstellungen
+werden auf medizinisches Deutsch umgestellt; eine gespeicherte feste deutsche
+oder englische Auswahl bleibt erhalten.
 
-**Im Code bestätigt:** `speech.language` ist standardmäßig leer. Der
-Whisper-Worker übergibt dann `language=None`; faster-whisper erkennt die Sprache
-automatisch. Eine feste deutsche Vorgabe wurde bei der lokalen Bereitstellung
-nicht gesetzt. Das ist eine plausible Erklärung, falls Whisper aktiv war, aber
-noch kein Nachweis für die Ursache dieses konkreten Ergebnisses.
+Whisper erhält fest `de` oder `en`. Medizinisches Deutsch verwendet ebenfalls
+`de`, ergänzt um einen deutschen medizinischen Kontexthinweis und die vorhandenen
+**Eigenen Begriffe** aus Einstellungen. Es ist kein separat medizinisch trainiertes
+oder klinisch validiertes Modell; Fachbegriffe, Zahlen und Einheiten prüfen.
 
-Die Oberfläche bietet derzeit keine sichtbare Auswahl der Diktatsprache.
-Der Parakeet-Zweig verwendet `model.recognize(...)` und erzwingt die übergebene
-Whisper-Sprachvorgabe nicht; die beiden Engines müssen getrennt behandelt werden.
+**Parakeet** bestimmt die Sprache modellintern. Die Sprachwahl ist dafür sichtbar
+deaktiviert und erklärt diese Grenze. Für festes Deutsch bitte Whisper wählen.
 
-Nächste kleine Schritte, sobald diese Fehlerbehebung beauftragt wird:
+Die gemeldete arabische Ausgabe wurde mit der Originalaufnahme nicht reproduziert.
+Die frühere automatische Whisper-Spracherkennung war eine plausible Ursache.
+Synthetische deutsche, englische und medizinisch-deutsche Audiodateien wurden im
+gebauten Paket korrekt mit den erwarteten Sprachen erkannt; kein arabischer Text.
+Beide enthaltenen Modelle bestanden zusätzlich den bestehenden Pakettest.
 
-- [ ] Bei einem erneuten Auftreten das ausgewählte Modell notieren.
-- [ ] Für deutsche Whisper-Diktate die vorhandene Spracheinstellung auf `de`
-      festlegen; automatische Erkennung bei Bedarf weiterhin ermöglichen.
-- [ ] Mit einem neutralen deutschen Testsatz die Erkennung vergleichen;
-      kurze/undeutliche Aufnahmen und das gewählte Mikrofon berücksichtigen.
-- [ ] Dasselbe mit Parakeet prüfen und die Ergebnisse getrennt dokumentieren.
-
-Es wurde für diesen Statusbericht keine App-Einstellung geändert und kein neuer
-Build erstellt. Die Sprachkorrektur ist **offen**.
-
-Referenz zur automatischen Erkennung und zum Parameter `language`:
-[faster-whisper, ursprünglicher Quellcode](https://github.com/SYSTRAN/faster-whisper/blob/master/faster_whisper/transcribe.py).
-Lokale Stellen: `BlitzDicWindows/src/store.js`, `src/dictation.js` und
-`speech/worker.py` (die beiden letzten relativ zu `BlitzDicWindows`).
+Offen bei erneutem Auftreten: ausgewähltes Modell und Profil notieren; echte
+Mikrofonqualität und problematische Fachbegriffe gezielt prüfen. Die synthetischen
+Tests ersetzen keinen Genauigkeitsnachweis für medizinische Diktate.
 
 ## Weitere Arbeiten, nach Bedarf
 

@@ -31,7 +31,7 @@ try {
   for (const preset of presets) {
     assert.ok(['whisper', 'parakeet-ultra'].includes(preset));
     await page.evaluate(async preset => {
-      const {settings} = await window.blitz.load(); settings.speech.preset = preset;
+      const {settings} = await window.blitz.load(); settings.speech.preset = preset; settings.speech.language = 'en';
       await window.blitz.settings(settings); document.querySelector('#meeting-transcript').value = '';
     }, preset);
     await page.locator('#meeting-record').click();

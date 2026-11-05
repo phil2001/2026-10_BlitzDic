@@ -149,6 +149,8 @@ try {
   await page.reload();
   await page.waitForSelector('#provider option', {state: 'attached'});
   console.log('Native shortcuts disabled in the isolated smoke-test profile only.');
+  // This fixture's WAV is English; the application default is medical German.
+  await page.locator('#speech-language').selectOption('en');
   await app.evaluate(({dialog}, file) => {
     dialog.showOpenDialog = async () => ({canceled: false, filePaths: [file]});
   }, `${root}/.runtime/test-speech.wav`);

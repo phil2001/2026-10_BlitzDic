@@ -53,7 +53,7 @@ try {
   page = await dictation.firstWindow();
   await page.waitForSelector('#provider option', {state: 'attached'});
   await page.evaluate(async ({preset, appRule, cancelRewrite, baseURL, hold}) => {
-    const {settings} = await window.blitz.load(); settings.speech.preset = preset;
+    const {settings} = await window.blitz.load(); settings.speech.preset = preset; settings.speech.language = 'en';
     settings.shortcutBehavior = hold ? 'hold' : 'toggle';
     if (appRule || cancelRewrite) {
       if (appRule) settings.appModes = [{executable: 'electron.exe', mode: 'clean'}];
