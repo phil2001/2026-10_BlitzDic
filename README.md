@@ -246,6 +246,11 @@ neuen Python-Umgebung aus. Diesen Pfad als `BLITZDIC_BUILD_PYTHON` setzen und
 in den folgenden Befehlen statt `.runtime/venv/Scripts/python.exe` verwenden.
 [Ruy-Build auf GitHub](https://github.com/phil2001/2026-10_BlitzDic/actions/workflows/ct2-ruy.yml)
 
+Die Sprecherlaufzeit kann zusätzlich aus dem eigenen Windows-Quellbuild
+eingebunden werden: `setup-speech.ps1 -SpeakerArtifactDirectory` erwartet das
+zugehörige Wheel mit Herkunftsmanifest. Beide Artefaktoptionen können gemeinsam
+verwendet werden. [Bau und Prüfung der Sprecherlaufzeit](BlitzDicWindows/licenses/native/sherpa-onnx-2.0.1/BUILD.md).
+
 Der Standard-Entwicklungsbuild verwendet die normale Python-Umgebung.
 
 ```powershell

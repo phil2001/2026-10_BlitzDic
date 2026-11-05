@@ -1,8 +1,15 @@
 name: Build Windows speaker runtime from source
 on:
   workflow_dispatch:
+    inputs:
+      reuse_run_id:
+        description: Existing source-build run whose retained wheel should be verified without recompiling
+        required: false
+        default: ''
+        type: string
 permissions:
   contents: read
+  actions: read
 jobs:
   build:
     runs-on: windows-2025
@@ -19,6 +26,7 @@ jobs:
         with:
           python-version: '3.12'
       - name: Build the Python wheel with recorded source dependencies
+        if: inputs.reuse_run_id == ''
         shell: pwsh
         run: |
           $PSNativeCommandUseErrorActionPreference = $true
@@ -61,6 +69,23 @@ jobs:
             "CMake options: $env:SHERPA_ONNX_CMAKE_ARGS"
             "Wheel SHA-256: $((Get-FileHash $wheel.FullName).Hash)"
           ) | Set-Content -Encoding utf8 sherpa-wheel/build-provenance.txt
+      - name: Retrieve an existing source build
+        if: inputs.reuse_run_id != ''
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SOURCE_RUN_ID: ${{ inputs.reuse_run_id }}
+        run: |
+          $PSNativeCommandUseErrorActionPreference = $true
+          if ($env:SOURCE_RUN_ID -notmatch '^\d+$') { throw 'Invalid source run ID' }
+          $run = gh run view $env:SOURCE_RUN_ID --repo $env:GITHUB_REPOSITORY --json workflowName,status | ConvertFrom-Json
+          if ($run.workflowName -ne 'Build Windows speaker runtime from source' -or $run.status -ne 'completed') { throw 'Expected a completed speaker source build' }
+          gh run download $env:SOURCE_RUN_ID --repo $env:GITHUB_REPOSITORY --name sherpa-windows-source-cp312 --dir sherpa-wheel
+      - name: Install the source wheel for verification
+        shell: pwsh
+        run: |
+          $PSNativeCommandUseErrorActionPreference = $true
+          $wheel = Get-ChildItem sherpa-wheel/*.whl | Select-Object -First 1
           python -m pip install $wheel.FullName 'numpy==2.5.4' 'av==16.0.1'
       - name: Verify the wheel and actual local speaker inference
         shell: pwsh
@@ -77,7 +102,21 @@ jobs:
           from zipfile import ZipFile
           import sherpa_onnx
 
-          assert sherpa_onnx.git_sha1.startswith('af2d8d81'), sherpa_onnx.git_sha1
+          import hashlib
+          import re
+          source = Path('sherpa-source/sherpa-onnx/csrc/version.cc').read_text()
+          expected_runtime_revision = re.search(r'static const char \*sha1 = "([0-9a-f]+)";', source).group(1)
+          # This pinned upstream release embeds an older revision in version.cc.
+          # Check its actual source literal separately from the checkout provenance.
+          assert sherpa_onnx.git_sha1 == expected_runtime_revision, sherpa_onnx.git_sha1
+          checkout = subprocess.check_output(['git', '-C', 'sherpa-source', 'rev-parse', 'HEAD'], text=True).strip()
+          assert checkout == 'af2d8d81dbfa61c4cea4c568da78f3982edca005', checkout
+          artifact = next(Path('sherpa-wheel').glob('*.whl'))
+          provenance = Path('sherpa-wheel/build-provenance.txt').read_text(encoding='utf-8-sig').splitlines()
+          assert f'Source: {checkout}' in provenance
+          assert f'Wheel SHA-256: {hashlib.sha256(artifact.read_bytes()).hexdigest().upper()}' in provenance
+          assert sherpa_onnx.version == '2.0.1', sherpa_onnx.version
+          assert sherpa_onnx.onnxruntime_version == '1.28.2', sherpa_onnx.onnxruntime_version
           with ZipFile(next(Path('sherpa-wheel').glob('*.whl'))) as wheel:
               assert any(name.endswith('licenses/provenance.json') for name in wheel.namelist())
           request = {
