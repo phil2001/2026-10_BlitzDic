@@ -1728,3 +1728,40 @@ This addresses the Community acquisition step. End-user redistribution terms
 for the installer and remaining native component obligations still require
 completion. The practice PCs are intended to receive the complete BlitzDic
 installer without separate developer-tool, Python, CUDA or C++ runtime setup.
+
+## Development package 0.3.10-dev.18: installer license page
+
+The build now verifies the original Microsoft Visual C++ V14 runtime DOCX and
+its extracted UTF-8 text before generating a scoped installer license page.
+The MIT terms for BlitzDic and Microsoft terms for the runtime are separately
+identified. The complete generated text, its provenance, the original DOCX
+and text copy are included in the installed license folder. The text copy
+preserves Word text runs and paragraph order; formatting and automatic list
+numbering are omitted, so the original document is retained as well.
+
+`verify-installer-license.py` statically reads the actual Unicode/Deflate NSIS
+header. It confirms that the first page is a license page and references the
+complete generated text, allowing only newline normalization. Dev.18 passed;
+dev.17, which lacks this page, was rejected as a negative control. This check
+is now part of the Windows build after NSIS compilation. It neither launches
+the installer nor verifies visual layout or interactive acceptance.
+
+The attempted visual inspection did not start because Computer Use app
+approval timed out. A subsequent window inventory showed no BlitzDic setup
+window. No installation was performed and the existing dev.14 app was not
+closed or modified.
+
+The staged dev.18 application passed its fresh-profile smoke test with both
+bundled models, connection discovery/test/save, WAV import and a rewrite via
+the local protocol fixture. Its own native shortcuts were disabled only in
+that test profile to avoid the running user installation's bindings. All 111
+actual native files match dev.17's tested runtime, and the new packaged
+Microsoft originals, generated license and provenance hashes were verified.
+
+The unsigned installer is
+`dist/windows-2026-11-05T08-32-40-255Z-9389cf/BlitzDic Setup 0.3.10-dev.18.exe`
+(1,147,293,290 bytes), SHA-256
+`8A067A77709B8242A2D679B2C9884FD68144D44EDE77C155B50F0C9899D8D7A2`.
+The existing installed app remains dev.14. A clean Windows 11 installation,
+interactive inspection of the new license page, and remaining redistribution
+review remain unverified.

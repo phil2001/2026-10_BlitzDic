@@ -46,14 +46,18 @@ Ein zusätzliches lokales LLM hat eigene RAM-/VRAM-Anforderungen.
 
 ## Installation und Bedienung
 
-Der aktuelle lokale Entwicklungsinstaller ist **0.3.10-dev.17** unter
-`BlitzDicWindows/dist/windows-2026-11-05T08-22-27-958Z-bb3b6a/BlitzDic Setup 0.3.10-dev.17.exe`
+Der aktuelle lokale Entwicklungsinstaller ist **0.3.10-dev.18** unter
+`BlitzDicWindows/dist/windows-2026-11-05T08-32-40-255Z-9389cf/BlitzDic Setup 0.3.10-dev.18.exe`
 (etwa 1,15 GB). Er enthält beide Sprachmodelle und die lokale Sprachlaufzeit.
 Der Installer ist noch nicht signiert; eine fertige Release-Datei ist noch nicht
 veröffentlicht. Die gebaute App wurde auf dem Entwicklungs-PC mit einem frischen
 Testprofil geprüft. Eine Neuinstallation auf einem frischen Windows-11-PC bleibt
 zu prüfen. Die installierte Testversion auf dem Entwicklungs-PC bleibt dev.14.
 Details zu Build, Prüfsumme und Tests stehen im [Arbeitsstand](WINDOWS_PORT.md).
+Das Setup enthält jetzt eine Lizenzseite. Die MIT-Lizenz für den eigenen Code
+und die Bedingungen für enthaltene Microsoft-Laufzeitdateien sind dort getrennt
+benannt und zusätzlich im installierten Lizenzordner verfügbar. Eine gesonderte
+Visual-Studio-Installation auf dem Arbeitsplatz ist dafür nicht nötig.
 
 1. Nach Installation BlitzDic öffnen und unter **Modelle** Whisper oder Parakeet wählen.
 2. Unter **Diktat** Mikrofon und Schreibmodus wählen, Aufnahme starten und beenden.

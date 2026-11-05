@@ -73,10 +73,20 @@ Ein Neustart wurde nicht automatisch ausgeführt.
    verlangt Abschnitt 5 schützende Vereinbarungen mit Endnutzern und
    Weiterverteilern sowie eine Freistellung Microsofts im dort beschriebenen
    Umfang. Eine bloße MIT-Lizenz für den eigenen Code erledigt diese separaten
-   Pflichten nicht. Die Umsetzung im Installer ist noch zu prüfen.
+   Pflichten nicht. Der Windows-Build erzeugt jetzt eine Setup-Lizenzseite mit
+   getrenntem Geltungsbereich für den MIT-Code und die Microsoft-Laufzeitdateien.
+   Die Microsoft-Originalbedingungen und eine Textfassung werden mitgeliefert;
+   beide Quellprüfsummen werden vor dem Bau geprüft. Eine statische Prüfung der
+   fertigen EXE bestätigt, dass deren erste Seite auf den vollständigen erzeugten
+   Lizenztext verweist. Die visuelle und interaktive Prüfung dieser Seite ist
+   noch offen. Diese technischen Prüfungen ersetzen keine weitergehende
+   rechtliche Beurteilung der konkreten Weitergabe.
 
 BlitzDic-Nutzer benötigen dafür keine eigene Visual-Studio-Installation. Die
 Weitergabeberechtigung betrifft den Herausgeber des Installers.
+Bei einer unbeaufsichtigten Installation muss der ausführende Administrator
+zur Annahme der Bedingungen für die jeweilige Organisation berechtigt sein;
+der Silent-Modus zeigt die Lizenzseite nicht an.
 
 ## Build Tools und Redistributable sind getrennt zu betrachten
 

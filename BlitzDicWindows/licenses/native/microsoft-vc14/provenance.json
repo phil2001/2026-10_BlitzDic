@@ -1,0 +1,9 @@
+{
+  "retrievedDate": "2026-11-05",
+  "sourceURL": "https://visualstudio.microsoft.com/wp-content/uploads/2025/10/Visual-C-V14-License-Redistributable_and_Runtime_ENU.docx",
+  "sourceDocument": "Visual-C-V14-License-Redistributable_and_Runtime_ENU.docx",
+  "sourceDocumentSha256": "08651651a7602fc7c0e2763de0fde1ff9f868df2780597cd1775ee9d6441c783",
+  "textFile": "Runtime-LICENSE.txt",
+  "textSha256": "441867162c8327509a08a9c626a5d1c2df2544a7859df0aeb94cd22229208869",
+  "textConversion": "UTF-8; original Word text runs in paragraph order, separated by blank lines; formatting and automatic list numbering omitted. The original DOCX is retained."
+}

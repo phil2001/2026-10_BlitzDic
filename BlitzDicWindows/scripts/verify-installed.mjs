@@ -16,6 +16,26 @@ for (const relative of ['models/whisper/model.bin', 'models/parakeet-ultra/encod
   await access(resolve(resources, relative));
 const inventory = JSON.parse(await readFile(resolve(resources, 'licenses/dependencies/inventory.json'), 'utf8'));
 assert.deepEqual(inventory.missingPackageNotices, []);
+const installerLicense = await readFile(resolve(licenseRoot, 'Installer-LICENSE.txt'));
+const installerLicenseOrigin = JSON.parse(await readFile(resolve(licenseRoot, 'Installer-license-provenance.json'), 'utf8'));
+assert.equal(createHash('sha256').update(installerLicense).digest('hex'), installerLicenseOrigin.sha256);
+const microsoftLicenseRoot = resolve(licenseRoot, 'native/microsoft-vc14');
+const microsoftLicenseOrigin = JSON.parse(await readFile(resolve(microsoftLicenseRoot, 'provenance.json'), 'utf8'));
+assert.equal(microsoftLicenseOrigin.sourceDocumentSha256,
+  '08651651a7602fc7c0e2763de0fde1ff9f868df2780597cd1775ee9d6441c783');
+for (const [file, hash] of [[microsoftLicenseOrigin.sourceDocument, microsoftLicenseOrigin.sourceDocumentSha256],
+  [microsoftLicenseOrigin.textFile, microsoftLicenseOrigin.textSha256]]) {
+  const path = resolve(microsoftLicenseRoot, file);
+  assert.ok(path.startsWith(microsoftLicenseRoot + sep));
+  assert.equal(createHash('sha256').update(await readFile(path)).digest('hex'), hash);
+}
+assert.equal(installerLicenseOrigin.microsoftOriginalSha256, microsoftLicenseOrigin.sourceDocumentSha256);
+assert.equal(installerLicenseOrigin.microsoftTextSha256, microsoftLicenseOrigin.textSha256);
+assert.equal(createHash('sha256').update(await readFile(resolve(resources, 'licenses/BlitzDic-LICENSE.txt'))).digest('hex'),
+  installerLicenseOrigin.blitzDicMitSha256);
+assert.match(installerLicense.toString('utf8'), /1\. BLITZDIC — MIT LICENSE/);
+assert.match(installerLicense.toString('utf8'), /2\. MICROSOFT VISUAL C\+\+ V14/);
+assert.ok(installerLicense.toString('utf8').endsWith(await readFile(resolve(microsoftLicenseRoot, microsoftLicenseOrigin.textFile), 'utf8')));
 const avPackage = inventory.packages.find(item => item.name === 'av');
 assert.equal(avPackage.version, '16.0.1+blitzdic.1');
 const ffmpegNotice = avPackage.files.find(item => /[\\/]blitzdic-ffmpeg[\\/]ffmpeg-8\.0\.3\.tar\.xz$/.test(item.path));

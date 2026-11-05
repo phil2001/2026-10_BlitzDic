@@ -24,6 +24,7 @@ await mkdir(resolve(root, buildRoot), {recursive: true});
 console.log(`Build: ${id}\nInstaller output: ${output}`);
 await run(python, ['scripts/setup-diarization.py', '--verify-only']);
 await run(python, ['scripts/collect-licenses.py', `${buildRoot}/licenses`]);
+await run(process.execPath, ['scripts/create-installer-license.mjs', `${buildRoot}/licenses/Installer-LICENSE.txt`]);
 await run(python, ['scripts/native-inventory.py', `${buildRoot}/licenses/native-binaries.json`, '--require-clean-ffmpeg']);
 await run(`${process.env.SystemRoot}/System32/WindowsPowerShell/v1.0/powershell.exe`,
   ['-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-File', 'scripts/build-speech.ps1',
@@ -33,10 +34,14 @@ await run(python, ['scripts/map-native-package.py', `${buildRoot}/licenses/nativ
   `${buildRoot}/speech/work/blitzdic-speech/Analysis-00.toc`, '--require-trusted-origins']);
 let config = await readFile(resolve(root, 'electron-builder.yml'), 'utf8');
 config = config.replace('output: dist/windows', `output: ${output}`)
+  .replace('nsis:', `nsis:\n  license: ${buildRoot}/licenses/Installer-LICENSE.txt`)
   .replace('from: dist/speech/blitzdic-speech', `from: ${speechOutput}/blitzdic-speech`)
   .replace('extraResources:', `extraResources:\n  - from: ${buildRoot}/licenses\n    to: licenses/dependencies`);
 const configFile = `${buildRoot}/electron-builder.yml`;
 await writeFile(resolve(root, configFile), config);
 await run(process.execPath, ['node_modules/electron-builder/cli.js', '--win', '--x64', '--publish', 'never', '--config', configFile]);
+const version = JSON.parse(await readFile(resolve(root, 'package.json'), 'utf8')).version;
+await run(python, ['scripts/verify-installer-license.py', `${output}/BlitzDic Setup ${version}.exe`,
+  `${buildRoot}/licenses/Installer-LICENSE.txt`]);
 await writeFile(resolve(root, `${buildRoot}/build-result.json`), JSON.stringify({id, output, speechOutput}, null, 2));
 console.log(`Windows package built in ${output}. License inventory: ${buildRoot}/licenses/inventory.json`);
