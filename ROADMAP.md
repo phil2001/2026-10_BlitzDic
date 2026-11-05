@@ -1,7 +1,8 @@
 # Roadmap für Windows 11
 
-Aktuelle Kurzfassung einschließlich des gemeldeten Sprachwechsels:
-[STATUS.md](STATUS.md). Der Sprachwechsel ist der erste offene Fehlerhinweis.
+Aktuelle Kurzfassung einschließlich der festen Sprachprofile:
+[STATUS.md](STATUS.md). Die Sprachwahl ist in dev.24 umgesetzt; die ursprüngliche
+arabische Ausgabe wurde mit der Originalaufnahme nicht reproduziert.
 
 ## Aktueller Auftrag: lokale Version bereitstellen
 
@@ -10,11 +11,15 @@ die benutzbare lokale Windows-Version mit Whisper und Parakeet fokussiert.
 Weitere Funktionen und die zusätzlichen Tests unten sind zurückgestellt.
 Die VM-Vorbereitung wird nicht fortgesetzt; Windows wurde nicht installiert.
 
-Dev.23 ist lokal startbereit. Im normalen Benutzerprofil ist **Wortgenau** mit
-**Whisper** ausgewählt; **Parakeet Ultra** ist ebenfalls vollständig enthalten
+Dev.24 ist lokal gestartet. Im normalen Benutzerprofil ist **Wortgenau** mit
+**Whisper** und **Medizinisches Deutsch** ausgewählt; **Parakeet Ultra** ist ebenfalls vollständig enthalten
 und unter Modelle wählbar. Dafür ist kein LLM-Server erforderlich. Eine lokale
 Projektverknüpfung startet die vorhandene Ausgabe, ohne die bisherige
 Testinstallation zu entfernen. Vorhandene weitere Optionen bleiben erhalten.
+Whisper verwendet fest Deutsch oder Englisch. Medizinisches Deutsch ergänzt
+lokalen Kontext und eigene Begriffe; es ist kein separat medizinisch trainiertes
+Modell. Parakeet bestimmt die Sprache modellintern. Der vollständige dev.24-
+Installer ist mit Prüfsumme als unveröffentlichter privater Release-Entwurf gesichert.
 
 ## Zurückgestellte Abnahmen und spätere Arbeiten
 
