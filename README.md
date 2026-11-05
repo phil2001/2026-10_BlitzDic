@@ -16,6 +16,8 @@ konfiguriert werden; dann wird auf den Arbeitsplätzen kein LM Studio benötigt.
 
 **Status: Entwicklungsversion. Noch keine fertig geprüfte Veröffentlichung.**
 
+Kurzer Arbeitsstand und nächste Schritte: [STATUS.md](STATUS.md).
+
 **Lokale Version bereit:** Auf dem aktuellen Arbeitsrechner startet die
 Verknüpfung **BlitzDic Lokal** im Projektordner die vorhandene Windows-Ausgabe.
 Sie ist auf **Wortgenau** mit **Whisper** vorbereitet; **Parakeet Ultra** lässt

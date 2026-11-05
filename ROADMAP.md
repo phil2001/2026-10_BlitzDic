@@ -1,5 +1,8 @@
 # Roadmap für Windows 11
 
+Aktuelle Kurzfassung einschließlich des gemeldeten Sprachwechsels:
+[STATUS.md](STATUS.md). Der Sprachwechsel ist der erste offene Fehlerhinweis.
+
 ## Aktueller Auftrag: lokale Version bereitstellen
 
 Der Benutzer hat die Windows-Test-VM abgelehnt und den Umfang ausdrücklich auf
