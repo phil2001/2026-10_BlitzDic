@@ -4,3 +4,6 @@ licenses/native/intel-openmp/Intel-EULA-August-2024.txt binary
 licenses/native/onednn-3.1.1/*.txt binary
 licenses/native/numpy-openblas/SUPPLIER-LICENSE.txt binary
 licenses/native/python-standalone-20260127/LICENSE.*.txt binary
+licenses/native/sherpa-onnx-2.0.1/**/LICENSE* binary
+licenses/native/sherpa-onnx-2.0.1/**/build-recipe.cmake binary
+licenses/speech-models/*.txt binary
