@@ -23,7 +23,7 @@ jobs:
         run: |
           $PSNativeCommandUseErrorActionPreference = $true
           python -m pip install setuptools wheel
-          $env:SHERPA_ONNX_CMAKE_ARGS = '-DCMAKE_BUILD_TYPE=Release -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DSHERPA_ONNX_ENABLE_BINARY=OFF -DSHERPA_ONNX_BUILD_C_API_EXAMPLES=OFF -DSHERPA_ONNX_ENABLE_C_API=ON -DSHERPA_ONNX_ENABLE_TTS=ON -DSHERPA_ONNX_ENABLE_SPEAKER_DIARIZATION=ON -DSHERPA_ONNX_ENABLE_WEBSOCKET=OFF -DSHERPA_ONNX_ENABLE_PORTAUDIO=OFF'
+          $env:SHERPA_ONNX_CMAKE_ARGS = '-DCMAKE_BUILD_TYPE=Release -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DSHERPA_ONNX_USE_PRE_INSTALLED_ONNXRUNTIME_IF_AVAILABLE=OFF -DSHERPA_ONNX_ENABLE_BINARY=OFF -DSHERPA_ONNX_BUILD_C_API_EXAMPLES=OFF -DSHERPA_ONNX_ENABLE_C_API=ON -DSHERPA_ONNX_ENABLE_TTS=ON -DSHERPA_ONNX_ENABLE_SPEAKER_DIARIZATION=ON -DSHERPA_ONNX_ENABLE_WEBSOCKET=OFF -DSHERPA_ONNX_ENABLE_PORTAUDIO=OFF'
           Copy-Item -Recurse BlitzDicWindows/licenses/native/sherpa-onnx-2.0.1 sherpa-source/sherpa-onnx/python/sherpa_onnx/licenses
           @'
           from pathlib import Path
@@ -33,11 +33,25 @@ jobs:
           setup.write_text(text.replace('zip_safe=False,', 'zip_safe=False,\n    include_package_data=True,'))
           with Path('sherpa-source/MANIFEST.in').open('a') as manifest:
               manifest.write('\nrecursive-include sherpa-onnx/python/sherpa_onnx/licenses *\n')
+          extension = Path('sherpa-source/cmake/cmake_extension.py')
+          text = extension.read_text()
+          old = 'out_bin_dir = Path(self.build_lib).resolve().parent / "sherpa_onnx" / "bin"'
+          assert text.count(old) == 1
+          text = text.replace(old, 'out_bin_dir = Path(self.build_lib).resolve() / "sherpa_onnx" / "lib"\n        out_bin_dir.mkdir(parents=True, exist_ok=True)')
+          old = 'shutil.copy(f"{src_file}", f"{out_bin_dir}/")'
+          assert text.count(old) == 1
+          text = text.replace(old, 'if src_file.resolve() != (out_bin_dir / src_file.name).resolve():\n                shutil.copy(f"{src_file}", f"{out_bin_dir}/")')
+          old = '"onnxruntime.dll",'
+          assert text.count(old) == 1
+          text = text.replace(old, '"onnxruntime.dll",\n            "onnxruntime_providers_shared.dll",')
+          extension.write_text(text)
           '@ | python -
           Push-Location sherpa-source
           try { python setup.py bdist_wheel } finally { Pop-Location }
           New-Item -ItemType Directory sherpa-wheel | Out-Null
           Copy-Item sherpa-source/dist/*.whl sherpa-wheel/
+          git -C sherpa-source diff -- setup.py MANIFEST.in cmake/cmake_extension.py |
+            Set-Content -Encoding utf8 sherpa-wheel/packaging-changes.patch
           Get-ChildItem sherpa-source/build -Recurse -Filter CMakeCache.txt |
             ForEach-Object { Copy-Item $_.FullName sherpa-wheel/CMakeCache.txt }
           $wheel = Get-ChildItem sherpa-wheel/*.whl | Select-Object -First 1
