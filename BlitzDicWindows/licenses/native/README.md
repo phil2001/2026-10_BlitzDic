@@ -8,6 +8,11 @@ preserve five original license files from archives verified against the
 v2.0.1 build recipe. The supplier wheel's exact static configuration remains
 to be matched to that recipe.
 
+The [Tokenizers source dependency notices](tokenizers-0.23.3/README.md)
+cover all registry crates in the published Python source archive's lockfile.
+Their source archive hashes were verified before collection. The Windows
+wheel's exact feature selection remains a separate check.
+
 ## Microsoft C++ runtime in 0.3.10-dev.11
 
 The frozen speech worker ships five Microsoft C++ runtime DLLs. A PE scan of

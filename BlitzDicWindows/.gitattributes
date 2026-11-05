@@ -7,3 +7,6 @@ licenses/native/python-standalone-20260127/LICENSE.*.txt binary
 licenses/native/sherpa-onnx-2.0.1/**/LICENSE* binary
 licenses/native/sherpa-onnx-2.0.1/**/build-recipe.cmake binary
 licenses/speech-models/*.txt binary
+licenses/native/tokenizers-0.23.3/** binary
+licenses/native/tokenizers-0.23.3/README.md text diff eol=lf
+licenses/native/tokenizers-0.23.3/provenance.json text diff eol=lf
