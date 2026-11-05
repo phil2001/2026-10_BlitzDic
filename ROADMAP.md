@@ -1,5 +1,20 @@
 # Roadmap für Windows 11
 
+## Aktueller Auftrag: lokale Version bereitstellen
+
+Der Benutzer hat die Windows-Test-VM abgelehnt und den Umfang ausdrücklich auf
+die benutzbare lokale Windows-Version mit Whisper und Parakeet fokussiert.
+Weitere Funktionen und die zusätzlichen Tests unten sind zurückgestellt.
+Die VM-Vorbereitung wird nicht fortgesetzt; Windows wurde nicht installiert.
+
+Dev.23 ist lokal startbereit. Im normalen Benutzerprofil ist **Wortgenau** mit
+**Whisper** ausgewählt; **Parakeet Ultra** ist ebenfalls vollständig enthalten
+und unter Modelle wählbar. Dafür ist kein LLM-Server erforderlich. Eine lokale
+Projektverknüpfung startet die vorhandene Ausgabe, ohne die bisherige
+Testinstallation zu entfernen. Vorhandene weitere Optionen bleiben erhalten.
+
+## Zurückgestellte Abnahmen und spätere Arbeiten
+
 - Physische Mikrofontests, weitere Office-/Browser-Versionen und ein frisches Windows 11 prüfen.
 - Echten LAN-Modellserver prüfen, sobald er bereitsteht. Die Konfiguration für den späteren Server ist verfügbar. Externe API mit einem echten Anbieter prüfen.
 - Weitere Office-/Browser-Versionen prüfen. Die installierte dev.20 hat den

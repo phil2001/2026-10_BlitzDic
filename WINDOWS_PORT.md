@@ -43,10 +43,44 @@ a finished release remains pending. This checklist tracks the full deliverable.
 
 ## Porting evidence
 
+### Local handoff after scope clarification, 2026-11-05
+
+The user declined creating a Windows test VM, then asked to finish the usable
+local version with Whisper and Parakeet and leave further evaluation/testing
+for later. VM preparation and new feature work are stopped. No Windows OS was
+installed or registered; no VM-test tools are required by or included in the app.
+The previously documented broader acceptance limits are retained, not claimed
+as completed or used to expand the user's current request.
+
+The unchanged dev.23 artifact passed its final core package run: both actual
+bundled speech models, a manually selected Whisper Tiny folder, provider fixture,
+111 native origins, source/license inventory and audio import/rewrite integration.
+The already-running check completed with exit code 0; log:
+`.runtime/BlitzDicTest-d461fcf6.log`. No additional test sequence was started after
+the user requested the local handoff and deferred further testing.
+The ASAR and resources were separately checked to exclude the macOS app, local
+runtime work directories, QEMU/TPM tools, Debian packages and VM images.
+The installer's SHA-256 remains
+`1AE5A6F5965EFBC5D93D02E0030091E2B77CFB01B632B49A68D2E1B2F3A295A8`.
+
+The normal app profile was prepared through its existing settings API: verbatim
+mode, Whisper selected, both bundled models available. Other settings/history
+were preserved; no audio was recorded and no transcript/credential was exported.
+The app was then opened normally on the user's desktop; its main window title
+was BlitzDic, process 40292 was responding at handoff. No debugger/test controller
+was left attached to that normal app process. Installed dev.20 was not uninstalled.
+
+Automatic approval review rejected creating a desktop shortcut outside the
+workspace. That action was not executed or retried indirectly. The allowed
+alternative is `BlitzDic Lokal.lnk` inside the project, targeting the existing
+dev.23 unpacked executable. No previous directory or shortcut was removed.
+The current local handoff does not certify every Windows 11 PC or close the
+deferred hardware/clean-PC tests.
+
 ### Current acceptance limits, 2026-11-05
 
 The detailed historical entries below are evidence for their named builds and
-scopes. The latest dev.22 package passes the app/model/provider fixture checks
+scopes. The latest dev.23 package passes the app/model/provider fixture checks
 and compiled license-page check described at the end of this document. This
 does not close the complete checklist above.
 
@@ -59,7 +93,7 @@ does not close the complete checklist above.
   passed verification. The physical microphone result below still concerns dev.14.
 - A fresh Windows 11 installation is still unavailable and untested. A fresh
   app profile on the development PC is not a substitute for this gate.
-- The new license page is verified statically in the actual dev.22 installer;
+- The new license page is verified statically in the actual dev.23 installer;
   interactive inspection remains open after Computer Use approval timed out.
 - Final feature/visual parity and remaining native redistribution attribution
   still need review. The installer is unsigned. No finished-release claim is

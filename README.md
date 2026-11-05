@@ -16,6 +16,12 @@ konfiguriert werden; dann wird auf den Arbeitsplätzen kein LM Studio benötigt.
 
 **Status: Entwicklungsversion. Noch keine fertig geprüfte Veröffentlichung.**
 
+**Lokale Version bereit:** Auf dem aktuellen Arbeitsrechner startet die
+Verknüpfung **BlitzDic Lokal** im Projektordner die vorhandene Windows-Ausgabe.
+Sie ist auf **Wortgenau** mit **Whisper** vorbereitet; **Parakeet Ultra** lässt
+sich unter **Modelle** auswählen. Beide Modelle sind enthalten, ein LLM-Server
+ist dafür nicht nötig. Weitere Tests wurden auf Wunsch des Benutzers zurückgestellt.
+
 ## Funktionen
 
 - Lokale Transkription von Mikrofonaufnahmen und Audiodateien.
