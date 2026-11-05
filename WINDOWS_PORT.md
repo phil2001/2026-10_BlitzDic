@@ -1615,3 +1615,13 @@ phrase and final sentence in all eight repetitions. Word starts were ordered
 and word intervals stayed within the recording. The worker accepted a UTF-8
 request and returned ASCII-escaped JSON that decoded to the expected German
 text.
+
+The packaged dev.14 app also passed a real local LLM integration test with
+Gemma 4 E4B in LM Studio. Through the app's connection page, the test
+discovered the loaded model and saved its configuration. It imported the
+German WAV in the clean writing mode using bundled Whisper, then checked the
+completed editor result and history entry. The rewrite preserved the date,
+time, person, documents, budget and destination from the fixture. The test
+used a fresh app profile and a non-visible Win32 desktop. Its file picker
+returned a predetermined test WAV. The loopback server was stopped and the
+test model unloaded afterwards.
