@@ -46,7 +46,7 @@ a finished release remains pending. This checklist tracks the full deliverable.
 ### Current acceptance limits, 2026-11-05
 
 The detailed historical entries below are evidence for their named builds and
-scopes. The latest dev.18 package passes the app/model/provider fixture checks
+scopes. The latest dev.20 package passes the app/model/provider fixture checks
 and compiled license-page check described at the end of this document. This
 does not close the complete checklist above.
 
@@ -55,10 +55,11 @@ does not close the complete checklist above.
   with owned Word/classic fields still require final acceptance. Later package
   smoke tests exercise imports, not native key delivery or external insertion.
 - The installed user copy remains dev.14. Upgrading that concrete installation
-  to dev.18 awaits the user's requested deletion/shortcut-update approval.
+  awaits approval for the concrete newer installer and shortcut update. The
+  unanswered earlier request covered dev.18, not later versions.
 - A fresh Windows 11 installation is still unavailable and untested. A fresh
   app profile on the development PC is not a substitute for this gate.
-- The new license page is verified statically in the actual dev.18 installer;
+- The new license page is verified statically in the actual dev.20 installer;
   interactive inspection remains open after Computer Use approval timed out.
 - Final feature/visual parity and remaining native redistribution attribution
   still need review. The installer is unsigned. No finished-release claim is
@@ -1836,3 +1837,40 @@ The user installation remains dev.14; the pending upgrade request concerns
 the retained dev.18 installer and has not been interpreted as approval for dev.19.
 Clean Windows 11 installation and the outstanding native Chrome/Word/classic
 field acceptance tests remain open.
+
+## Development package 0.3.10-dev.20: exact Windows SDK redistribution record
+
+The Electron-supplied `d3dcompiler_47.dll` matches the x64 Redist copy in
+Microsoft.Windows.SDK.CPP 10.0.28000.2270 byte for byte. Its Microsoft signature
+was valid, and the complete SDK package matched NuGet's published SHA-512.
+The original SDK RTF, derived plain text, package descriptor, catalog response
+and hashes are retained under `licenses/native/windows-sdk-10.0.28000.2270`.
+The DLL SHA-256 is
+`f5c95e919b4ffa1ac71049cd45b9f986d2965e6888395ca2806337985334fa56`.
+
+The build checks these source files and the actual Electron DLL before adding
+the complete SDK terms as a separate installer section. The MIT application,
+Visual C++ runtime and SDK component scopes are identified separately. The
+compiled installer's first license page and packaged license copies passed
+the static verification. Publisher obligations under the original terms remain;
+this technical provenance record is not a Microsoft-issued legal certificate.
+No workstation SDK or Visual Studio installation is required.
+
+The staged dev.20 app passed its isolated fresh-profile smoke test: all 111
+native origins, bundled corresponding FFmpeg sources, provider discovery,
+connection/settings persistence, audio import, local transcription, fixture LLM
+rewrite, both bundled speech models, and manually selected custom Whisper.
+Global shortcuts were disabled only in that test profile because the installed
+dev.14 copy owns its shortcuts; this does not verify native shortcut delivery.
+Test log: `.runtime/BlitzDicTest-b3dd49fb.log`.
+The Node regression suite also passed (75 passed, 2 skipped, 0 failed) with
+access to its own local HTTP fixture servers. The restricted sandbox attempt
+could not reach several fixture endpoints; the unrestricted rerun resolved
+those failures without a product-code change.
+
+Artifact:
+`dist/windows-2026-11-05T09-59-26-866Z-f07325/BlitzDic Setup 0.3.10-dev.20.exe`
+(1,186,211,791 bytes), SHA-256
+`57990C2D549F09714BEDECCC093645D154D8F4D3115F18206A1A80E5BB869797`.
+The installed copy remains dev.14. The acceptance limits above, including
+clean Windows installation and native target-app tests, remain open.

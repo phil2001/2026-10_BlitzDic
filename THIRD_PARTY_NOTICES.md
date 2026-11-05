@@ -46,6 +46,11 @@ Bau gegen das offizielle Electron-Lieferarchiv geprüft; die für Branding und
 ASAR-Integrität geänderten Programmressourcen sind dabei gesondert ausgewiesen.
 Die Quellen dienen der Nachvollziehbarkeit und Ausübung der Bibliotheksrechte.
 Anwender benötigen dafür keine weitere Installation auf ihren Arbeitsplätzen.
+Die Microsoft-Datei `d3dcompiler_47.dll` ist außerdem separat dem originalen
+SDK-Redist-Paket zugeordnet. Die SDK-Bedingungen liegen unter
+`licenses/native/windows-sdk-10.0.28000.2270` und werden neben MIT und Visual C++
+V14 auf der Setup-Lizenzseite benannt. Das SDK selbst wird auf den
+Arbeitsplätzen nicht benötigt.
 
 Ab Windows 0.3.5 verwendet die Paketierung das private PyAV-Wheel
 16.0.1+blitzdic.1 mit FFmpeg 8.0.3, dynamisch unter LGPL v2.1 oder später,

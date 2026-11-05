@@ -40,10 +40,11 @@ Electron MIT notice are already collected at the installed license root.
 The supplier includes `d3dcompiler_47.dll`, version 10.0.28000.2270. Its
 Authenticode signature was valid with Microsoft Corporation as signer.
 Microsoft lists this file as distributable with Classic Windows applications
-under the Windows SDK terms. Publisher eligibility and the corresponding
-end-user protections need separate review; the Visual C++ V14 text alone does
-not cover this SDK component. The current installer names the C++ runtime
-terms, so the SDK treatment remains an open item before final redistribution.
+under the Windows SDK terms. It also matches the exact x64 Redist file in the
+official SDK NuGet package. The [separate SDK record](../windows-sdk-10.0.28000.2270/README.md)
+retains that acquisition evidence and the original terms. The installer now
+identifies those terms separately from Visual C++ V14 and the MIT application.
+The publisher's obligations under both Microsoft agreements continue to apply.
 [Windows SDK terms](https://learn.microsoft.com/en-us/legal/windows-sdk/license),
 [SDK REDIST list](https://learn.microsoft.com/en-us/legal/windows-sdk/redist).
 

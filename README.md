@@ -46,8 +46,8 @@ Ein zusätzliches lokales LLM hat eigene RAM-/VRAM-Anforderungen.
 
 ## Installation und Bedienung
 
-Der aktuelle lokale Entwicklungsinstaller ist **0.3.10-dev.19** unter
-`BlitzDicWindows/dist/windows-2026-11-05T09-31-11-011Z-328d3d/BlitzDic Setup 0.3.10-dev.19.exe`
+Der aktuelle lokale Entwicklungsinstaller ist **0.3.10-dev.20** unter
+`BlitzDicWindows/dist/windows-2026-11-05T09-59-26-866Z-f07325/BlitzDic Setup 0.3.10-dev.20.exe`
 (etwa 1,19 GB). Er enthält beide Sprachmodelle und die lokale Sprachlaufzeit.
 Der Installer ist noch nicht signiert; eine fertige Release-Datei ist noch nicht
 veröffentlicht. Die gebaute App wurde auf dem Entwicklungs-PC mit einem frischen
@@ -56,7 +56,8 @@ zu prüfen. Die installierte Testversion auf dem Entwicklungs-PC bleibt dev.14.
 Details zu Build, Prüfsumme und Tests stehen im [Arbeitsstand](WINDOWS_PORT.md).
 Das Setup enthält jetzt eine Lizenzseite. Die MIT-Lizenz für den eigenen Code
 und die Bedingungen für enthaltene Microsoft-Laufzeitdateien sind dort getrennt
-benannt und zusätzlich im installierten Lizenzordner verfügbar. Eine gesonderte
+benannt; die separate SDK-Datei ist ebenfalls zugeordnet. Die Originalbedingungen
+sind zusätzlich im installierten Lizenzordner verfügbar. Eine gesonderte
 Visual-Studio-Installation auf dem Arbeitsplatz ist dafür nicht nötig.
 Die passenden Electron-/FFmpeg-Originalquellen und Bauhinweise werden ebenfalls
 mitgeliefert. Sie benötigen auf den Arbeitsplätzen keine Entwicklungswerkzeuge.

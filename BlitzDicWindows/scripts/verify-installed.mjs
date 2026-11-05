@@ -50,7 +50,21 @@ assert.equal(createHash('sha256').update(await readFile(resolve(resources, 'lice
   installerLicenseOrigin.blitzDicMitSha256);
 assert.match(installerLicense.toString('utf8'), /1\. BLITZDIC — MIT LICENSE/);
 assert.match(installerLicense.toString('utf8'), /2\. MICROSOFT VISUAL C\+\+ V14/);
-assert.ok(installerLicense.toString('utf8').endsWith(await readFile(resolve(microsoftLicenseRoot, microsoftLicenseOrigin.textFile), 'utf8')));
+assert.ok(installerLicense.toString('utf8').includes(await readFile(resolve(microsoftLicenseRoot, microsoftLicenseOrigin.textFile), 'utf8')));
+const sdkLicenseRoot = resolve(licenseRoot, 'native/windows-sdk-10.0.28000.2270');
+const sdkOrigin = JSON.parse(await readFile(resolve(sdkLicenseRoot, 'provenance.json'), 'utf8'));
+for (const item of sdkOrigin.files) {
+  const path = resolve(sdkLicenseRoot, item.path);
+  assert.ok(path.startsWith(sdkLicenseRoot + sep));
+  assert.equal(createHash('sha256').update(await readFile(path)).digest('hex'), item.sha256);
+}
+assert.equal(sdkOrigin.dllSha256, 'f5c95e919b4ffa1ac71049cd45b9f986d2965e6888395ca2806337985334fa56');
+assert.equal(createHash('sha256').update(await readFile(resolve(dirname(executablePath), sdkOrigin.dllName))).digest('hex'), sdkOrigin.dllSha256);
+assert.equal(installerLicenseOrigin.windowsSdkOriginalSha256, sdkOrigin.originalLicenseSha256);
+assert.equal(installerLicenseOrigin.windowsSdkTextSha256, sdkOrigin.textSha256);
+assert.equal(installerLicenseOrigin.windowsSdkDllSha256, sdkOrigin.dllSha256);
+assert.match(installerLicense.toString('utf8'), /3\. MICROSOFT WINDOWS SDK — D3DCOMPILER_47\.DLL/);
+assert.ok(installerLicense.toString('utf8').endsWith(await readFile(resolve(sdkLicenseRoot, sdkOrigin.textFile), 'utf8')));
 const avPackage = inventory.packages.find(item => item.name === 'av');
 assert.equal(avPackage.version, '16.0.1+blitzdic.1');
 const ffmpegNotice = avPackage.files.find(item => /[\\/]blitzdic-ffmpeg[\\/]ffmpeg-8\.0\.3\.tar\.xz$/.test(item.path));

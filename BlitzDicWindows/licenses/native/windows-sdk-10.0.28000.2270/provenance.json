@@ -1,0 +1,43 @@
+{
+  "sdkVersion": "10.0.28000.2270",
+  "sdkPackage": "Microsoft.Windows.SDK.CPP",
+  "sdkPackageURL": "https://api.nuget.org/v3-flatcontainer/microsoft.windows.sdk.cpp/10.0.28000.2270/microsoft.windows.sdk.cpp.10.0.28000.2270.nupkg",
+  "sdkPackageSha256": "0a4887a64d1b17128f9ffd80032f20debabf943f34eea927aac00cc46cb32879",
+  "sdkPackageSha512Base64": "dQjr0W5oTPTsOCS8YCYQivFJG3Ypc+gRcnAfrTa6jIwK3nDFSLwNy0m9TUqWuzUMdQZQdD5RXHCJ9fcUxaYi8A==",
+  "packageCatalogURL": "https://www.nuget.org/api/v2/Packages(Id='Microsoft.Windows.SDK.CPP',Version='10.0.28000.2270')",
+  "sdkRedistPath": "c/Redist/D3D/x64/d3dcompiler_47.dll",
+  "dllName": "d3dcompiler_47.dll",
+  "dllSha256": "f5c95e919b4ffa1ac71049cd45b9f986d2965e6888395ca2806337985334fa56",
+  "dllBytes": 4753864,
+  "authenticodeStatus": "Valid",
+  "signer": "Microsoft Corporation",
+  "dllMatchesElectron": true,
+  "licenseURL": "https://aka.ms/WinSDKLicenseURL",
+  "resolvedLicenseURL": "https://download.microsoft.com/download/0/F/F/0FF2B061-47DD-4F55-89B6-FD1D8C44F14D/sdk_license.rtf",
+  "redistListURL": "https://learn.microsoft.com/en-us/legal/windows-sdk/redist",
+  "originalLicenseFile": "SDK-LICENSE.rtf",
+  "originalLicenseSha256": "dd07eb178e00c6bba4148457fc00ff77cd4887eb521d504186fe59c9ec8bbe62",
+  "textFile": "SDK-LICENSE.txt",
+  "textSha256": "aba32b705ea9716ba8b6e1cb464016e1709256214022fc132d49bb0572c33406",
+  "textConversion": "System.Windows.Forms.RichTextBox.Rtf -> Text, UTF-8 without BOM; original RTF retained; no terms edited.",
+  "files": [
+    {
+      "path": "SDK-LICENSE.rtf",
+      "sha256": "dd07eb178e00c6bba4148457fc00ff77cd4887eb521d504186fe59c9ec8bbe62"
+    },
+    {
+      "path": "SDK-LICENSE.txt",
+      "sha256": "aba32b705ea9716ba8b6e1cb464016e1709256214022fc132d49bb0572c33406"
+    },
+    {
+      "path": "Microsoft.Windows.SDK.CPP.nuspec",
+      "sha256": "3f30424cc0f1d31630419f8df1fe6041bb6d37d3398a61694f3e1add9d2af258"
+    },
+    {
+      "path": "package-catalog.xml",
+      "sha256": "4f45ced01abbe29f3c538016a14ec86367c4ac7cd90d42f5ea89a40d2081f99d"
+    }
+  ],
+  "acquisitionDate": "2026-11-05",
+  "acquisitionScope": "Official SDK NuGet packages downloaded into the development project for the requested Windows app packaging; no system-wide SDK installation and no SDK workstation prerequisite."
+}

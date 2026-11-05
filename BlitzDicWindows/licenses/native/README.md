@@ -4,6 +4,9 @@ The [Electron 45.2.1 source bundle](electron-45.2.1/README.md) records the
 official Windows runtime archive, checks the six platform DLLs and executable
 sections, and supplies the matching Chromium FFmpeg and Electron source trees.
 This FFmpeg is separate from the speech worker's clean PyAV/FFmpeg build.
+The [Windows SDK redistributable record](windows-sdk-10.0.28000.2270/README.md)
+matches Electron's signed D3DCompiler DLL to Microsoft's exact x64 Redist file
+and retains its separate original license terms.
 
 The [Python standalone runtime notices](python-standalone-20260127/README.md)
 record the source and notices for the bundled OpenSSL, SQLite and libffi DLLs.

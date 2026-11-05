@@ -88,6 +88,28 @@ Bei einer unbeaufsichtigten Installation muss der ausführende Administrator
 zur Annahme der Bedingungen für die jeweilige Organisation berechtigt sein;
 der Silent-Modus zeigt die Lizenzseite nicht an.
 
+## Zusätzliche SDK-Datei in Electron
+
+Electron bringt `d3dcompiler_47.dll` mit. Diese Datei wurde bytegleich mit
+`c/Redist/D3D/x64/d3dcompiler_47.dll` im offiziellen, stabilen SDK-NuGet-Paket
+10.0.28000.2270 abgeglichen. Das Paket stimmte mit NuGets veröffentlichtem
+SHA-512 überein; die DLL hat eine gültige Microsoft-Signatur. Die Original-
+SDK-Pakete liegen als Entwicklungsnachweis im Projekt. Microsoft führt die
+Datei für klassische Windows-Anwendungen in seiner SDK-Weitergabeliste.
+
+Der [SDK-Nachweis](windows-sdk-10.0.28000.2270/README.md) enthält die separat
+geltenden Originalbedingungen und ihre Herkunft. Das Setup nennt diese jetzt
+in Abschnitt 3 ausschließlich für die enthaltene SDK-Datei. Die Bedingungen
+sehen Annahme durch Nutzung der SDK-Software vor. Dieser kostenlose SDK-Weg
+enthält keinen separat zu kaufenden Produktschlüssel. Die Pflichten des
+Herausgebers bleiben bestehen; die Community-Vereinbarung ersetzt die SDK-
+Bedingungen nicht. Eine systemweite SDK-Installation wurde nicht ausgeführt
+und ist auf den Arbeitsplätzen für BlitzDic nicht vorgesehen.
+
+Quellen: [offizielles SDK-Paket](https://www.nuget.org/packages/Microsoft.Windows.SDK.CPP/10.0.28000.2270),
+[SDK-Lizenzbedingungen](https://learn.microsoft.com/en-us/legal/windows-sdk/license),
+[SDK-Weitergabeliste](https://learn.microsoft.com/en-us/legal/windows-sdk/redist).
+
 ## Build Tools und Redistributable sind getrennt zu betrachten
 
 Die Build-Tools-Bedingungen erlauben auch ohne Visual-Studio-Produktlizenz das
