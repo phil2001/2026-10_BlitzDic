@@ -1,0 +1,91 @@
+name: Build Windows speaker runtime from source
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: windows-2025
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7
+        with:
+          repository: k2-fsa/sherpa-onnx
+          ref: af2d8d81dbfa61c4cea4c568da78f3982edca005
+          path: sherpa-source
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+      - name: Build the Python wheel with recorded source dependencies
+        shell: pwsh
+        run: |
+          $PSNativeCommandUseErrorActionPreference = $true
+          python -m pip install setuptools wheel
+          $env:SHERPA_ONNX_CMAKE_ARGS = '-DCMAKE_BUILD_TYPE=Release -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DSHERPA_ONNX_ENABLE_BINARY=OFF -DSHERPA_ONNX_BUILD_C_API_EXAMPLES=OFF -DSHERPA_ONNX_ENABLE_C_API=ON -DSHERPA_ONNX_ENABLE_TTS=ON -DSHERPA_ONNX_ENABLE_SPEAKER_DIARIZATION=ON -DSHERPA_ONNX_ENABLE_WEBSOCKET=OFF -DSHERPA_ONNX_ENABLE_PORTAUDIO=OFF'
+          Copy-Item -Recurse BlitzDicWindows/licenses/native/sherpa-onnx-2.0.1 sherpa-source/sherpa-onnx/python/sherpa_onnx/licenses
+          @'
+          from pathlib import Path
+          setup = Path('sherpa-source/setup.py')
+          text = setup.read_text()
+          assert text.count('zip_safe=False,') == 1
+          setup.write_text(text.replace('zip_safe=False,', 'zip_safe=False,\n    include_package_data=True,'))
+          with Path('sherpa-source/MANIFEST.in').open('a') as manifest:
+              manifest.write('\nrecursive-include sherpa-onnx/python/sherpa_onnx/licenses *\n')
+          '@ | python -
+          Push-Location sherpa-source
+          try { python setup.py bdist_wheel } finally { Pop-Location }
+          New-Item -ItemType Directory sherpa-wheel | Out-Null
+          Copy-Item sherpa-source/dist/*.whl sherpa-wheel/
+          Get-ChildItem sherpa-source/build -Recurse -Filter CMakeCache.txt |
+            ForEach-Object { Copy-Item $_.FullName sherpa-wheel/CMakeCache.txt }
+          $wheel = Get-ChildItem sherpa-wheel/*.whl | Select-Object -First 1
+          @(
+            'Experimental Windows x64 speaker runtime built from source.'
+            "Source: $(git -C sherpa-source rev-parse HEAD)"
+            "CMake options: $env:SHERPA_ONNX_CMAKE_ARGS"
+            "Wheel SHA-256: $((Get-FileHash $wheel.FullName).Hash)"
+          ) | Set-Content -Encoding utf8 sherpa-wheel/build-provenance.txt
+          python -m pip install $wheel.FullName 'numpy==2.5.4' 'av==16.0.1'
+      - name: Verify the wheel and actual local speaker inference
+        shell: pwsh
+        run: |
+          $PSNativeCommandUseErrorActionPreference = $true
+          New-Item -ItemType Directory BlitzDicWindows/.runtime | Out-Null
+          python BlitzDicWindows/scripts/setup-diarization.py
+          powershell.exe -NoProfile -File BlitzDicWindows/scripts/make-long-speech.ps1
+          @'
+          import json
+          from pathlib import Path
+          import subprocess
+          import sys
+          from zipfile import ZipFile
+          import sherpa_onnx
+
+          assert sherpa_onnx.git_sha1.startswith('af2d8d81'), sherpa_onnx.git_sha1
+          with ZipFile(next(Path('sherpa-wheel').glob('*.whl'))) as wheel:
+              assert any(name.endswith('licenses/provenance.json') for name in wheel.namelist())
+          request = {
+              'action': 'diarize',
+              'modelDirectory': str(Path('BlitzDicWindows/models/diarization').resolve()),
+              'audioPath': str(Path('BlitzDicWindows/.runtime/long-speech.wav').resolve()),
+              'speakerCount': 1,
+          }
+          result = subprocess.run([sys.executable, 'BlitzDicWindows/speech/worker.py'],
+                                  input=json.dumps(request), text=True, capture_output=True,
+                                  check=True, timeout=240)
+          output = json.loads(result.stdout)
+          assert output['speakerCount'] == 1, output
+          assert output['speakers'], output
+          assert all(item['end'] > item['start'] >= 0 for item in output['speakers']), output
+          print('PASS: source-built Windows runtime completed local speaker inference.')
+          '@ | python -
+      - name: Retain the source build evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: sherpa-windows-source-cp312
+          path: sherpa-wheel/
+          if-no-files-found: ignore
+          retention-days: 7
