@@ -43,6 +43,27 @@ a finished release remains pending. This checklist tracks the full deliverable.
 
 ## Porting evidence
 
+### Current acceptance limits, 2026-11-05
+
+The detailed historical entries below are evidence for their named builds and
+scopes. The latest dev.18 package passes the app/model/provider fixture checks
+and compiled license-page check described at the end of this document. This
+does not close the complete checklist above.
+
+- Native Edge/Parakeet hold dictation and external insertion passed for dev.3.
+  Its corresponding Chrome/Whisper full-path run and the expanded target guards
+  with owned Word/classic fields still require final acceptance. Later package
+  smoke tests exercise imports, not native key delivery or external insertion.
+- The installed user copy remains dev.14. Upgrading that concrete installation
+  to dev.18 awaits the user's requested deletion/shortcut-update approval.
+- A fresh Windows 11 installation is still unavailable and untested. A fresh
+  app profile on the development PC is not a substitute for this gate.
+- The new license page is verified statically in the actual dev.18 installer;
+  interactive inspection remains open after Computer Use approval timed out.
+- Final feature/visual parity and remaining native redistribution attribution
+  still need review. The installer is unsigned. No finished-release claim is
+  made from the passing model, provenance or protocol checks alone.
+
 ### Windows progress, 2026-10-31
 
 The first development installer with both speech models has been built:
@@ -1757,6 +1778,9 @@ the local protocol fixture. Its own native shortcuts were disabled only in
 that test profile to avoid the running user installation's bindings. All 111
 actual native files match dev.17's tested runtime, and the new packaged
 Microsoft originals, generated license and provenance hashes were verified.
+An additional dev.18 smoke run selected, saved and transcribed with the
+separate local Whisper Tiny folder through the packaged app's custom-model UI.
+All eight actual bundled model file hashes were checked again after packaging.
 
 The unsigned installer is
 `dist/windows-2026-11-05T08-32-40-255Z-9389cf/BlitzDic Setup 0.3.10-dev.18.exe`
