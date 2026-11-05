@@ -2121,3 +2121,23 @@ No partition/Windows guest was created and KVM usability, guest firmware/TPM,
 installation media and license prerequisites remain unverified. No host feature
 or group membership was changed. API reference:
 https://learn.microsoft.com/en-us/virtualization/api/hypervisor-platform/funcs/whvgetcapability.
+
+The follow-up KVM API read under the ordinary WSL user returned errno 13
+(permission denied). No root retry or group change was attempted. Cached Ubuntu
+package metadata lists candidates for QEMU, swtpm, OVMF and xorriso, none installed.
+QEMU documents TCG as pure software emulation, so a guest test without KVM is
+another path to qualify; its performance and a valid Windows installation are
+not yet proved. Microsoft's Windows 11 Enterprise evaluation page requires
+registration for the 90-day evaluation. No Windows media was downloaded, license
+accepted, registration submitted or guest created during this feasibility work.
+Sources: https://www.qemu.org/docs/master/system/introduction.html and
+https://www.microsoft.com/en-us/evalcenter/evaluate-windows-11-enterprise.
+
+Windows CI passed for dev.23 source commit
+`d87c9c7b0c68e45e778d5b6f982965c7079d1617`:
+https://github.com/phil2001/2026-10_BlitzDic/actions/runs/42039015645.
+The dev.23 installer and matching `SHA256SUMS.txt` are uploaded in private draft
+release `435267059`. Draft/prerelease remain true and the source target is the
+exact tested commit. GitHub's installer size/SHA-256 and checksum-file digest
+match the local artifacts. Evidence: `.runtime/release-dev23/upload-evidence.json`.
+The draft is not a final publication; installed dev.20 is unchanged.
