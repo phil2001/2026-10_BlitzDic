@@ -59,6 +59,9 @@ dev.20 aktualisiert; beide enthaltenen Modelle und die Oberfläche sind dort gep
 Dev.21 ergänzt die Versionsprüfung und Supportanzeige; dev.22 korrigiert die
 Erkennung der von GitHub normalisierten Installer-Dateinamen. Diese Builds wurden
 separat gebaut und ersetzen die installierte dev.20 bisher nicht.
+Dev.22 liegt auch als unveröffentlichter [Release-Entwurf im privaten Repository](https://github.com/phil2001/2026-10_BlitzDic/releases)
+mit vollständigem Installer und SHA256SUMS.txt bereit. Ein berechtigter GitHub-
+Zugang ist erforderlich. Der Entwurf ist noch keine freigegebene Veröffentlichung.
 Details zu Build, Prüfsumme und Tests stehen im [Arbeitsstand](WINDOWS_PORT.md).
 Das Setup enthält jetzt eine Lizenzseite. Die MIT-Lizenz für den eigenen Code
 und die Bedingungen für enthaltene Microsoft-Laufzeitdateien sind dort getrennt

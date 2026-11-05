@@ -2063,3 +2063,14 @@ Audio status checks, cancellation/normal-stop restoration and meeting exclusion.
 Only the initial mute state was read (false); no audio setting was changed.
 The user's current-audio timing question remains pending; elapsed time is not
 treated as permission. Other release acceptance limits above remain open.
+
+The corrected dev.22 installer is uploaded in private draft release `435240934`
+(`v0.3.10-dev.22`), targeting source commit
+`3fc30010d333453c5a31c4fefb5815e55213b0f8`. Both `draft` and `prerelease` remain
+true. Its GitHub asset `BlitzDic.Setup.0.3.10-dev.22.exe` is marked uploaded,
+has 1,186,214,226 bytes and the exact local SHA-256 above. The uploaded
+`SHA256SUMS.txt` uses that actual filename and its GitHub digest also matches
+the local text file. Verification is retained in
+`.runtime/release-dev22/upload-evidence.json`. No release was published.
+Windows CI passed for that source commit:
+https://github.com/phil2001/2026-10_BlitzDic/actions/runs/42036212596.
