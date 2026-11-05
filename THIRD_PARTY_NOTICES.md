@@ -47,13 +47,17 @@ GCC-/CRT-/winpthread-Laufzeittexte liegen dort ebenfalls. Über Einstellungen
 lassen sich Lizenzen und Quellcode öffnen. Andere native Abhängigkeiten bleiben
 Gegenstand der laufenden Prüfung.
 
-Für CTranslate2s Intel-OpenMP-DLL wurde Bytegleichheit mit intel-openmp 2025.3.0
-nachgewiesen. Dessen originaler Intel-EULA-Text und der Herkunftsnachweis werden
-unter `licenses/native/intel-openmp` gesammelt. Das ist kein Abschluss der
-Prüfung aller Weitergabebedingungen. Hinweise zu der im Build genannten oneDNN-
-Version 3.1.1 liegen daneben. NumPys OpenBLAS-Lieferdatei wurde ebenfalls
-bytegleich mit scipy-openblas64 0.3.34.106.0 abgeglichen. Die NumPy-Pakethinweise
-enthalten die OpenBLAS-/LAPACK-Lizenztexte.
+Ab 0.3.10-dev.11 verwenden die bereitgestellten Windows-Pakete einen eigenen
+CTranslate2-Build mit Ruy. Er enthält die Hinweise für CTranslate2, Ruy,
+cpu_features, spdlog, cpuinfo und clog. Die Importtabellen dieses Builds wurden
+auf Intel-OpenMP-, MKL-, oneDNN- und vcomp-DLL-Abhängigkeiten geprüft.
+
+Für ältere Pakete wurde die Intel-OpenMP-DLL bytegleich mit intel-openmp
+2025.3.0 abgeglichen. Die Hinweise unter `licenses/native/intel-openmp`
+und `licenses/native/onednn-3.1.1` dokumentieren diese frühere Untersuchung.
+NumPys OpenBLAS-Lieferdatei wurde bytegleich mit scipy-openblas64 0.3.34.106.0
+abgeglichen. Die NumPy-Pakethinweise enthalten die OpenBLAS-/LAPACK-Lizenztexte.
+Die Prüfung der verbleibenden nativen Weitergabebedingungen ist weiterhin offen.
 
 ## Speaker auxiliary models in Windows 0.3
 
