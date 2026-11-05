@@ -1625,3 +1625,22 @@ time, person, documents, budget and destination from the fixture. The test
 used a fresh app profile and a non-visible Win32 desktop. Its file picker
 returned a predetermined test WAV. The loopback server was stopped and the
 test model unloaded afterwards.
+
+## Installed dev.14 upgrade on Windows 11
+
+With the user's approval, the dev.14 NSIS setup upgraded the registered 0.3.6
+test installation in the existing workspace directory containing an umlaut
+and an emoji. Silent current-user installation returned exit code zero.
+Both the installed executable and the uninstall registry entry report
+0.3.10-dev.14.
+
+The installed app passed the fresh-profile package test on a non-visible
+Win32 desktop. Both bundled models and the custom Whisper Tiny folder
+transcribed the fixture. Model discovery, saved connection settings, and
+the WAV-to-ASR-to-LLM rewrite through the loopback fixture passed.
+Desktop and Start menu shortcuts resolve to the upgraded executable using
+IShellLinkW. WScript.Shell's returned path replaced the emoji with question
+marks, so it was insufficient for this Unicode target check.
+
+This verifies an in-place installer upgrade on the development PC. A fresh
+Windows 11 installation and physical audio input remain unverified.
