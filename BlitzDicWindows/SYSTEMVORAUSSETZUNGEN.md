@@ -1,6 +1,6 @@
 # Systemvoraussetzungen für lokale Spracherkennung
 
-Stand: 04.11.2026. Gilt für die aktuellen BlitzDic-Vorgaben und den getesteten
+Stand: 05.11.2026. Gilt für die aktuellen BlitzDic-Vorgaben und den getesteten
 CPU-Betrieb. Die Windows-App befindet sich noch in Entwicklung.
 
 Die vollständige Windows-Ausgabe bündelt Whisper Small, Parakeet Ultra und
@@ -9,6 +9,15 @@ keine separate Python-Installation nötig. Die Downloadangaben unten betreffen
 die Entwicklungsumgebung; Endnutzer laden einmal den vollständigen Installer.
 Beide Modelle zusammen belegen unkomprimiert etwa 1,16 GB zusätzlich zu App
 und Laufzeiten. Externe LLM-Anbieter für Schreibmodi werden separat eingerichtet.
+
+Für die Ordinations-Arbeitsplätze ist ein vollständiger Installer vorgesehen,
+der auch die benötigten C++-Laufzeitdateien mitliefert. Visual Studio, Python,
+CUDA und LM Studio sind dort für die lokale Spracherkennung nicht als zusätzliche
+Installationen vorgesehen. Visual Studio Community wird nur in der
+Entwicklungsumgebung verwendet. Ein Test auf einem frischen Windows-11-PC ohne
+Entwicklertools steht noch aus; die bisherigen Tests ersetzen diesen nicht.
+Ein optionaler gemeinsamer LLM-Server wird auf dem dafür vorgesehenen Netzwerk-PC
+eingerichtet und in BlitzDic über seine Adresse konfiguriert.
 
 | Voraussetzung | OpenAI Whisper | Parakeet Ultra (NVIDIA / Moondream) |
 |---|---|---|
@@ -50,8 +59,12 @@ Windows-Paket enthaltenen Modellen und dessen Sprachlaufzeit erfolgreich geprüf
 Umlaute, „Anna prüft die Unterlagen“, „morgen um 9 Uhr“, ein Budget von 2.500 Euro
 und die offene Lieferung nach Berlin blieben erhalten. Whisper erkannte die
 Sprache als Deutsch. Das ist ein Funktionstest, kein allgemeiner Genauigkeitsnachweis.
-Physische Mikrofone, Dialekte, Fachvokabular und lange deutsche Aufnahmen sind
-weiterhin gesondert zu prüfen.
+Mit der installierten Entwicklungsversion wurden auch lange synthetische deutsche
+Aufnahmen geprüft. Beim physischen Mikrofontest meldete der Benutzer nach mehreren
+abweichenden Ergebnissen mit Parakeet und explizit gewähltem Realtek-USB-Mikrofon
+den korrekten Satz „Die Besprechung beginnt um neun Uhr, Anna prüft die Unterlagen.“
+Dieses letzte Ergebnis wurde vom Benutzer zurückgemeldet und nicht unabhängig
+aus der App ausgelesen. Dialekte und medizinisches Fachvokabular bleiben zu prüfen.
 
 ### Gemessener Speicherbedarf und Laufzeit
 

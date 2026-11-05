@@ -53,6 +53,8 @@ empfohlene und optionale Zusatzkomponenten wurden nicht pauschal ausgewählt.
 Die Installation wurde mit `--norestart` ausgeführt. Die lokalen Nachweise und
 die drei offiziellen Lizenzdokumente samt Prüfsummen liegen im ignorierten
 Projektordner `.runtime/visual-studio-community`.
+Das Setup wurde erfolgreich mit Code `3010` beendet (Neustart erforderlich).
+Ein Neustart wurde nicht automatisch ausgeführt.
 
 ## Vor einer öffentlichen Installer-Weitergabe
 

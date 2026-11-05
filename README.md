@@ -5,6 +5,15 @@ BlitzDic ist eine Windows-11-Diktier-App mit lokaler Spracherkennung durch
 Beide Modelle und die Sprachlaufzeit sind im vollständigen Windows-Paket enthalten.
 Keine separate Python-Installation, kein LM Studio und kein nachträglicher Modelldownload nötig. Für reine Spracherkennung ist auch kein OpenAI-Konto erforderlich.
 
+**Bereitstellung in der Ordination:** Ein vollständiger BlitzDic-Installer pro
+Windows-11-x64-Arbeitsplatz ist das Ziel. Whisper, Parakeet und die benötigten
+Sprachlaufzeiten werden mitgeliefert. Auf den Arbeitsplätzen sollen weder Visual
+Studio noch Python, CUDA oder ein gesondertes C++-Laufzeitpaket installiert werden
+müssen. Visual Studio Community gehört zur Entwicklungsumgebung. Die Installation
+auf einem frischen Windows-11-PC ohne Entwicklertools ist noch zu verifizieren.
+Für optionale KI-Textüberarbeitung kann ein gemeinsamer LLM-Server im Netzwerk
+konfiguriert werden; dann wird auf den Arbeitsplätzen kein LM Studio benötigt.
+
 **Status: Entwicklungsversion. Noch keine fertig geprüfte Veröffentlichung.**
 
 ## Funktionen
