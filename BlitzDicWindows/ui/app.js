@@ -456,6 +456,36 @@ try {
   licensesButton.textContent = 'Lizenzen und Quellcode öffnen';
   licensesButton.onclick = attempt(() => api['licenses-open']());
   $('settings').append(aboutTitle, aboutText, licensesButton);
+  const updateNote = document.createElement('p');
+  updateNote.textContent = 'Die Versionsprüfung kontaktiert GitHub nur auf Knopfdruck. Es wird nichts automatisch heruntergeladen oder installiert.';
+  const updateActions = document.createElement('div'); updateActions.className = 'actions';
+  const updateCheck = document.createElement('button'); updateCheck.id = 'release-check'; updateCheck.textContent = 'Auf neue Version prüfen';
+  const releasesOpen = document.createElement('button'); releasesOpen.id = 'releases-open'; releasesOpen.textContent = 'Veröffentlichungen öffnen';
+  const updateStatus = document.createElement('p'); updateStatus.id = 'release-status'; updateStatus.setAttribute('role', 'status');
+  updateCheck.onclick = async () => {
+    updateCheck.disabled = true; updateStatus.textContent = 'Veröffentlichungen werden geprüft …';
+    try {
+      const result = await api['release-check']();
+      updateStatus.textContent = {
+        unpublished: 'Es gibt noch keine öffentliche Veröffentlichung. Deine installierte Version bleibt nutzbar.',
+        'no-windows-installer': `Für ${result.version} gibt es noch keinen passenden Windows-Installer.`,
+        available: `Version ${result.version} ist verfügbar. Du kannst sie unter Veröffentlichungen herunterladen.`,
+        current: `Keine neuere stabile Windows-Version gefunden. Letzte Veröffentlichung: ${result.version}.`,
+      }[result.state] || 'Veröffentlichung konnte nicht geprüft werden.';
+    } catch (error) {updateStatus.textContent = error.message;}
+    finally {updateCheck.disabled = false;}
+  };
+  releasesOpen.onclick = attempt(() => api['releases-open']());
+  updateActions.append(updateCheck, releasesOpen);
+  const supportTitle = document.createElement('h3'); supportTitle.textContent = 'Problem melden';
+  const supportNote = document.createElement('p'); supportNote.textContent = 'Der Bericht enthält nur App-Version und Windows-Plattform sowie Felder für deine Fehlerbeschreibung. Keine Einstellungen, Diktate oder Schlüssel. Prüfe den Text vor dem Weitergeben.';
+  const supportPreview = document.createElement('textarea'); supportPreview.id = 'support-report'; supportPreview.readOnly = true; supportPreview.hidden = true;
+  supportPreview.setAttribute('aria-label', 'Supportinformationen zur Prüfung');
+  const supportPrepare = document.createElement('button'); supportPrepare.id = 'support-prepare'; supportPrepare.textContent = 'Supportinformationen anzeigen';
+  const supportCopy = document.createElement('button'); supportCopy.id = 'support-copy'; supportCopy.textContent = 'Supportinformationen kopieren'; supportCopy.hidden = true;
+  supportPrepare.onclick = attempt(async () => {supportPreview.value = await api['support-info'](); supportPreview.hidden = false; supportCopy.hidden = false;});
+  supportCopy.onclick = attempt(async () => {await api.copy(supportPreview.value); status('Supportinformationen kopiert. Es wurde nichts versendet.');});
+  $('settings').append(updateNote, updateActions, updateStatus, supportTitle, supportNote, supportPrepare, supportPreview, supportCopy);
   speakerModelsAvailable = data.speakerModelsAvailable;
   $('meeting-speaker-count').replaceChildren(new Option('Automatisch (experimentell)', '-1'),
     ...Array.from({length: 20}, (_, index) => new Option(String(index + 1), String(index + 1))));

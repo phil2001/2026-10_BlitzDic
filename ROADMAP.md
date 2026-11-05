@@ -2,8 +2,8 @@
 
 - Physische Mikrofontests, weitere Office-/Browser-Versionen und ein frisches Windows 11 prüfen.
 - Echten LAN-Modellserver prüfen, sobald er bereitsteht. Die Konfiguration für den späteren Server ist verfügbar. Externe API mit einem echten Anbieter prüfen.
-- Website-Regeln: abschließendes Paket einschließlich Whisper/Chrome prüfen;
-  die erweiterte Fensterbindung auch mit Word und klassischen Feldern prüfen.
+- Weitere Office-/Browser-Versionen prüfen. Die installierte dev.20 hat den
+  vollständigen Chrome-/Whisper-Pfad sowie Word- und klassische Feldtests bestanden.
 - Experimentelles Stummschalten: echte Windows-Änderung/Wiederherstellung und
   vollständigen Diktatablauf im Paket prüfen.
 - Live-Meeting-Notizen mit echter Aufnahme und echtem LLM im vollständigen Paket prüfen.
@@ -11,6 +11,9 @@
 - Oberfläche visuell abschließen und Zugänglichkeit prüfen.
 - Vollständige Drittanbieter-Lizenzen bündeln und Installer auf sauberem Windows testen.
 - Aktuellen Windows-Build im Zielrepository veröffentlichen.
+- Signierten Updateprozess abschließen. Dev.21 bietet eine manuelle Prüfung
+  stabiler Windows-Veröffentlichungen sowie Download über die feste GitHub-Seite;
+  automatischer Download/Installation und Signaturprüfung sind nicht umgesetzt.
 
 Bereits vorhanden und mit begrenzter Testabdeckung belegt: beide gebündelten
 Sprachmodelle, lokale CPU-Erkennung, konfigurierbare globale Tastenkürzel,

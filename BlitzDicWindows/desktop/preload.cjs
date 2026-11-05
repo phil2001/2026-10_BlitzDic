@@ -1,6 +1,7 @@
 const { contextBridge, ipcRenderer } = require('electron');
 const methods = ['load', 'settings', 'models', 'model-directory', 'connection', 'download', 'import', 'audio', 'cancel', 'copy', 'history-clear', 'recording-state', 'recording-level', 'meetings', 'meeting-summary', 'meeting-save', 'meeting-audio', 'meetings-clear', 'licenses-open'];
 const api = Object.fromEntries(methods.map(name => [name, (...args) => ipcRenderer.invoke(name, ...args)]));
+for (const name of ['release-check', 'releases-open', 'support-info']) api[name] = () => ipcRenderer.invoke(name);
 api['meeting-rename'] = (...args) => ipcRenderer.invoke('meeting-rename', ...args);
 api['hold-rejected'] = token => ipcRenderer.invoke('hold-rejected', token);
 api['recording-starting'] = kind => ipcRenderer.invoke('recording-starting', kind);

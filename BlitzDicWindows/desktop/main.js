@@ -15,6 +15,8 @@ import { HoldShortcuts } from '../src/hold-shortcuts.js';
 import { EscapeControl } from '../src/escape-control.js';
 import { OutputMute } from '../src/output-mute.js';
 import { LiveNotes } from '../src/live-notes.js';
+import { checkRelease, releasesURL, supportInfo } from '../src/releases.js';
+import { release as windowsRelease } from 'node:os';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 let window, flow, store, tray, meetings, indicator, quitting = false;
@@ -324,6 +326,14 @@ else app.whenReady().then(async () => {
   });
   handle('copy', text => { if (typeof text !== 'string') throw new Error('Ungültiger Text.'); clipboard.writeText(text); });
   handle('history-clear', () => store.clearHistory());
+  let releaseCheck;
+  handle('release-check', () => {
+    if (!releaseCheck) releaseCheck = checkRelease(app.getVersion()).finally(() => {releaseCheck = null;});
+    return releaseCheck;
+  });
+  handle('releases-open', () => shell.openExternal(releasesURL));
+  handle('support-info', () => supportInfo({version: app.getVersion(), platform: process.platform,
+    arch: process.arch, release: windowsRelease()}));
   handle('licenses-open', async () => {
     const directory = app.isPackaged ? join(process.resourcesPath, 'licenses') : join(root, 'licenses');
     await access(directory);

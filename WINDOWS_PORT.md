@@ -46,20 +46,20 @@ a finished release remains pending. This checklist tracks the full deliverable.
 ### Current acceptance limits, 2026-11-05
 
 The detailed historical entries below are evidence for their named builds and
-scopes. The latest dev.20 package passes the app/model/provider fixture checks
+scopes. The latest dev.21 package passes the app/model/provider fixture checks
 and compiled license-page check described at the end of this document. This
 does not close the complete checklist above.
 
 - Native Edge/Parakeet hold dictation and external insertion passed for dev.3.
-  Its corresponding Chrome/Whisper full-path run and the expanded target guards
-  with owned Word/classic fields still require final acceptance. Later package
-  smoke tests exercise imports, not native key delivery or external insertion.
+  The installed dev.20 now also passed the Chrome/Whisper full-path run and
+  expanded target guards with owned Word/classic fields, as recorded below.
+  Package import smoke tests alone do not verify native key delivery/insertion.
 - The approved test installation has been upgraded to dev.20; installer exit,
   installed package version, both model workers and Unicode shortcut targets
   passed verification. The physical microphone result below still concerns dev.14.
 - A fresh Windows 11 installation is still unavailable and untested. A fresh
   app profile on the development PC is not a substitute for this gate.
-- The new license page is verified statically in the actual dev.20 installer;
+- The new license page is verified statically in the actual dev.21 installer;
   interactive inspection remains open after Computer Use approval timed out.
 - Final feature/visual parity and remaining native redistribution attribution
   still need review. The installer is unsigned. No finished-release claim is
@@ -1934,3 +1934,81 @@ the repository under the authorized Codex visualizations workspace. A previous
 extra run was not executed when automatic approval review hit its usage limit;
 after the user's continuation, review succeeded and the installed-app run above
 completed. Application binaries were unchanged by this verification.
+
+### Native target acceptance on installed dev.20
+
+After the user confirmed a new three-minute idle slot, sequential native tests
+used only their own temporary fields/windows/documents and the installed frozen
+worker. The classic Edit test passed Unicode, selection, undo, changed-text and
+cursor rejection, password/read-only exclusion and unchanged clipboard.
+The Word test passed on Word 16.0 build 16.0.20527: Unicode/emoji, selection,
+undo/redo, multiline, changed text/cursor/document, protection and unchanged
+clipboard. Its own documents were closed without saving.
+
+The full Chrome/Whisper held-shortcut run completed with exit code 0 on Chrome
+156.0.8078.80. The first capture was refused for missing field focus; its bounded
+retry captured the exact owned field. Host-only collection, disabled collection,
+URL-shaped field content, covering frames and focused cross-origin frames all
+passed. All three calm/clean/verbatim cases passed native key delivery, actual
+bundled Whisper recognition, correct external insertion and encrypted history.
+Website specificity, explicit-mode priority and unconfigured-LLM verbatim fallback
+passed; provider requests/history contained no browser host, path or query.
+The provider was a localhost synthetic fixture, not a real LAN/cloud model;
+the microphone source was a test WAV, not a physical microphone.
+Log: `.runtime/chrome-whisper-dev20.log`. All owned test windows closed and the
+user was told the idle slot had ended. These results close the named dev.20
+Chrome/Word/classic gaps, not the clean-PC or broader physical-audio gates.
+
+## Development package 0.3.10-dev.21: releases and support information
+
+The pinned upstream README advertises in-app updates and prepared feedback.
+The Windows settings now include an explicit manual release check and a local
+support-information preview/copy flow. The release check uses only the fork's
+fixed GitHub latest-release endpoint, with a ten-second timeout, rejected
+redirects, no credentials/body, and a 256-KiB response limit. It accepts stable
+semantic version tags and a matching Windows installer asset in this repository.
+Missing publications, missing Windows installers, rate limits, malformed data
+and connection failures have distinct messages. Concurrent checks are coalesced.
+No startup check, automatic download or installer execution occurs. The browser
+button opens only the fixed repository releases page. Automatic signed updating
+remains unimplemented; this is not equivalent to upstream's signed update flow.
+
+Support preview contains only app version, OS platform/kernel and architecture,
+plus blank reproduction fields. Settings, username, server addresses, keys and
+transcripts are not collected. Copy requires a separate click. No mail or issue
+is sent. PRIVACY.md describes both user-triggered flows.
+
+The Node suite passed 79 tests (2 real-model opt-in cases skipped). New behavior
+tests cover version ordering including prerelease-to-stable, absence of Windows
+assets, foreign URLs, malformed/oversized replies, rate limits, transport errors,
+fixed endpoint/no credentials, and support-field exclusion.
+The release function was also called once against the real public endpoint and
+returned `unpublished`, consistent with there being no public release yet.
+
+The built dev.21 UI passed the existing model/LAN/API/layout checks plus rendered
+release states for available, unpublished and rate-limited responses. Support
+preview and its IPC copy path passed. GitHub responses, shell browser opening
+and clipboard writes were replaced only within that isolated test process;
+the system clipboard was untouched. Page title/identity, meaningful content,
+absence of error overlays, console/page-error collection and screenshot review
+passed. Screenshots include the minimum 744 x 581 content viewport. The synthetic
+v9.0.0 notification in the screenshot is a fixture, not a real publication.
+Evidence is outside the repository in the Codex visualizations workspace:
+`blitzdic-ui-qa21.mjs`, `blitzdic21-ui-qa21.json`,
+`blitzdic21-release-available.png` and `blitzdic21-support.png`.
+
+The full packaged smoke test passed all 111 native origins, provider discovery,
+connection/settings persistence, audio import and fixture rewriting, license and
+corresponding-source checks, both bundled speech engines and a manually selected
+Whisper Tiny folder. Log: `.runtime/BlitzDicTest-4d89facf.log`.
+Compiled license-page and Electron runtime/source verification also passed.
+
+Artifact:
+`dist/windows-2026-11-05T13-06-33-975Z-301d23/BlitzDic Setup 0.3.10-dev.21.exe`
+(1,186,214,269 bytes), SHA-256
+`37E5F5335404025DC2363842982BE533823BD4BE473792023550EB372DC15C87`.
+The approved installed copy remains dev.20. The new build does not change the
+native insertion/shortcut or speech-worker implementations tested above, but
+does add settings UI and main-process IPC handlers. It has not been installed
+over the user's copy. Clean-PC, physical-source meeting tests, remaining parity,
+attribution and signing gates remain open.

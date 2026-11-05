@@ -24,6 +24,17 @@ laden die festgelegten Modellversionen von Hugging Face. Ein zusätzliches LLM
 wird über den gewählten Anbieter eingerichtet. BlitzDic hat kein eigenes Backend
 und enthält keine absichtlich eingebaute Telemetrie.
 
+Die manuelle Versionsprüfung unter Einstellungen fragt ausschließlich die letzte
+stabile Veröffentlichung im GitHub-Repository `phil2001/2026-10_BlitzDic` ab.
+Sie läuft nur auf Knopfdruck; GitHub erhält dabei die üblichen Verbindungsdaten
+wie die IP-Adresse, keine Diktate, Einstellungen, API-Schlüssel oder Gerätekennung.
+Es gibt keinen automatischen Download oder Installationsschritt. Der gesonderte
+Knopf „Veröffentlichungen öffnen“ öffnet die feste GitHub-Veröffentlichungsseite
+im Standardbrowser. Supportinformationen werden zunächst lokal angezeigt und
+erst auf einen weiteren Klick in die Zwischenablage kopiert. Sie enthalten nur
+App-Version, Betriebssystem-Plattform, Windows-Kernelversion und Prozessorarchitektur
+sowie leere Felder für die Fehlerbeschreibung. Es wird keine Nachricht versendet.
+
 Beim automatischen Einfügen über die Windows-Schnittstellen wird der Inhalt des Zieltextfelds
 vorübergehend lokal gelesen, um Änderungen während der Erkennung zu erkennen.
 Gespeichert wird er nicht; nur ein flüchtiger Fingerabdruck und die Auswahlposition

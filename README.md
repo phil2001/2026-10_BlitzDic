@@ -33,6 +33,8 @@ konfiguriert werden; dann wird auf den Arbeitsplätzen kein LM Studio benötigt.
 - Optionale vorläufige Live-Notizen und Rückblick auf die letzten zehn Minuten.
 - Verschlüsselte Einstellungen, API-Schlüssel und Verlauf über Windows-DPAPI.
 - Systemvoraussetzungen direkt bei der Modellauswahl.
+- Manuelle Versionsprüfung im eigenen GitHub-Repository und lokal vorbereitete
+  Supportinformationen zur Prüfung und zum Kopieren.
 
 ## Voraussetzungen
 
@@ -46,14 +48,16 @@ Ein zusätzliches lokales LLM hat eigene RAM-/VRAM-Anforderungen.
 
 ## Installation und Bedienung
 
-Der aktuelle lokale Entwicklungsinstaller ist **0.3.10-dev.20** unter
-`BlitzDicWindows/dist/windows-2026-11-05T09-59-26-866Z-f07325/BlitzDic Setup 0.3.10-dev.20.exe`
+Der aktuelle lokale Entwicklungsinstaller ist **0.3.10-dev.21** unter
+`BlitzDicWindows/dist/windows-2026-11-05T13-06-33-975Z-301d23/BlitzDic Setup 0.3.10-dev.21.exe`
 (etwa 1,19 GB). Er enthält beide Sprachmodelle und die lokale Sprachlaufzeit.
 Der Installer ist noch nicht signiert; eine fertige Release-Datei ist noch nicht
 veröffentlicht. Die gebaute App wurde auf dem Entwicklungs-PC mit einem frischen
 Testprofil geprüft. Eine Neuinstallation auf einem frischen Windows-11-PC bleibt
 zu prüfen. Die Testinstallation auf dem Entwicklungs-PC wurde nach Freigabe auf
 dev.20 aktualisiert; beide enthaltenen Modelle und die Oberfläche sind dort geprüft.
+Dev.21 ergänzt die Versionsprüfung und Supportanzeige; es wurde separat gebaut
+und ersetzt die installierte dev.20 bisher nicht.
 Details zu Build, Prüfsumme und Tests stehen im [Arbeitsstand](WINDOWS_PORT.md).
 Das Setup enthält jetzt eine Lizenzseite. Die MIT-Lizenz für den eigenen Code
 und die Bedingungen für enthaltene Microsoft-Laufzeitdateien sind dort getrennt
@@ -256,6 +260,18 @@ Der Build erstellt neue Ordner mit Zeitstempel unter `build/` und `dist/`, samme
 Die beiden großen Sprachmodelle sind keine Git-Dateien; der Installer übernimmt
 sie aus den lokalen Modellordnern. Sprachtests mit echten Gewichten werden über
 `BLITZDIC_ASR_TEST=1` aktiviert; siehe [Testanleitung](BlitzDicWindows/speech/README.md).
+
+## Versionen und Support
+
+Unter **Einstellungen → Über BlitzDic** prüft **Auf neue Version prüfen** auf
+Knopfdruck die letzte stabile Veröffentlichung im Zielrepository. Nur passende
+Windows-Installer werden als Update angeboten. **Veröffentlichungen öffnen**
+öffnet die feste GitHub-Seite im Standardbrowser; Download und Installation
+erfolgen manuell. Es gibt keine automatische Installation und derzeit keine
+Signaturprüfung eines heruntergeladenen Updates durch BlitzDic.
+**Supportinformationen anzeigen** zeigt ausschließlich Version und Windows-
+Plattform mit einer Vorlage für die Fehlerbeschreibung. Erst **Kopieren**
+überträgt diesen Text in die Zwischenablage. Es wird keine Nachricht versendet.
 
 ## Noch offen
 
