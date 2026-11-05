@@ -49,6 +49,10 @@ to `a4`. The following hashes were measured with SHA-256.
 Builds still resolve these two DLLs from the host. A different host or runtime
 version requires a new comparison. The distributor's rights to ship all five
 files remain under review.
+[The Microsoft licensing assessment](MICROSOFT_RUNTIME.md) documents a free
+Community licensing route for the MIT-published BlitzDic project and the
+completed user-authorized Community installation. Distribution requirements
+for the packaged runtime remain to be checked separately.
 [Microsoft redistribution documentation](https://learn.microsoft.com/en-us/cpp/windows/redistributing-visual-cpp-files)
 
 ## CPU package changes in 0.3.6
