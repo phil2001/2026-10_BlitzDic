@@ -457,7 +457,7 @@ try {
   licensesButton.onclick = attempt(() => api['licenses-open']());
   $('settings').append(aboutTitle, aboutText, licensesButton);
   const updateNote = document.createElement('p');
-  updateNote.textContent = 'Die Versionsprüfung kontaktiert GitHub nur auf Knopfdruck. Es wird nichts automatisch heruntergeladen oder installiert.';
+  updateNote.textContent = 'Die Versionsprüfung fragt öffentlich zugängliche GitHub-Veröffentlichungen nur auf Knopfdruck ab. Es wird nichts automatisch heruntergeladen oder installiert.';
   const updateActions = document.createElement('div'); updateActions.className = 'actions';
   const updateCheck = document.createElement('button'); updateCheck.id = 'release-check'; updateCheck.textContent = 'Auf neue Version prüfen';
   const releasesOpen = document.createElement('button'); releasesOpen.id = 'releases-open'; releasesOpen.textContent = 'Veröffentlichungen öffnen';
@@ -467,7 +467,7 @@ try {
     try {
       const result = await api['release-check']();
       updateStatus.textContent = {
-        unpublished: 'Es gibt noch keine öffentliche Veröffentlichung. Deine installierte Version bleibt nutzbar.',
+        unpublished: 'Keine öffentlich zugängliche Veröffentlichung gefunden. Bei einem privaten Repository bitte „Veröffentlichungen öffnen“ nutzen.',
         'no-windows-installer': `Für ${result.version} gibt es noch keinen passenden Windows-Installer.`,
         available: `Version ${result.version} ist verfügbar. Du kannst sie unter Veröffentlichungen herunterladen.`,
         current: `Keine neuere stabile Windows-Version gefunden. Letzte Veröffentlichung: ${result.version}.`,

@@ -46,7 +46,7 @@ a finished release remains pending. This checklist tracks the full deliverable.
 ### Current acceptance limits, 2026-11-05
 
 The detailed historical entries below are evidence for their named builds and
-scopes. The latest dev.21 package passes the app/model/provider fixture checks
+scopes. The latest dev.22 package passes the app/model/provider fixture checks
 and compiled license-page check described at the end of this document. This
 does not close the complete checklist above.
 
@@ -59,7 +59,7 @@ does not close the complete checklist above.
   passed verification. The physical microphone result below still concerns dev.14.
 - A fresh Windows 11 installation is still unavailable and untested. A fresh
   app profile on the development PC is not a substitute for this gate.
-- The new license page is verified statically in the actual dev.21 installer;
+- The new license page is verified statically in the actual dev.22 installer;
   interactive inspection remains open after Computer Use approval timed out.
 - Final feature/visual parity and remaining native redistribution attribution
   still need review. The installer is unsigned. No finished-release claim is
@@ -2012,3 +2012,54 @@ native insertion/shortcut or speech-worker implementations tested above, but
 does add settings UI and main-process IPC handlers. It has not been installed
 over the user's copy. Clean-PC, physical-source meeting tests, remaining parity,
 attribution and signing gates remain open.
+
+## Development package 0.3.10-dev.22: verified GitHub asset naming
+
+A private, unpublished prerelease draft for dev.21 was created at source commit
+`ca1899e98670ea17b5e49c6dc0add1bb8efc1beb` (release id `435229728`). The uploaded
+installer is 1,186,214,269 bytes and GitHub's computed SHA-256 matches the local
+dev.21 artifact. GitHub normalized its name to
+`BlitzDic.Setup.0.3.10-dev.21.exe`; this exposed a genuine gap in dev.21's new
+update detector, which expected spaces. The draft notes disclose that limitation.
+`SHA256SUMS.txt` uses the actual GitHub filename; the earlier versioned checksum
+file describes the identical bytes under their local filename. No draft was
+published and no prior local build or release asset was deleted.
+
+Dev.22 accepts only the two exact product/version installer names (spaces or
+GitHub-normalized dots), their matching URL in this repository and a positive
+integer size. Other versions and foreign URLs remain excluded. Regression tests
+cover the observed normalized name. The UI also explains that anonymous checks
+see only public releases and directs private-repository users to the browser.
+The authenticated repository query confirmed that this repository is private;
+the earlier anonymous `unpublished` response was not evidence about private drafts.
+
+The full suite passed 79 tests (2 optional ASR cases skipped). The built dev.22
+UI passed the model/LAN/API and small-window checks plus available-release
+rendering with a dotted GitHub asset, the private/unavailable-release message,
+rate-limit handling and support preview/copy. No page/console errors were
+captured. Browser plugin not available; isolated-desktop Playwright was used.
+Screenshots and `blitzdic22-ui-qa22.json` are in the external visualizations
+workspace. The displayed v9.0.0 update is synthetic fixture data.
+
+The packaged smoke test passed both real bundled models, manually selected
+Whisper Tiny, provider discovery/settings, import/rewrite, all 111 native
+origins and bundled license/corresponding-source checks.
+Log: `.runtime/BlitzDicTest-c7130985.log`.
+The compiled installer license page and Electron runtime checks passed too.
+
+Artifact:
+`dist/windows-2026-11-05T13-24-37-318Z-6934d1/BlitzDic Setup 0.3.10-dev.22.exe`
+(1,186,214,226 bytes), SHA-256
+`0A55AED5FB35085F35FC93F94D5FE4B06C1B960C8C685B02A954EAB66A2F81A7`.
+Installed dev.20 is unchanged.
+
+Clean-Windows gate revalidation: WindowsSandbox.exe was not found, querying its
+optional-feature status requires administrator elevation, and Get-VM explicitly
+denied the current user's Hyper-V permissions. Running Hyper-V services alone do
+not provide an accessible test VM. No feature or group membership was changed.
+The physical audio/default-output mute gate is still open. A bounded integration
+test is prepared outside the repository with a fake microphone WAV, real Core
+Audio status checks, cancellation/normal-stop restoration and meeting exclusion.
+Only the initial mute state was read (false); no audio setting was changed.
+The user's current-audio timing question remains pending; elapsed time is not
+treated as permission. Other release acceptance limits above remain open.

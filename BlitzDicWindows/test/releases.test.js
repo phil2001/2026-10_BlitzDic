@@ -12,6 +12,12 @@ test('release check distinguishes stable upgrades, development builds and missin
   assert.equal((await checkRelease('0.3.10-dev.20', fixture(stable()))).state, 'available');
   assert.equal((await checkRelease('0.3.10', fixture(stable()))).state, 'current');
   assert.equal((await checkRelease('0.3.11-dev.0', fixture(stable()))).state, 'current');
+  const normalized = stable();
+  normalized.assets[0].name = 'BlitzDic.Setup.0.3.10.exe';
+  normalized.assets[0].browser_download_url = `${releasesURL}/download/v0.3.10/BlitzDic.Setup.0.3.10.exe`;
+  assert.equal((await checkRelease('0.3.9', fixture(normalized))).state, 'available');
+  normalized.assets[0].name = 'BlitzDic.Setup.0.3.9.exe';
+  assert.equal((await checkRelease('0.3.9', fixture(normalized))).state, 'no-windows-installer');
   assert.equal((await checkRelease('0.3.9', fixture({...stable(), assets: []}))).state, 'no-windows-installer');
   const foreign = stable(); foreign.assets[0].browser_download_url = 'https://other.example/setup.exe';
   assert.equal((await checkRelease('0.3.9', fixture(foreign))).state, 'no-windows-installer');

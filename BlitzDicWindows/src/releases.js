@@ -55,9 +55,14 @@ export async function checkRelease(installedVersion, {fetchImpl = fetch, timeout
   if (!latest || latest.pre.length || release.draft !== false || release.prerelease !== false)
     throw new Error('Keine gültige stabile Veröffentlichung gefunden.');
   const assetPrefix = `${releasesURL}/download/${encodeURIComponent(release.tag_name)}/`;
+  const releaseVersion = release.tag_name.replace(/^v/, '');
+  // GitHub normalizes spaces in uploaded asset names to dots. Accept only
+  // these two exact product/version names and their matching repository URL.
+  const installerNames = [`BlitzDic Setup ${releaseVersion}.exe`, `BlitzDic.Setup.${releaseVersion}.exe`];
   const windowsInstaller = Array.isArray(release.assets) && release.assets.some(asset =>
-    asset?.name === `BlitzDic Setup ${release.tag_name.replace(/^v/, '')}.exe` &&
-    asset.browser_download_url === assetPrefix + encodeURIComponent(asset.name) && asset.size > 0);
+    installerNames.includes(asset?.name) &&
+    asset.browser_download_url === assetPrefix + encodeURIComponent(asset.name) &&
+    Number.isSafeInteger(asset.size) && asset.size > 0);
   if (!windowsInstaller) return {state: 'no-windows-installer', version: release.tag_name};
   return {state: newerStable(latest, installed) ? 'available' : 'current', version: release.tag_name};
 }

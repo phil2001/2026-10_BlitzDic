@@ -48,16 +48,17 @@ Ein zusätzliches lokales LLM hat eigene RAM-/VRAM-Anforderungen.
 
 ## Installation und Bedienung
 
-Der aktuelle lokale Entwicklungsinstaller ist **0.3.10-dev.21** unter
-`BlitzDicWindows/dist/windows-2026-11-05T13-06-33-975Z-301d23/BlitzDic Setup 0.3.10-dev.21.exe`
+Der aktuelle lokale Entwicklungsinstaller ist **0.3.10-dev.22** unter
+`BlitzDicWindows/dist/windows-2026-11-05T13-24-37-318Z-6934d1/BlitzDic Setup 0.3.10-dev.22.exe`
 (etwa 1,19 GB). Er enthält beide Sprachmodelle und die lokale Sprachlaufzeit.
 Der Installer ist noch nicht signiert; eine fertige Release-Datei ist noch nicht
 veröffentlicht. Die gebaute App wurde auf dem Entwicklungs-PC mit einem frischen
 Testprofil geprüft. Eine Neuinstallation auf einem frischen Windows-11-PC bleibt
 zu prüfen. Die Testinstallation auf dem Entwicklungs-PC wurde nach Freigabe auf
 dev.20 aktualisiert; beide enthaltenen Modelle und die Oberfläche sind dort geprüft.
-Dev.21 ergänzt die Versionsprüfung und Supportanzeige; es wurde separat gebaut
-und ersetzt die installierte dev.20 bisher nicht.
+Dev.21 ergänzt die Versionsprüfung und Supportanzeige; dev.22 korrigiert die
+Erkennung der von GitHub normalisierten Installer-Dateinamen. Diese Builds wurden
+separat gebaut und ersetzen die installierte dev.20 bisher nicht.
 Details zu Build, Prüfsumme und Tests stehen im [Arbeitsstand](WINDOWS_PORT.md).
 Das Setup enthält jetzt eine Lizenzseite. Die MIT-Lizenz für den eigenen Code
 und die Bedingungen für enthaltene Microsoft-Laufzeitdateien sind dort getrennt
@@ -269,6 +270,10 @@ Windows-Installer werden als Update angeboten. **Veröffentlichungen öffnen**
 öffnet die feste GitHub-Seite im Standardbrowser; Download und Installation
 erfolgen manuell. Es gibt keine automatische Installation und derzeit keine
 Signaturprüfung eines heruntergeladenen Updates durch BlitzDic.
+Die Versionsprüfung ist anonym und kann nur öffentlich zugängliche Releases
+finden. Dieses Zielrepository ist derzeit privat. Für dessen private Releases
+**Veröffentlichungen öffnen** verwenden und im Browser mit einem berechtigten
+GitHub-Konto anmelden; BlitzDic speichert dafür keinen GitHub-Zugang.
 **Supportinformationen anzeigen** zeigt ausschließlich Version und Windows-
 Plattform mit einer Vorlage für die Fehlerbeschreibung. Erst **Kopieren**
 überträgt diesen Text in die Zwischenablage. Es wird keine Nachricht versendet.
