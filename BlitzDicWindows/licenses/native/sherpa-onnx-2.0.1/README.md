@@ -13,6 +13,12 @@ in this directory. File hashes and source URLs are in provenance.json.
 | simple-sentencepiece | 0.7 |
 | hclust-cpp | 2026-02-25 |
 | ONNX Runtime | 1.28.2, Windows x64 MT Release |
+| OpenFST | 1.8.5-2026-07-09 |
+| nlohmann/json | 3.12.0 |
+| pybind11 | 3.0.0 |
+| KissFFT | febd4caeed32e33ad8b2e0bb5ea77542c40f18ec |
+| kaldifst | 1.8.0 |
+| Eigen | 3.4.0 |
 
 The main source recipe includes the first four components. It includes
 hclust-cpp when speaker diarization is enabled.
@@ -30,5 +36,10 @@ the pinned Windows build recipe. Its original LICENSE and ThirdPartyNotices.txt
 are preserved here. This covers the embedded 1.28.2 DLL independently of the
 separate top-level ONNX Runtime Python package.
 
-The exact static dependency composition of the Sherpa wheel still requires
-verification. Other optional dependencies remain outside this collection.
+KissFFT comes from kaldi-native-fbank's recipe. Kaldifst and Eigen come
+from kaldi-decoder's recipe. The original Eigen source archive is included
+beside its notices and verified against the recipe hash.
+
+This collection follows the declared source dependencies. The exact static
+composition of the supplier binaries still requires verification. Optional
+components outside these archives remain outside this collection.

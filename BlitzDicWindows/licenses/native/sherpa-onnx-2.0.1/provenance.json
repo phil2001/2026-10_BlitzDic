@@ -88,5 +88,142 @@
       }
     ],
     "packagedDllSha256": "7f66f939a881baf4f46a2216496798edf4a1429878b646d12674aa62f27d8a25"
+  },
+  {
+    "component": "openfst",
+    "archiveURL": "https://github.com/csukuangfj/openfst/archive/refs/tags/v1.8.5-2026-07-09.tar.gz",
+    "archiveSha256": "2ff712a32952fcb01d351121a6bc8ccf4fdc6b2aa06ce8df2b3095dedd518c0e",
+    "recipeSha256": "1658b8ba6bc449daef239cece7ebf6d0bef09665dd4a078ccf6cb66ec01e5d1f",
+    "notices": [
+      {
+        "path": "openfst/COPYING",
+        "archivePath": "openfst-1.8.5-2026-07-09/COPYING",
+        "sha256": "4300529197035fd3452350718a0b8cee984e9412c9932d7f35fcde849fc97a4b"
+      }
+    ],
+    "recipeURL": "https://raw.githubusercontent.com/k2-fsa/sherpa-onnx/af2d8d81dbfa61c4cea4c568da78f3982edca005/cmake/openfst.cmake"
+  },
+  {
+    "component": "json",
+    "archiveURL": "https://github.com/nlohmann/json/archive/refs/tags/v3.12.0.tar.gz",
+    "archiveSha256": "4b92eb0c06d10683f7447ce9406cb97cd4b453be18d7279320f7b2f025c10187",
+    "recipeSha256": "e318b4065954cb479318d191c91e32d5a0cae94a53fff70987791b6f9828b1de",
+    "notices": [
+      {
+        "path": "json/LICENSE.MIT",
+        "archivePath": "json-3.12.0/LICENSE.MIT",
+        "sha256": "46a65cffd1ea955132d95a8dd921640714a8d6b537d2e4e482d31145ae95b603"
+      },
+      {
+        "path": "json/docs/mkdocs/docs/home/license.md",
+        "archivePath": "json-3.12.0/docs/mkdocs/docs/home/license.md",
+        "sha256": "d4b7ed0261c2c840e9ccc7d483b3b659bfddc8be797f3007da080f0c4a78d960"
+      }
+    ],
+    "recipeURL": "https://raw.githubusercontent.com/k2-fsa/sherpa-onnx/af2d8d81dbfa61c4cea4c568da78f3982edca005/cmake/json.cmake"
+  },
+  {
+    "component": "pybind11",
+    "archiveURL": "https://github.com/pybind/pybind11/archive/refs/tags/v3.0.0.tar.gz",
+    "archiveSha256": "453b1a3e2b266c3ae9da872411cadb6d693ac18063bd73226d96cfb7015a200c",
+    "recipeSha256": "34ceb32bc2ecc8cc9763f8c360311a23778b10d024579d1e934640728dbe3a54",
+    "notices": [
+      {
+        "path": "pybind11/LICENSE",
+        "archivePath": "pybind11-3.0.0/LICENSE",
+        "sha256": "83965b843b98f670d3a85bd041ed4b372c8ec50d7b4a5995a83ac697ba675dcb"
+      }
+    ],
+    "recipeURL": "https://raw.githubusercontent.com/k2-fsa/sherpa-onnx/af2d8d81dbfa61c4cea4c568da78f3982edca005/cmake/pybind11.cmake"
+  },
+  {
+    "component": "kissfft",
+    "archiveURL": "https://github.com/mborgerding/kissfft/archive/febd4caeed32e33ad8b2e0bb5ea77542c40f18ec.zip",
+    "archiveSha256": "497103e664168ebe39580b757adbe616f6cf85a16572af581ca7bc42d0ab13fd",
+    "recipeSha256": "f6038500a227a48df0e309b9490bd9c8cec8ee376008d7211e3fc96f0c689580",
+    "notices": [
+      {
+        "path": "kissfft/COPYING",
+        "archivePath": "kissfft-febd4caeed32e33ad8b2e0bb5ea77542c40f18ec/COPYING",
+        "sha256": "a2840585f8411be8e6826a31ef15ae65c950bd74a2437a73b013398a934ad0c6"
+      }
+    ],
+    "recipeOrigin": {
+      "archiveURL": "https://github.com/csukuangfj/kaldi-native-fbank/archive/refs/tags/v1.22.4.tar.gz",
+      "archiveSha256": "257fea639585ca6ee00860493bb9d7ab32488b8a5407ffe434c1f361ea545fae",
+      "archivePath": "kaldi-native-fbank-1.22.4/cmake/kissfft.cmake"
+    }
+  },
+  {
+    "component": "kaldifst",
+    "archiveURL": "https://github.com/k2-fsa/kaldifst/archive/refs/tags/v1.8.0.tar.gz",
+    "archiveSha256": "3f247b7e5a2409071202f5e2bc6200060f66728c0a3443c03923ad2723e040b3",
+    "recipeSha256": "3fc84cb97584d944ad23cccacfcb958f163873ffae62a0764d8e75930f9a8bb3",
+    "notices": [
+      {
+        "path": "kaldifst/LICENSE",
+        "archivePath": "kaldifst-1.8.0/LICENSE",
+        "sha256": "a682d6efd1ee5dee08a8e405c233c2c198ea70ae0718129daa83ab58cfe31c5d"
+      }
+    ],
+    "recipeOrigin": {
+      "archiveURL": "https://github.com/k2-fsa/kaldi-decoder/archive/refs/tags/v0.3.0.tar.gz",
+      "archiveSha256": "b9f34cfb4fd3b1344100eead79ef4d37aa15962274b9e3056de345021f76a1b0",
+      "archivePath": "kaldi-decoder-0.3.0/cmake/kaldifst.cmake"
+    }
+  },
+  {
+    "component": "eigen",
+    "archiveURL": "https://gitlab.com/libeigen/eigen/-/archive/3.4.0/eigen-3.4.0.tar.gz",
+    "archiveSha256": "8586084f71f9bde545ee7fa6d00288b264a2b7ac3607b974e54d13e7162c1c72",
+    "recipeSha256": "679d4c5f617ba736c05d512ef26212cf699fe15eaac9a6375c9c624727a555a0",
+    "notices": [
+      {
+        "path": "eigen/COPYING.APACHE",
+        "archivePath": "eigen-3.4.0/COPYING.APACHE",
+        "sha256": "03379001a7b12a2ec997a25554247d985270b353c10d5bafee9ac8d6519820b7"
+      },
+      {
+        "path": "eigen/COPYING.BSD",
+        "archivePath": "eigen-3.4.0/COPYING.BSD",
+        "sha256": "51928dce36213c5333ba3172e847d735d4c6e9b7ff2722a326c49067155b82eb"
+      },
+      {
+        "path": "eigen/COPYING.GPL",
+        "archivePath": "eigen-3.4.0/COPYING.GPL",
+        "sha256": "8ceb4b9ee5adedde47b31e975c1d90c73ad27b6b165a1dcd80c7c545eb65b903"
+      },
+      {
+        "path": "eigen/COPYING.LGPL",
+        "archivePath": "eigen-3.4.0/COPYING.LGPL",
+        "sha256": "dc626520dcd53a22f727af3ee42c770e56c97a64fe3adb063799d8ab032fe551"
+      },
+      {
+        "path": "eigen/COPYING.MINPACK",
+        "archivePath": "eigen-3.4.0/COPYING.MINPACK",
+        "sha256": "c87b7f8ee88f6195e91743820c00354833583aef091b72e2d4a49c8e28e798a0"
+      },
+      {
+        "path": "eigen/COPYING.MPL2",
+        "archivePath": "eigen-3.4.0/COPYING.MPL2",
+        "sha256": "fab3dd6bdab226f1c08630b1dd917e11fcb4ec5e1e020e2c16f83a0a13863e85"
+      },
+      {
+        "path": "eigen/COPYING.README",
+        "archivePath": "eigen-3.4.0/COPYING.README",
+        "sha256": "c83230b770f17ef1386ea1fd3681271dd98aa93646bdbfb5bff3a1b7050fff9d"
+      },
+      {
+        "path": "eigen/bench/btl/COPYING",
+        "archivePath": "eigen-3.4.0/bench/btl/COPYING",
+        "sha256": "b8d0e2bcbf36f6af3cdbf94055ad2ea675d5a19fc623eb0ec82febb2b08e719b"
+      }
+    ],
+    "includedSourceArchive": "eigen/eigen-3.4.0.tar.gz",
+    "recipeOrigin": {
+      "archiveURL": "https://github.com/k2-fsa/kaldi-decoder/archive/refs/tags/v0.3.0.tar.gz",
+      "archiveSha256": "b9f34cfb4fd3b1344100eead79ef4d37aa15962274b9e3056de345021f76a1b0",
+      "archivePath": "kaldi-decoder-0.3.0/cmake/eigen.cmake"
+    }
   }
 ]
