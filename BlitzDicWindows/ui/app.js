@@ -333,7 +333,11 @@ $('meetings-clear').onclick = attempt(async () => {
 const providerConfig = () => Object.fromEntries(['provider', 'location', 'baseURL', 'model', 'apiKey'].map(id => [id, $(id).value]));
 document.querySelectorAll('nav button').forEach(button => button.onclick = () => {
   document.querySelectorAll('main > section').forEach(section => { section.hidden = section.id !== button.dataset.page; });
-  document.querySelectorAll('nav button').forEach(b => b.classList.toggle('selected', b === button));
+  document.querySelectorAll('nav button').forEach(b => {
+    b.classList.toggle('selected', b === button);
+    if (b === button) b.setAttribute('aria-current', 'page');
+    else b.removeAttribute('aria-current');
+  });
 });
 $('record').onclick = attempt(async () => {
   if (busy || meetingBusy || dictationStartup || meetingStartup || meetingRecorder.state !== 'idle' || recorder.state === 'starting') return;

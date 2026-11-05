@@ -2074,3 +2074,50 @@ the local text file. Verification is retained in
 `.runtime/release-dev22/upload-evidence.json`. No release was published.
 Windows CI passed for that source commit:
 https://github.com/phil2001/2026-10_BlitzDic/actions/runs/42036212596.
+
+## Development package 0.3.10-dev.23: accessible meter names and navigation
+
+A Chromium Accessibility-tree check on the actual dev.22 package found two
+unnamed meters: `level` during dictation and `meeting-level` during meeting
+capture. All inspected controls in the six idle pages and manual-model state
+had names. No navigation button declared the current page in any of the nine
+states. This was direct rendered evidence, not an inference from HTML alone.
+
+The UI now names the meters `Mikrofonpegel` and `Aufnahmepegel des Meetings`,
+labels the navigation landmark and marks exactly the active navigation button
+with `aria-current="page"`. Changing pages removes the prior marker. No recording,
+recognition, mute, insertion, provider or storage implementation changed.
+
+The same check passed against source dev.23 and the built dev.23 package.
+Six pages were opened by focusing each navigation button and pressing Enter;
+the expected page became visible. All nine inspected states had zero unnamed
+controls in the tested role set (button/textbox/combobox/checkbox/link/meter/slider)
+and exactly one current navigation marker. Dictation and meeting states used
+Chromium's fake microphone WAV. Windows mute was explicitly disabled in that
+isolated test profile; no real microphone or system clipboard was used.
+Title, ASAR page URL, page/console errors and a recording screenshot were checked;
+no page or console error was captured. Browser plugin not available; Playwright
+ran on the isolated desktop. This is scoped Accessibility-tree and keyboard
+verification, not a complete WCAG/Narrator/NVDA or visual-parity audit.
+
+Before/after evidence is retained outside the repository in the visualizations
+workspace: `blitzdic-a11y-result.json`,
+`blitzdic-a11y-result-0.3.10-dev.23.json` and
+`blitzdic23-a11y-recording.png`. The compiled license page and packaged Electron
+runtime/source checks passed. Full speech/provider smoke evidence remains the
+dev.22 run above; no speech/provider code was modified for this UI correction.
+
+Artifact:
+`dist/windows-2026-11-05T13-36-46-150Z-8c733b/BlitzDic Setup 0.3.10-dev.23.exe`
+(1,186,214,922 bytes), SHA-256
+`1AE5A6F5965EFBC5D93D02E0030091E2B77CFB01B632B49A68D2E1B2F3A295A8`.
+Installed dev.20 and the uploaded dev.21/dev.22 drafts remain unchanged.
+
+An additional clean-VM feasibility probe found that WHvGetCapability succeeded
+with HypervisorPresent=1 and that the existing Ubuntu-24.04 WSL distribution
+contains `/dev/kvm`. This changes the next investigation: denied Get-VM access
+does not establish that every possible local test-VM path is unavailable.
+No partition/Windows guest was created and KVM usability, guest firmware/TPM,
+installation media and license prerequisites remain unverified. No host feature
+or group membership was changed. API reference:
+https://learn.microsoft.com/en-us/virtualization/api/hypervisor-platform/funcs/whvgetcapability.

@@ -48,8 +48,8 @@ Ein zusätzliches lokales LLM hat eigene RAM-/VRAM-Anforderungen.
 
 ## Installation und Bedienung
 
-Der aktuelle lokale Entwicklungsinstaller ist **0.3.10-dev.22** unter
-`BlitzDicWindows/dist/windows-2026-11-05T13-24-37-318Z-6934d1/BlitzDic Setup 0.3.10-dev.22.exe`
+Der aktuelle lokale Entwicklungsinstaller ist **0.3.10-dev.23** unter
+`BlitzDicWindows/dist/windows-2026-11-05T13-36-46-150Z-8c733b/BlitzDic Setup 0.3.10-dev.23.exe`
 (etwa 1,19 GB). Er enthält beide Sprachmodelle und die lokale Sprachlaufzeit.
 Der Installer ist noch nicht signiert; eine fertige Release-Datei ist noch nicht
 veröffentlicht. Die gebaute App wurde auf dem Entwicklungs-PC mit einem frischen
@@ -59,6 +59,9 @@ dev.20 aktualisiert; beide enthaltenen Modelle und die Oberfläche sind dort gep
 Dev.21 ergänzt die Versionsprüfung und Supportanzeige; dev.22 korrigiert die
 Erkennung der von GitHub normalisierten Installer-Dateinamen. Diese Builds wurden
 separat gebaut und ersetzen die installierte dev.20 bisher nicht.
+Dev.23 beschriftet die Pegelanzeigen für Hilfstechnologien und kennzeichnet die
+aktuelle Navigationsseite. Diese Zustände und die Navigation per Enter sind im
+gebauten Paket geprüft; ein vollständiger Screenreader-Test steht noch aus.
 Dev.22 liegt auch als unveröffentlichter [Release-Entwurf im privaten Repository](https://github.com/phil2001/2026-10_BlitzDic/releases)
 mit vollständigem Installer und SHA256SUMS.txt bereit. Ein berechtigter GitHub-
 Zugang ist erforderlich. Der Entwurf ist noch keine freigegebene Veröffentlichung.
