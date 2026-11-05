@@ -16,8 +16,9 @@ Weitere Arbeiten werden nach Rückmeldung zur Benutzung festgelegt.
   zusätzliches Python, Visual Studio, CUDA, LM Studio oder OpenAI-Konto nötig.
 - Die lokale Ausgabe wurde direkt gestartet; die ältere registrierte
   Testinstallation dev.20 wurde dabei nicht entfernt oder aktualisiert.
-- Dev.24-Installer und Prüfsumme sind lokal vorhanden; dev.23 liegt zusätzlich
-  als privater GitHub-Release-Entwurf vor. Der Installer ist unsigniert; eine Freigabe für alle Ordinations-PCs ist
+- Dev.24-Installer und Prüfsumme liegen lokal und als unveröffentlichter
+  [privater Release-Entwurf](https://github.com/phil2001/2026-10_BlitzDic/releases/tag/untagged-844c147fb152289d0ade)
+  vor. Hochgeladene Größe und SHA-256 sind abgeglichen. Der Installer ist unsigniert; eine Freigabe für alle Ordinations-PCs ist
   damit noch nicht belegt.
 
 ## Sprachwahl: umgesetzt in dev.24

@@ -2199,3 +2199,10 @@ Local handoff uses the staged standalone app, not an update of installed dev.20.
 User authorized restarting the open app; normal profile is Wortgenau, Whisper,
 de-medical with bundled models. Only the project shortcut is updated.
 No VM, clinical validation or universal Windows-PC certification was added.
+
+Dev.24 source commit `bbc80e35fe7657ae004b8d9d5af259032b9062b8` passed Windows
+CI: https://github.com/phil2001/2026-10_BlitzDic/actions/runs/42062270677.
+Private draft release `435494089` now holds the installer and matching checksum
+file. Uploaded installer size (1,186,216,835 bytes), SHA-256, checksum-file digest,
+source target and draft/prerelease flags match local evidence in
+`.runtime/release-dev24/upload-evidence.json`. No final release was published.

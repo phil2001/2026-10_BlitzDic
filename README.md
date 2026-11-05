@@ -70,7 +70,7 @@ separat gebaut und ersetzen die installierte dev.20 bisher nicht.
 Dev.23 beschriftet die Pegelanzeigen für Hilfstechnologien und kennzeichnet die
 aktuelle Navigationsseite. Diese Zustände und die Navigation per Enter sind im
 gebauten Paket geprüft; ein vollständiger Screenreader-Test steht noch aus.
-Dev.23 liegt auch als unveröffentlichter [Release-Entwurf im privaten Repository](https://github.com/phil2001/2026-10_BlitzDic/releases)
+Dev.24 liegt auch als unveröffentlichter [Release-Entwurf im privaten Repository](https://github.com/phil2001/2026-10_BlitzDic/releases/tag/untagged-844c147fb152289d0ade)
 mit vollständigem Installer und SHA256SUMS.txt bereit. Ein berechtigter GitHub-
 Zugang ist erforderlich. Der Entwurf ist noch keine freigegebene Veröffentlichung.
 Details zu Build, Prüfsumme und Tests stehen im [Arbeitsstand](WINDOWS_PORT.md).
