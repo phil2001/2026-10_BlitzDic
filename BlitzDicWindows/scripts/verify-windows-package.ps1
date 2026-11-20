@@ -80,7 +80,12 @@ foreach ($preset in @('whisper', 'parakeet-ultra')) {
     $start.RedirectStandardError = $true
     $start.EnvironmentVariables['PATH'] = "$env:SystemRoot\System32;$env:SystemRoot"
     $start.EnvironmentVariables['HF_HUB_OFFLINE'] = '1'
-    $process = [System.Diagnostics.Process]::Start($start)
+    # Windows PowerShell 5.1 writes the console input encoding's BOM into a redirected
+    # stdin when the console uses UTF-8 (code page 65001); the worker expects plain JSON.
+    $consoleEncoding = [Console]::InputEncoding
+    try { [Console]::InputEncoding = New-Object System.Text.UTF8Encoding $false } catch { }
+    try { $process = [System.Diagnostics.Process]::Start($start) }
+    finally { try { [Console]::InputEncoding = $consoleEncoding } catch { } }
     try {
         $output = $process.StandardOutput.ReadToEndAsync()
         $errors = $process.StandardError.ReadToEndAsync()

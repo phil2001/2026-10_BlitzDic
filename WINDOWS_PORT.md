@@ -2206,3 +2206,36 @@ Private draft release `435494089` now holds the installer and matching checksum
 file. Uploaded installer size (1,186,216,835 bytes), SHA-256, checksum-file digest,
 source target and draft/prerelease flags match local evidence in
 `.runtime/release-dev24/upload-evidence.json`. No final release was published.
+
+## 2026-11-20: dev.25 — Parakeet default, term correction, first fused package
+
+Scope: installer for the source state of commits f583b18..0f30482 (preloaded model,
+autostart, fast insertion, physical-core threads, Electron fuses, Parakeet default,
+dictionary term correction with the Windows spell checker as guard). App source change
+for this build: version number only.
+
+Build machine preparation on this PC (all inside `BlitzDicWindows/.runtime`, hash-pinned):
+clean FFmpeg 8.0.3 built with the portable MSYS2 20260927 (GCC 16.2.0, NASM 3.02),
+relinked wheel `av-16.0.1+blitzdic.1` SHA-256
+`6afabb6bd68ff998d08d1c7ac57e84183ae680d7897e468c0f0b1b485f9acc2a`, speaker models via
+`setup-diarization.py`, PyInstaller 6.22.3. The venv's base Python came from the user-wide
+uv folder, which `map-native-package.py --require-trusted-origins` rejects (25 external
+CPython files). The same CPython 3.12.12 was copied to `.runtime/python` (where
+`setup-speech.ps1` puts it) and `pyvenv.cfg` pointed there; then 0 external origins.
+The previous venv is kept as `.runtime/venv-backup-2026-11-20-upstream-av`.
+
+First fused package: `verify-electron-runtime.py --application` failed on `.rdata`,
+because the fuse wire lives there. The check now accepts exactly the configured fuses
+(`011111011`, supplier `101100011`), restores the supplier bytes and still compares all
+sections with the reviewed hashes; an unfused exe is rejected.
+
+Build: `windows-2026-11-20T18-07-38-704Z-1ecd31`. Installer 1,193,971,260 bytes,
+SHA-256 `b6bde70bbb2e94b1d39b534a6f20f10bd03ce1964ec255cd0cd4c7d86c3bb8fa`, copied to the
+project root (ignored by Git). Node tests: 129 passed, 4 skipped. On `win-unpacked`:
+`verify-installed.mjs` passed (licenses, both models, LLM fixture, fresh profile);
+`verify-term-correction-ui.mjs` with `BLITZDIC_TEST_EXECUTABLE` passed (Parakeet default,
+Apexaban → Apixaban listed, raw text with correction off); `verify-windows-package.ps1`
+passed for Whisper and Parakeet. That script first failed with a UTF-8 BOM on stdin
+under console code page 65001 (Windows PowerShell 5.1 writes the preamble); it now uses
+a BOM-free input encoding while starting the worker. The setup itself was not run here;
+no GitHub release was created.

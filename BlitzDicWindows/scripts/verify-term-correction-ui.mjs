@@ -1,6 +1,7 @@
 // Real app, real model, real Windows spell checker: a German medical recording is imported,
 // near-miss terms are corrected and listed under the text; switched off, the text stays raw.
 // Usage: node scripts/verify-term-correction-ui.mjs <recording.wav> [expected change, e.g. "Apexaban → Apixaban"]
+// Set BLITZDIC_TEST_EXECUTABLE to a built BlitzDic.exe to check the package instead of the source.
 import {_electron as electron} from 'playwright';
 import {resolve} from 'node:path';
 import assert from 'node:assert/strict';
@@ -8,9 +9,12 @@ const root = resolve(import.meta.dirname, '..');
 const [audio, expected] = process.argv.slice(2);
 if (!audio) throw new Error('Pfad zu einer deutschen medizinischen Testaufnahme angeben.');
 const env = {...process.env}; delete env.ELECTRON_RUN_AS_NODE;
-const app = await electron.launch({args: [root, `--user-data-dir=${root}/.runtime/term-correction-ui-${Date.now()}`], env});
+const executablePath = process.env.BLITZDIC_TEST_EXECUTABLE;
+const profile = `--user-data-dir=${root}/.runtime/term-correction-ui-${Date.now()}`;
+const app = await electron.launch(executablePath ? {executablePath, args: [profile], env} : {args: [root, profile], env});
 try {
   const page = await app.firstWindow(); await page.waitForSelector('#provider option', {state: 'attached'});
+  if (executablePath) console.log('Gebaute App:', await app.evaluate(({app}) => `${app.getVersion()}, gepackt: ${app.isPackaged}`));
   // New settings: Parakeet, Medizinisches Deutsch with the dictionary, correction on.
   assert.equal(await page.locator('#speech-model').inputValue(), 'parakeet-ultra');
   assert.equal(await page.locator('#speech-language').isDisabled(), false);

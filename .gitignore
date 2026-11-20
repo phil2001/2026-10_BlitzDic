@@ -8,6 +8,7 @@ models/
 .env.*
 *.local
 /BlitzDic Lokal.lnk
+/BlitzDic Setup *.exe
 
 # Entwicklungswerkzeuge
 node_modules/

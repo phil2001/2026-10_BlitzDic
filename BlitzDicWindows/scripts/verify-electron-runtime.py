@@ -36,6 +36,27 @@ def verify_sources(directory):
         verify_file(directory, item['path'], item['sha256'])
 
 
+# The Electron fuses set in electron-builder.yml are the only intended change inside .rdata.
+FUSE_SENTINEL = b'dL7pKGdnNz796PbbjQWNKmHXBZaB9tsX'
+# Fuse wire v1 of Electron 45.2.1, in Electron's order: RunAsNode, CookieEncryption,
+# NodeOptions, NodeCliInspect, AsarIntegrity, OnlyLoadAppFromAsar, BrowserV8Snapshot,
+# GrantFileProtocolExtraPrivileges, WasmTrapHandlers.
+SUPPLIER_FUSES, BLITZDIC_FUSES = b'101100011', b'011111011'
+
+
+def restore_supplier_fuses(rdata):
+    """Checks the packaged fuses and returns .rdata as Electron shipped it."""
+    if rdata.count(FUSE_SENTINEL) != 1:
+        raise SystemExit('Electron fuse wire not found exactly once')
+    start = rdata.index(FUSE_SENTINEL) + len(FUSE_SENTINEL)
+    if rdata[start:start + 2] != bytes([1, len(SUPPLIER_FUSES)]):
+        raise SystemExit('Unexpected Electron fuse wire version or length')
+    fuses = slice(start + 2, start + 2 + len(SUPPLIER_FUSES))
+    if rdata[fuses] != BLITZDIC_FUSES:
+        raise SystemExit(f'Packaged Electron fuses differ from electron-builder.yml: {rdata[fuses].decode()}')
+    return rdata[:fuses.start] + SUPPLIER_FUSES + rdata[fuses.stop:]
+
+
 verify_sources(base)
 directory = (args.distribution or args.application).resolve()
 if args.distribution:
@@ -58,6 +79,8 @@ for item in manifest['runtimeDlls']:
 executable = directory / ('electron.exe' if args.distribution else 'BlitzDic.exe')
 with pefile.PE(str(executable)) as image:
     sections = {section.Name.decode().rstrip('\0'): section.get_data() for section in image.sections}
+if args.application:
+    sections['.rdata'] = restore_supplier_fuses(sections['.rdata'])
 if manifest['excludedExecutableSections'] != ['.rsrc']:
     raise SystemExit('Only the application resource section may differ from the supplier')
 if set(sections) != {item['name'] for item in manifest['executableSections']} | {'.rsrc'}:
@@ -65,4 +88,5 @@ if set(sections) != {item['name'] for item in manifest['executableSections']} | 
 for item in manifest['executableSections']:
     if hashlib.sha256(sections[item['name']]).hexdigest() != item['sha256']:
         raise SystemExit(f'Electron executable section changed: {item["name"]}')
-print('PASS: six Electron DLLs, executable sections, original notices and matching source bundle')
+print('PASS: six Electron DLLs, executable sections' + (' (fuses as configured)' if args.application else '')
+      + ', original notices and matching source bundle')

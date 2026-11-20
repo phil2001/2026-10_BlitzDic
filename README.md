@@ -56,9 +56,13 @@ Ein zusätzliches lokales LLM hat eigene RAM-/VRAM-Anforderungen.
 
 ## Installation und Bedienung
 
-Der aktuelle lokale Entwicklungsinstaller ist **0.3.10-dev.24** unter
-`BlitzDicWindows/dist/windows-2026-11-05T16-05-07-487Z-cefee8/BlitzDic Setup 0.3.10-dev.24.exe`
-(etwa 1,19 GB). Er enthält beide Sprachmodelle und die lokale Sprachlaufzeit.
+Der aktuelle lokale Entwicklungsinstaller ist **0.3.10-dev.25**. Er liegt als
+`BlitzDic Setup 0.3.10-dev.25.exe` im Hauptordner des Projekts (etwa 1,19 GB, nicht in Git;
+Build `windows-2026-11-20T18-07-38-704Z-1ecd31`). Er enthält beide Sprachmodelle, die lokale
+Sprachlaufzeit, Parakeet Ultra als Standard und die Fachbegriff-Korrektur.
+Installation: Setup starten, bei der Windows-Warnung **Weitere Informationen → Trotzdem
+ausführen**, Lizenz bestätigen, Ordner wählen. Installiert wird ohne Administratorrechte für
+das angemeldete Windows-Konto.
 Der Installer ist noch nicht signiert; eine fertige Release-Datei ist noch nicht
 veröffentlicht. Die gebaute App wurde auf dem Entwicklungs-PC mit einem frischen
 Testprofil geprüft. Eine Neuinstallation auf einem frischen Windows-11-PC bleibt

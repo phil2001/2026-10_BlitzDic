@@ -1,6 +1,6 @@
 # Status: BlitzDic für Windows 11
 
-Stand: 05.11.2026
+Stand: 20.11.2026
 
 ## Aktueller Auftrag und nutzbarer Stand
 
@@ -8,10 +8,12 @@ Die lokale Diktier-App mit Whisper und Parakeet steht im Vordergrund. Keine neue
 Test-VM, keine zusätzlichen Funktionen und keine umfangreiche Testinfrastruktur.
 Weitere Arbeiten werden nach Rückmeldung zur Benutzung festgelegt.
 
-- Lokale Ausgabe: **0.3.10-dev.24**, Windows 11 **x64**.
-- Start auf diesem Rechner: **BlitzDic Lokal.lnk** im Projektordner.
-- Voreinstellung bei Übergabe: **Wortgenau**, **Whisper Small**, **Medizinisches Deutsch**.
-- **Parakeet Ultra (NVIDIA / Moondream)** ist unter **Modelle** auswählbar.
+- Installer: **BlitzDic Setup 0.3.10-dev.25.exe** im Hauptordner, Windows 11 **x64**
+  (SHA-256 `b6bde70bbb2e94b1d39b534a6f20f10bd03ce1964ec255cd0cd4c7d86c3bb8fa`).
+- Voreinstellung neuer Installationen: **Wortgenau**, **Parakeet Ultra (NVIDIA / Moondream)**,
+  **Medizinisches Deutsch** mit **Fachbegriff-Korrektur**.
+- **Whisper Small** ist unter **Modelle** auswählbar.
+- Ältere Einträge: dev.24 lief auf dem früheren Arbeitsrechner über **BlitzDic Lokal.lnk**.
 - Beide Modelle und die Sprachlaufzeit sind enthalten. Für Diktate sind kein
   zusätzliches Python, Visual Studio, CUDA, LM Studio oder OpenAI-Konto nötig.
 - Die lokale Ausgabe wurde direkt gestartet; die ältere registrierte
@@ -20,6 +22,11 @@ Weitere Arbeiten werden nach Rückmeldung zur Benutzung festgelegt.
   [privater Release-Entwurf](https://github.com/phil2001/2026-10_BlitzDic/releases/tag/untagged-844c147fb152289d0ade)
   vor. Hochgeladene Größe und SHA-256 sind abgeglichen. Der Installer ist unsigniert; eine Freigabe für alle Ordinations-PCs ist
   damit noch nicht belegt.
+
+Dev.25 wurde am 20.11.2026 auf diesem Rechner gebaut und als entpackte App geprüft:
+Pakettest mit beiden Modellen, Lizenzen und LLM-Testserver, Fachbegriff-Korrektur
+(„Apexaban“ → „Apixaban“, abgeschaltet unverändert) und das Prüfskript für Arbeitsplätze.
+Das Setup selbst wurde hier noch nicht ausgeführt; ein Release auf GitHub gibt es dafür nicht.
 
 ## Sprachwahl: umgesetzt in dev.24
 
@@ -33,8 +40,9 @@ Whisper erhält fest `de` oder `en`. Medizinisches Deutsch verwendet ebenfalls
 **Eigenen Begriffe** aus Einstellungen. Es ist kein separat medizinisch trainiertes
 oder klinisch validiertes Modell; Fachbegriffe, Zahlen und Einheiten prüfen.
 
-**Parakeet** bestimmt die Sprache modellintern. Die Sprachwahl ist dafür sichtbar
-deaktiviert und erklärt diese Grenze. Für festes Deutsch bitte Whisper wählen.
+**Parakeet** bestimmt die Sprache modellintern. Seit dev.25 bleibt die Sprachwahl
+auch dafür aktiv: Medizinisches Deutsch schaltet die Fachbegriff-Korrektur mit dem
+mitgelieferten Wörterbuch ein. Für fest vorgegebenes Deutsch bitte Whisper wählen.
 
 Die gemeldete arabische Ausgabe wurde mit der Originalaufnahme nicht reproduziert.
 Die frühere automatische Whisper-Spracherkennung war eine plausible Ursache.
