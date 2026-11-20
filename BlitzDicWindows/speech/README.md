@@ -68,6 +68,60 @@ A deactivation in Task Manager or Windows Settings is respected; only switching
 the setting itself changes it. The uninstaller removes the entry, an update keeps
 it (`installer/autostart.nsh`). Development runs never register autostart.
 
+New installations default to Parakeet Ultra with „Medizinisches Deutsch“: in the
+term test (SYSTEMVORAUSSETZUNGEN.md) it was the fastest and, with term correction,
+the most accurate choice. Saved settings keep the model chosen earlier.
+
+### Term correction
+
+`src/term-correction.js` corrects near-miss technical terms in the main process
+after recognition, for both engines, before rewriting, insertion and history.
+Speech models mostly miss a rare term by one or two letters („Apexaban“,
+„Metoprool“); such a word is replaced by the listed term. Sources: the user's own
+terms (always, spelling wins) and, for „Medizinisches Deutsch“ only, the shipped
+dictionary `src/medical-terms-de.txt` (about 1,800 terms). Settings →
+„Fachbegriffe automatisch korrigieren“ (default on) switches it off. Every change
+is listed under the text („Apexaban → Apixaban“) and stored with the history
+entry; meetings report the count. Live notes use the corrected text.
+
+A dictionary alone is not enough: on 424,000 words of correctly spelled German
+Wikipedia text (medical and general articles) the first version would have made
+1,434 changes, for example „Infektion“ → „Inspektion“ and „Skepsis“ → „Sepsis“.
+Hence these rules, chosen to rather miss a correction than make a wrong one:
+
+- **Spelling guard:** a word is only replaced when the Windows spell checker
+  (the dictionaries Windows itself uses; Austrian German first) also reports it
+  as misspelled in every capitalization. It knows most medical words, so
+  „Infektion“ or „Nephropathie“ stay, while „Apexaban“ is rejected. Without a
+  German spell checker nothing is changed and the result says so. Two correctly
+  spelled words are joined only into exactly a listed term („Vorhof flimmern“).
+- Only words of at least 7 letters that are not listed in any inflected form
+  (German endings such as -e, -en, -es are accepted), never words with two
+  capitals (acronyms).
+- Normalized edit distance: at most one edit per five letters (similarity 0.8).
+- The last two letters must match, so the word form stays: „bronchoskopisch“
+  never becomes „Bronchoskopie“. Inflected near-misses („Apexabans“) stay.
+- Two listed terms equally close: no change.
+- Two unknown neighboring words are joined only if the result is nearly exact,
+  never a listed word with its neighbor.
+- Lower-case terms (adjectives) are capitalized only at the start of a sentence.
+- Dictionary lines starting with `!` protect a word without making it a result.
+  Medical counterparts must be listed together (Hyper-/Hypokaliämie,
+  Dysphagie/Dysphasie, Ab-/Adduktion), and so must spelling variants
+  (-graphie/-grafie, c/k/z), otherwise a correct word could be turned into its
+  listed neighbor. `test/term-correction.test.js` checks the known pairs.
+
+With all rules the same text gets 16 changes: 7 genuine typos in Wikipedia fixed
+(„Dapagloflizin“, „Terbulatin“), 6 English words germanized („pancreatitis“) and
+3 wrong changes of rare words („Cypermethrin“ → „Permethrin“), about one per
+140,000 words.
+
+The spell checker runs as `blitzdic-uia.exe --spell-service` (`uia_target.cs`),
+started by the persistent target service with the app and asked only when a
+correction is proposed: about 5–100 ms instead of half a second for a helper
+start. `scripts/test-spell-service.ps1` checks it. A letter-pair index keeps the dictionary search fast: 20,000 different
+words take about 0.1 s.
+
 ## Verified on 2026-10-31
 
 Windows System.Speech generated this fixture locally:

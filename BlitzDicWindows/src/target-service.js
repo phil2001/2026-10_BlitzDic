@@ -3,7 +3,7 @@ import { basename } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const workerScript = fileURLToPath(new URL('../speech/worker.py', import.meta.url));
-const actions = new Set(['capture-target', 'insert-text']);
+const actions = new Set(['capture-target', 'insert-text', 'spell-check']);
 
 // Persistent field capture and insertion (worker.py --target-service). Starting
 // a worker before every recording and every insertion cost noticeable time on

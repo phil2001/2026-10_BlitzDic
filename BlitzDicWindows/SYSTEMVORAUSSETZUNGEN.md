@@ -38,6 +38,17 @@ Die installierte App startet dazu standardmäßig mit Windows im Infobereich
 746 MB tatsächlich belegter Arbeitsspeicher (reserviert 2,7 bzw. 1,1 GB, siehe
 unten). Bei 16 GB ist das eingeplant.
 
+**Standardmodell und Fachbegriff-Korrektur:** Neue Installationen verwenden
+Parakeet Ultra mit der Diktatsprache „Medizinisches Deutsch“. Fast richtig
+erkannte Fachbegriffe („Apexaban“) werden danach mit einem mitgelieferten
+medizinischen Wörterbuch und den eigenen Begriffen korrigiert und unter dem Text
+angezeigt. Als Schutz vor Fehlkorrekturen wird ein Wort nur geändert, wenn auch
+die Rechtschreibprüfung von Windows es als falsch meldet. Dafür muss in Windows
+Deutsch mit Rechtschreibprüfung installiert sein; bei deutschem Windows ist das
+der Fall, sonst unter Einstellungen → Zeit und Sprache → Sprache und Region
+Deutsch hinzufügen. Fehlt sie, bleibt der Text unverändert und BlitzDic weist
+darauf hin. Messung siehe unten.
+
 **Planungsempfehlung:** Für App, Laufzeiten, beide Modelle und Downloadreserve
 zunächst mindestens 5 GB freien SSD-Speicher vorsehen. Für 0.3.10-dev.9 wurden
 1,15 GB für den Installer und 1,86 GB für die entpackte App einschließlich der
@@ -121,6 +132,41 @@ Leerlauf des vorgeladenen Sprachprozesses: Whisper 360 MB physischer Speicher
 bzw. 1.143 MB. Reservierter Speicher zählt gegen die Auslagerungsgrenze, belegt
 aber nicht zwingend RAM. Einzelmessungen auf einem PC, keine Zusicherung für
 andere Rechner.
+
+### Fachbegriffe: Erkennung und Korrektur (20.11.2026)
+
+Gleicher PC. 14 synthetische medizinische Diktatsätze (Windows-Stimme Hedda) mit
+52 Fachbegriffen, etwa „Cholezystolithiasis“, „Pollakisurie“ und „Empagliflozin“.
+Gezählt wird, ob ein Begriff richtig geschrieben im Text steht.
+
+| Variante | Begriffe richtig | Wortfehlerrate |
+|---|---:|---:|
+| Whisper, „Medizinisches Deutsch“ (Kontexthinweis) | 50 % | 24,7 % |
+| Whisper mit 150 Fachbegriffen als Hinweisliste | 63 % | 18,2 % |
+| Parakeet Ultra | 69 % | 16,2 % |
+| Whisper, „Medizinisches Deutsch“ + Korrektur | 77 % | 14,9 % |
+| **Parakeet Ultra + Korrektur (neuer Standard)** | **83 %** | **12,3 %** |
+
+Alle 22 Korrekturen der beiden Korrektur-Zeilen waren richtig. Die Nachkorrektur
+dauerte höchstens 0,1 s. Eine lange Hinweisliste für Whisper verlängert die
+Erkennung dagegen um 44–74 %. Whisper berücksichtigt davon nur die ersten rund
+40 Begriffe; Hinweisliste und Einleitung dürfen zusammen eine feste Länge nicht
+überschreiten, sonst bricht Whisper ab. Die App übergibt daher weiterhin
+höchstens 20 eigene Begriffe als Hinweis.
+
+Fehlkorrekturen wurden an 424.000 Wörtern korrekt geschriebener deutscher
+Wikipedia-Artikel gemessen (85 Artikel, überwiegend medizinische). Ohne die
+Windows-Rechtschreibprüfung als Wächter hätte die Korrektur 1.434-mal
+eingegriffen, etwa „Infektion“ → „Inspektion“. Mit Wächter und den übrigen
+Regeln waren es 16 Eingriffe: 7 echte Tippfehler der Artikel richtig korrigiert,
+6 englische Wörter eingedeutscht und 3 seltene Wörter falsch geändert
+(„Cypermethrin“ → „Permethrin“), also etwa einer auf 140.000 Wörter.
+
+Einschränkungen: synthetische Stimme statt echter Diktate, kleiner Satzumfang,
+die getesteten Begriffe stehen im Wörterbuch. Mit echten Diktaten können die
+Werte niedriger liegen. Unverändert bleiben Begriffe, die zu weit
+danebenliegen („Polakisouri“) oder mit dem Nachbarwort verschmolzen sind
+(„Unterbauchdruktulent“). Korrekturen deshalb unter dem Text prüfen.
 
 ## Grafikkarten, ARM und andere Modellgrößen
 

@@ -3,7 +3,7 @@ import { join } from 'node:path';
 
 export const defaultSettings = () => ({
   version: 1,
-  speech: { preset: 'whisper', language: 'de-medical', microphone: '' },
+  speech: { preset: 'parakeet-ultra', language: 'de-medical', microphone: '' },
   provider: { provider: 'ollama', location: 'local', baseURL: 'http://127.0.0.1:11434/v1', model: '', apiKey: '' },
   mode: 'verbatim', modeSettings: { customTerms: [], replacements: [] },
   appModes: [],
@@ -14,6 +14,7 @@ export const defaultSettings = () => ({
   muteOutputWhileRecording: false,
   shortcutBehavior: 'toggle',
   startWithWindows: true,
+  termCorrection: true,
 });
 
 // Entire settings/history payload is encrypted by the operating system adapter.

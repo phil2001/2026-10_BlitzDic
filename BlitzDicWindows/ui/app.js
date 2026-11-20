@@ -217,7 +217,9 @@ $('meeting-record').onclick = attempt(async () => {
       }
       setMeetingDraft(combined, draft.names);
       setMeetingSummary({});
-      status((entry.warning ? entry.warning + ' ' : '') + 'Meeting lokal transkribiert. ' + (meetingSourceEnded ? 'Die Audioquelle wurde beendet; der vorhandene Abschnitt wurde verarbeitet.' : 'Die Zusammenfassung kann jetzt gestartet werden.'));
+      const corrected = new Set((entry.corrections ?? []).map(change => `${change.from} → ${change.to}`)).size;
+      status((entry.warning ? entry.warning + ' ' : '') + 'Meeting lokal transkribiert. ' +
+        (corrected ? `${corrected} Fachbegriff${corrected === 1 ? '' : 'e'} automatisch angepasst, bitte im Transkript prüfen. ` : '') + (meetingSourceEnded ? 'Die Audioquelle wurde beendet; der vorhandene Abschnitt wurde verarbeitet.' : 'Die Zusammenfassung kann jetzt gestartet werden.'));
     } finally { meetingBusy = false; meetingRecordingUI(false); }
   } else {
     if ($('meeting-transcript').value.length > 500000) throw new Error('Transkript vor weiterem Aufnehmen auf höchstens 500.000 Zeichen kürzen oder aufteilen.');
@@ -265,10 +267,19 @@ async function refreshMicrophones() {
   }
   picker.value = selected;
 }
+// Unique "heard → written" pairs, so a reader can check each automatic change.
+function correctionSummary(corrections = []) {
+  const pairs = [...new Set(corrections.map(change => `${change.from} → ${change.to}`))];
+  if (!pairs.length) return '';
+  const shown = pairs.slice(0, 12).join(' · ');
+  return `Fachbegriffe angepasst, bitte prüfen: ${shown}${pairs.length > 12 ? ` und ${pairs.length - 12} weitere` : ''}`;
+}
 async function result(entry) {
   if (!entry) return;
   lastOriginal = entry.original;
   $('result').value = entry.text; status(entry.warning || 'Transkription abgeschlossen.');
+  const summary = correctionSummary(entry.corrections);
+  $('corrections').textContent = summary; $('corrections').hidden = !summary;
   await refreshHistory();
 }
 async function refreshHistory() {
@@ -382,12 +393,15 @@ $('speech-model').onchange = attempt(async () => { settings.speech.preset = $('s
 function updateLocation() {
   const whisper = settings.speech.preset === 'whisper' || (settings.speech.preset === 'custom' && (settings.speech.engine || 'whisper') === 'whisper');
   const language = {de: 'Deutsch', en: 'Englisch', 'de-medical': 'Medizinisches Deutsch'}[settings.speech.language] || 'Medizinisches Deutsch';
-  $('speech-language').disabled = !whisper;
-  $('speech-language-hint').textContent = whisper ? (settings.speech.language === 'de-medical' ?
-    'Sprache fest auf Deutsch. Medizinischer Kontexthinweis und eigene Begriffe aus Einstellungen unterstützen Whisper. Kein separat medizinisch trainiertes Modell; Fachbegriffe, Zahlen und Einheiten prüfen.' :
+  const medical = settings.speech.language === 'de-medical';
+  const dictionary = medical && settings.termCorrection !== false ? ' Fachbegriffe werden danach mit dem medizinischen Wörterbuch korrigiert und unter dem Text angezeigt.' : '';
+  // Parakeet chooses the language itself; the choice still selects the correction dictionary.
+  $('speech-language-hint').textContent = whisper ? (medical ?
+    `Sprache fest auf Deutsch. Medizinischer Kontexthinweis und eigene Begriffe aus Einstellungen unterstützen Whisper.${dictionary} Kein separat medizinisch trainiertes Modell; Fachbegriffe, Zahlen und Einheiten prüfen.` :
     `Sprache fest auf ${language}; keine automatische Sprachauswahl.`) :
-    'Parakeet bestimmt die Sprache modellintern. Feste Sprachwahl und medizinische Kontexthinweise gelten für Whisper; wähle dafür Whisper unter Modelle.';
-  $('processing-location').textContent = `Spracherkennung: ${{ whisper: 'Whisper', 'parakeet-ultra': 'Parakeet Ultra', custom: 'Eigenes Modell' }[settings.speech.preset]} · ${whisper ? language : 'Sprache modellintern'} · Lokal auf diesem Computer.`;
+    (medical ? `Parakeet erkennt die Sprache selbst.${dictionary} Kein medizinisch trainiertes Modell; Fachbegriffe, Zahlen und Einheiten prüfen.` :
+      'Parakeet erkennt die Sprache selbst. Diese Auswahl bestimmt nur, ob das medizinische Wörterbuch zur Nachkorrektur verwendet wird (bei „Medizinisches Deutsch“).');
+  $('processing-location').textContent = `Spracherkennung: ${{ whisper: 'Whisper', 'parakeet-ultra': 'Parakeet Ultra', custom: 'Eigenes Modell' }[settings.speech.preset]} · ${whisper ? language : `Sprache automatisch${medical ? ' · Medizinisches Wörterbuch' : ''}`} · Lokal auf diesem Computer.`;
 }
 $('download').onclick = attempt(async () => {
   $('download').disabled = true; status('Modell wird heruntergeladen …');
@@ -424,8 +438,9 @@ $('save-settings').onclick = attempt(async () => {
   settings.historyEnabled = $('history-enabled').checked;
   settings.recordingIndicator = $('recording-indicator-enabled').checked;
   settings.muteOutputWhileRecording = $('mute-output-enabled').checked;
+  settings.termCorrection = $('term-correction').checked;
   settings.modeSettings.customTerms = $('terms').value.split('\n').map(s => s.trim()).filter(Boolean);
-  settings.modeSettings.systemPrompt = $('instruction').value; await save(); status('Einstellungen gespeichert.');
+  settings.modeSettings.systemPrompt = $('instruction').value; await save(); updateLocation(); status('Einstellungen gespeichert.');
 });
 $('clear-history').onclick = attempt(async () => { if (confirm('Gesamten Verlauf leeren?')) { await api['history-clear'](); await refreshHistory(); } });
 api.onState(state => {
@@ -618,6 +633,7 @@ try {
   $('history-enabled').checked = settings.historyEnabled;
   $('recording-indicator-enabled').checked = settings.recordingIndicator !== false;
   $('mute-output-enabled').checked = settings.muteOutputWhileRecording === true;
+  $('term-correction').checked = settings.termCorrection !== false;
   $('terms').value = settings.modeSettings.customTerms.join('\n'); $('instruction').value = settings.modeSettings.systemPrompt || '';
   updateLocation(); previewLiveDestination(); await refreshHistory(); await refreshMeetings();
   navigator.mediaDevices?.addEventListener('devicechange', refreshMicrophones);

@@ -82,12 +82,18 @@ Visual-Studio-Installation auf dem Arbeitsplatz ist dafür nicht nötig.
 Die passenden Electron-/FFmpeg-Originalquellen und Bauhinweise werden ebenfalls
 mitgeliefert. Sie benötigen auf den Arbeitsplätzen keine Entwicklungswerkzeuge.
 
-1. Nach Installation BlitzDic öffnen und unter **Modelle** Whisper oder Parakeet wählen.
+1. Nach Installation BlitzDic öffnen. Standard ist **Parakeet Ultra**; unter **Modelle** lässt sich
+   Whisper wählen. Bereits gespeicherte Einstellungen behalten ihr Modell.
 2. Unter **Diktat** Mikrofon, Schreibmodus und **Diktatsprache** wählen, Aufnahme starten und beenden.
-   Whisper bietet festes **Deutsch**, **Englisch** und **Medizinisches Deutsch** (Standard).
-   Medizinisches Deutsch ergänzt einen Kontexthinweis und eigene Begriffe aus Einstellungen;
-   es ist kein separat medizinisch trainiertes Modell. Fachbegriffe, Zahlen und Einheiten prüfen.
-   Parakeet bestimmt die Sprache modellintern; für feste Sprachwahl Whisper verwenden.
+   Zur Wahl stehen **Medizinisches Deutsch** (Standard), **Deutsch** und **Englisch**.
+   Bei Whisper legt die Auswahl die Sprache fest, und Medizinisches Deutsch ergänzt einen
+   Kontexthinweis und eigene Begriffe. Parakeet erkennt die Sprache selbst.
+   Bei Medizinisches Deutsch korrigiert BlitzDic anschließend fast richtig erkannte Fachbegriffe
+   („Apexaban“ → „Apixaban“) mit einem mitgelieferten Wörterbuch und den eigenen Begriffen.
+   Jede Anpassung steht unter dem Text; abschaltbar unter **Einstellungen**. Geändert wird nur,
+   was auch die Windows-Rechtschreibprüfung als falsch meldet
+   ([Messung](BlitzDicWindows/SYSTEMVORAUSSETZUNGEN.md)). Es ist kein medizinisch trainiertes
+   Modell; Fachbegriffe, Zahlen und Einheiten prüfen.
    Ab 0.3.10-dev.10 merkt sich BlitzDic die Mikrofonwahl für Diktate und Meetings.
    Falls das Gerät fehlt, es erneut verbinden oder **Standardmikrofon** wählen.
 3. Für Schreibmodi außer Wortgenau unter **Verbindungen** einen LLM-Server einrichten.

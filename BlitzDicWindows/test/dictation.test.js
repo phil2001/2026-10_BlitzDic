@@ -23,6 +23,24 @@ test('medical German and user terms reach ASR, while plain English does not rece
   assert.equal(requests[1].language,'en');
   assert.equal(Object.hasOwn(requests[1],'medicalTerms'),false);
 });
+test('near-miss medical terms are corrected before rewriting and kept visible', async () => {
+  let rewritten;
+  const {flow, settings, history} = fixture({transcribe: async () => ({text: 'Weiter mit Apexaban.', segments: []}),
+    rewriteText: async text => { rewritten = text; return text; }, misspelled: async words => words.filter(word => word === 'Apexaban')});
+  const entry = await flow.process('audio.wav', 'clean');
+  assert.equal(rewritten, 'Weiter mit Apixaban.');
+  assert.equal(entry.original, 'Weiter mit Apixaban.');
+  assert.deepEqual(entry.corrections, [{from: 'Apexaban', to: 'Apixaban'}]);
+  assert.deepEqual(history[0].corrections, entry.corrections);
+  settings.termCorrection = false;
+  assert.equal((await flow.process('audio.wav')).text, 'Weiter mit Apexaban.');
+});
+test('a missing spell checker leaves the text unchanged with a note', async () => {
+  const {flow} = fixture({transcribe: async () => ({text: 'Weiter mit Apexaban.', segments: []})});
+  const entry = await flow.process('audio.wav');
+  assert.equal(entry.text, 'Weiter mit Apexaban.');
+  assert.match(entry.warning, /Windows-Rechtschreibprüfung/);
+});
 test('verbatim transcript reaches history without configured LLM', async () => {
   const { flow, history } = fixture(); const states = [];
   flow.on('state', state => states.push(state));

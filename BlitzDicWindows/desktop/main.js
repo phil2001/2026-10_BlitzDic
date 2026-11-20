@@ -49,9 +49,12 @@ else app.whenReady().then(async () => {
     .then(settings => { speechWorkers.prepare(speechModel(settings.speech, modelRoot)); }, () => {});
   // Field capture before a recording and insertion after it, without a process start.
   targets = new TargetService({ pythonPath });
-  flow = new Dictation({ store, modelRoot, pythonPath, transcribe });
+  // Windows spell checker as a guard for the term correction (only asked when a correction is proposed).
+  const misspelled = async (words, language) =>
+    (await targets.request({ action: 'spell-check', words, language }, { timeoutMs: 5000 })).misspelled;
+  flow = new Dictation({ store, modelRoot, pythonPath, transcribe, misspelled });
   meetings = new Meetings({store});
-  liveNotes = new LiveNotes({modelRoot,pythonPath,recognize:transcribe});
+  liveNotes = new LiveNotes({modelRoot,pythonPath,recognize:transcribe,misspelled});
   indicator = new RecordingIndicator(() => { if (!window.isDestroyed()) window.webContents.send('stop-recording'); });
   await indicator.setEnabled((await store.settings()).recordingIndicator !== false);
   let insertionTarget = null, recording = false, capturePending = false, captureEpoch = 0;
@@ -218,6 +221,8 @@ else app.whenReady().then(async () => {
         throw new Error('Unbekannte Kürzelbedienung.');
       if (settings.startWithWindows !== undefined && typeof settings.startWithWindows !== 'boolean')
         throw new Error('Ungültige Autostart-Einstellung.');
+      if (settings.termCorrection !== undefined && typeof settings.termCorrection !== 'boolean')
+        throw new Error('Ungültige Einstellung zur Fachbegriff-Korrektur.');
       const autostartBefore = (await store.settings()).startWithWindows !== false;
       if (settings.shortcutBehavior === 'hold') await runSpeech({action: 'validate-hold-shortcuts',
         shortcuts: Object.values(settings.shortcuts ?? {})}, {pythonPath, timeoutMs: 5000});

@@ -18,6 +18,7 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: powershell.exe -NoProfile -File scripts/test-uia-scope.ps1
+      - run: powershell.exe -NoProfile -File scripts/test-spell-service.ps1
       - uses: actions/setup-python@v7
         with:
           python-version: '3.12'

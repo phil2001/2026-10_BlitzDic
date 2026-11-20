@@ -60,7 +60,10 @@ def preload(engine, directory):
 
 
 def target_action(request):
-    """Capture the focused field or insert into it; single-use or via --target-service."""
+    """Capture the focused field, insert into it or check spelling; single-use or via --target-service."""
+    if request['action'] == 'spell-check':
+        from uia_target import misspelled
+        return misspelled(request.get('words'), request.get('language'))
     from windows_target import capture, insert, foreground_app
     if request['action'] == 'capture-target':
         executable = foreground_app()
@@ -87,7 +90,7 @@ def run(request):
     if request['action'] == 'diarize':
         from diarization import run as diarize
         return diarize(request)
-    if request['action'] in ('capture-target', 'insert-text'):
+    if request['action'] in ('capture-target', 'insert-text', 'spell-check'):
         return target_action(request)
     root = Path(request["modelDirectory"]).resolve()
     preset = PRESETS.get(request.get("preset"))
@@ -173,6 +176,10 @@ if __name__ == "__main__":
             sys.exit(0)
         if sys.argv[1:] == ['--target-service']:
             import windows_target, uia_target  # Load before the first request.
+            try:
+                uia_target.prepare_spelling()  # Term-correction guard, started ahead of use.
+            except Exception:
+                pass  # Reported on the first spell check; capture and insertion still work.
             from target_service import serve
             serve(target_action)
             sys.exit(0)

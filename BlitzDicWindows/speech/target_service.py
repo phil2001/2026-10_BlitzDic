@@ -8,7 +8,7 @@ import json
 import sys
 from contextlib import redirect_stdout
 
-ACTIONS = ('capture-target', 'insert-text')
+ACTIONS = ('capture-target', 'insert-text', 'spell-check')
 
 
 def serve(handle, incoming=None, outgoing=None):

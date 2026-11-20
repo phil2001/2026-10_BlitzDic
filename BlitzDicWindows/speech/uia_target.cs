@@ -245,6 +245,93 @@ public static class BlitzDicUia {
     }
 }
 
+// Windows Spell Checking API (Windows 8 and later), the dictionaries Windows uses
+// itself; nothing is downloaded. Guards the term correction: only words Windows
+// also reports as misspelled are replaced. Interfaces list the vtable in order.
+[ComImport, Guid("B7C82D61-FBE8-4B47-9B27-6C0D2E0DE0A3"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+interface ISpellingError { uint StartIndex { get; } }
+[ComImport, Guid("803E3BD4-2828-4410-8290-418D1D73C762"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+interface IEnumSpellingError { [PreserveSig] int Next(out ISpellingError value); }
+[ComImport, Guid("B6FD0B71-E2BC-4653-8D05-F197E412770B"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+interface ISpellChecker {
+    [return: MarshalAs(UnmanagedType.LPWStr)] string LanguageTag();
+    IEnumSpellingError Check([MarshalAs(UnmanagedType.LPWStr)] string text);
+}
+[ComImport, Guid("8E018A9D-2415-4677-BF08-794EA61F94BB"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+interface ISpellCheckerFactory {
+    System.Runtime.InteropServices.ComTypes.IEnumString SupportedLanguages();
+    [return: MarshalAs(UnmanagedType.Bool)] bool IsSupported([MarshalAs(UnmanagedType.LPWStr)] string languageTag);
+    ISpellChecker CreateSpellChecker([MarshalAs(UnmanagedType.LPWStr)] string languageTag);
+}
+[ComImport, Guid("7AB36653-1796-484B-BDFA-E74F1DB7C1DC")] class SpellCheckerFactory {}
+
+public static class BlitzDicSpelling {
+    public static string Language;
+    static readonly Dictionary<string, ISpellChecker> checkers = new Dictionary<string, ISpellChecker>();
+    static readonly Dictionary<string, string> tags = new Dictionary<string, string>();
+    static ISpellChecker Checker(string language) {
+        language = language == "en" ? "en" : "de";
+        ISpellChecker cached;
+        if (!checkers.TryGetValue(language, out cached)) { cached = Create(language); checkers[language] = cached; tags[language] = Language; }
+        Language = tags[language];
+        return cached;
+    }
+    // Austrian German first; any installed regional variant of the language otherwise.
+    static ISpellChecker Create(string language) {
+        var factory = (ISpellCheckerFactory)new SpellCheckerFactory();
+        var preferred = language == "en" ? new[] { "en-US", "en-GB" } : new[] { "de-AT", "de-DE", "de-CH" };
+        foreach (var tag in preferred) if (factory.IsSupported(tag)) { Language = tag; return factory.CreateSpellChecker(tag); }
+        var supported = factory.SupportedLanguages(); var one = new string[1];
+        while (supported.Next(1, one, IntPtr.Zero) == 0)
+            if (one[0].StartsWith((language == "en" ? "en" : "de") + "-", StringComparison.OrdinalIgnoreCase)) {
+                Language = one[0]; return factory.CreateSpellChecker(one[0]);
+            }
+        throw new InvalidOperationException("Keine Windows-Rechtschreibprüfung für diese Sprache installiert.");
+    }
+    // Misspelled only in every capitalization: a recognizer may write a noun in lower case.
+    public static List<string> Misspelled(string language, IEnumerable<object> words) {
+        var checker = Checker(language); var wrong = new List<string>();
+        foreach (var value in words) {
+            var word = value as string;
+            if (String.IsNullOrEmpty(word) || word.Length > 100) continue;
+            var variants = new[] { word, Char.ToUpperInvariant(word[0]) + word.Substring(1), Char.ToLowerInvariant(word[0]) + word.Substring(1) };
+            bool correct = false;
+            foreach (var variant in variants) {
+                ISpellingError error;
+                if (checker.Check(variant).Next(out error) != 0) { correct = true; break; }
+            }
+            if (!correct) wrong.Add(word);
+        }
+        return wrong;
+    }
+    // Persistent mode: one JSON request per line ({"language","words"}), one JSON answer per
+    // line. Saves the helper start (about half a second) for every checked dictation; the
+    // process ends when its parent closes stdin.
+    public static int Serve(System.Web.Script.Serialization.JavaScriptSerializer json) {
+        // Loads the dictionary and compiles this code before the first dictation needs it.
+        try { json.Serialize(Misspelled("de", new object[] { "Befund", "Bfeund" })); } catch {}
+        string line;
+        while ((line = Console.In.ReadLine()) != null) {
+            object result;
+            try {
+                var request = json.Deserialize<Dictionary<string, object>>(line.TrimStart((char)0xFEFF));  // Byte order mark from Windows PowerShell.
+                object words;
+                if (request == null || !request.TryGetValue("words", out words) || !(words is System.Collections.ArrayList))
+                    throw new InvalidOperationException("Wortliste fehlt.");
+                object language; request.TryGetValue("language", out language);
+                var wrong = Misspelled(language as string, ((System.Collections.ArrayList)words).ToArray());
+                result = new Dictionary<string, object> { { "misspelled", wrong }, { "language", Language } };
+            } catch (Exception error) {
+                if (Environment.GetEnvironmentVariable("BLITZDIC_UIA_TRACE") == "1") Console.Error.WriteLine(error);
+                result = new Dictionary<string, object> { { "error", "Windows-Rechtschreibprüfung nicht verfügbar." } };
+            }
+            Console.Out.WriteLine(json.Serialize(result));
+            Console.Out.Flush();
+        }
+        return 0;
+    }
+}
+
 // One JSON request on stdin, one JSON result on stdout; same requests, results and
 // exit codes as the former PowerShell bridge. C# 5: the Windows-supplied compiler.
 public static class BlitzDicUiaProgram {
@@ -252,11 +339,12 @@ public static class BlitzDicUiaProgram {
         object value; return values != null && values.TryGetValue(name, out value) ? value : null;
     }
     [STAThread] // As in Windows PowerShell: Word's COM selection is called from an STA.
-    public static int Main() {
+    public static int Main(string[] args) {
         var utf8 = new UTF8Encoding(false);
         Console.InputEncoding = utf8; Console.OutputEncoding = utf8;
         var json = new System.Web.Script.Serialization.JavaScriptSerializer();
         json.MaxJsonLength = 8 * 1024 * 1024;
+        if (args.Length == 1 && args[0] == "--spell-service") return BlitzDicSpelling.Serve(json);
         try {
             // Tolerate a byte order mark, as the PowerShell bridge's ConvertFrom-Json did.
             var request = json.Deserialize<Dictionary<string, object>>(Console.In.ReadToEnd().TrimStart('﻿'));
@@ -277,6 +365,11 @@ public static class BlitzDicUiaProgram {
             } else if (action == "insert") {
                 result = new Dictionary<string, object> {
                     { "inserted", BlitzDicUia.Insert(Value(request, "signature") as string, Value(request, "text") as string) } };
+            } else if (action == "spell") {
+                var words = Value(request, "words") as System.Collections.ArrayList;
+                if (words == null) throw new InvalidOperationException("Wortliste fehlt.");
+                var wrong = BlitzDicSpelling.Misspelled(Value(request, "language") as string, words.ToArray());
+                result = new Dictionary<string, object> { { "misspelled", wrong }, { "language", BlitzDicSpelling.Language } };
             } else throw new InvalidOperationException("Unbekannte UI-Automation-Aktion.");
             Console.Out.Write(json.Serialize(result));
             return 0;
