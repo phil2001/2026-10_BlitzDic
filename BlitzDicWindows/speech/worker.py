@@ -31,13 +31,11 @@ def load_whisper(directory):
 @lru_cache(maxsize=2)
 def load_parakeet(directory):
     import onnx_asr
-    from cpu_threads import override
-    sess_options = None
-    # ONNX Runtime already uses all physical cores; only a measurement override changes it.
-    if override():
-        import onnxruntime
-        sess_options = onnxruntime.SessionOptions()
-        sess_options.intra_op_num_threads = override()
+    import onnxruntime
+    from cpu_threads import inference_threads
+    # ONNX Runtime would use every physical core, including slow efficiency cores; see cpu_threads.py.
+    sess_options = onnxruntime.SessionOptions()
+    sess_options.intra_op_num_threads = inference_threads()
     return onnx_asr.load_model('nemo-parakeet-tdt-0.6b-v3', directory, quantization='int8',
                               sess_options=sess_options, providers=['CPUExecutionProvider'])
 

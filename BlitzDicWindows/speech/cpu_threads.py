@@ -1,10 +1,11 @@
-"""CPU thread count for speech recognition.
+"""CPU thread count for speech recognition (Whisper and Parakeet).
 
-faster-whisper uses only 4 threads unless told otherwise. Use the physical cores
-instead (hyperthreads stay free for Windows and the app), at most 8: more threads
-gain little for these model sizes and spread onto slower efficiency cores of
-hybrid CPUs. Not yet measured on the practice PCs; BLITZDIC_CPU_THREADS (1-64)
-overrides the choice for measurements.
+One thread per physical core (hyperthreads stay free for Windows and the app), at
+most 8. Measured on an Intel Core Ultra 5 125U (12 cores, 2 of them performance
+cores), preloaded model, 66 s German dictation: Whisper 21.7 s with 4 threads
+(faster-whisper's default) vs 13.7 s with 8; Parakeet 10.5 s with all 12 cores
+(ONNX Runtime's default) vs 7.7 s with 8. PCs with up to 8 cores keep using all
+of them. BLITZDIC_CPU_THREADS (1-64) overrides the choice for measurements.
 """
 import ctypes
 import os

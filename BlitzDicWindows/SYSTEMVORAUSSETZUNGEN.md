@@ -34,8 +34,9 @@ eingerichtet und in BlitzDic über seine Adresse konfiguriert.
 **Dauerhaft geladenes Modell:** Damit ein Diktat nicht auf das Laden des Modells
 wartet, hält BlitzDic das gewählte Modell ständig in einem bereiten Sprachprozess.
 Die installierte App startet dazu standardmäßig mit Windows im Infobereich
-(abschaltbar unter Einstellungen). Das belegt dauerhaft grob 1 GB Arbeitsspeicher;
-ein eigener Messwert für den Leerlauf steht noch aus. Bei 16 GB ist das eingeplant.
+(abschaltbar unter Einstellungen). Gemessen im Leerlauf: Whisper 360 MB, Parakeet
+746 MB tatsächlich belegter Arbeitsspeicher (reserviert 2,7 bzw. 1,1 GB, siehe
+unten). Bei 16 GB ist das eingeplant.
 
 **Planungsempfehlung:** Für App, Laufzeiten, beide Modelle und Downloadreserve
 zunächst mindestens 5 GB freien SSD-Speicher vorsehen. Für 0.3.10-dev.9 wurden
@@ -91,6 +92,35 @@ kann auch nicht im RAM befindlichen Speicher umfassen. Die Tabelle enthält
 Einzelmessungen des Sprachprozesses. Der Bedarf von Windows, der BlitzDic-Oberfläche,
 eines zusätzlichen LLM und von paralleler Aufnahme ist darin nicht enthalten.
 Die Messung begründet keine RAM-Mindestanforderung für andere PCs.
+
+### Messung mit vorgeladenem Modell (20.11.2026)
+
+Laptop mit Intel Core Ultra 5 125U (12 Kerne, davon 2 Performance-Kerne,
+14 logische Prozessoren), 31,5 GB RAM, Windows 11, Netzbetrieb. Entwicklungs-
+Laufzeit mit den gesperrten Paketversionen; CTranslate2 aus PyPI, nicht der im
+Installer verwendete Ruy-Build (dort war Whisper zuletzt rund ein Viertel
+langsamer). Synthetische deutsche Diktate der Windows-Stimme Hedda, 9,8 s und
+66,5 s, Profil „Medizinisches Deutsch“. Zeit von der Anfrage bis zum Text,
+Median aus drei Läufen nach einem verworfenen Aufwärmlauf.
+
+| Modell, Diktat | Vorher: Prozess startet und lädt, 4 Threads bzw. alle Kerne | Nachher: vorgeladen, höchstens 8 Threads |
+|---|---:|---:|
+| Whisper, 9,8 s | 9,9 s | 3,6 s |
+| Whisper, 66,5 s | 25,6 s | 13,7 s |
+| Parakeet, 9,8 s | 15,1 s | 1,5 s |
+| Parakeet, 66,5 s | 22,5 s | 7,7 s |
+
+Gegenprobe mit vorgeladenem Modell, 66,5 s: Whisper 21,7 s mit 4 Threads
+(bisheriger Standard) gegen 13,7 s mit 8; Parakeet 10,5 s mit allen 12 Kernen
+(bisheriger Standard) gegen 7,6 s mit 4 und 7,7 s mit 8 Threads. Daraus folgt die
+Obergrenze von 8 Threads für beide Modelle. PCs mit höchstens 8 Kernen nutzen
+weiterhin alle physischen Kerne.
+
+Leerlauf des vorgeladenen Sprachprozesses: Whisper 360 MB physischer Speicher
+(`WorkingSet64`), 2.674 MB reserviert (`PrivateMemorySize64`); Parakeet 746 MB
+bzw. 1.143 MB. Reservierter Speicher zählt gegen die Auslagerungsgrenze, belegt
+aber nicht zwingend RAM. Einzelmessungen auf einem PC, keine Zusicherung für
+andere Rechner.
 
 ## Grafikkarten, ARM und andere Modellgrößen
 
