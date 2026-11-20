@@ -65,5 +65,7 @@ try {
     if ($LASTEXITCODE -ne 0) { throw 'Installation der Spracherkennung fehlgeschlagen.' }
     & $python -c 'import faster_whisper, onnx_asr, sherpa_onnx'
     if ($LASTEXITCODE -ne 0) { throw 'Laufzeitprüfung fehlgeschlagen.' }
+    # Development helper next to uia_target.py; packaged builds compile their own.
+    & (Join-Path $PSScriptRoot 'build-uia.ps1') -Output (Join-Path $projectRoot 'speech/blitzdic-uia.exe')
     Write-Output "Spracherkennung bereit: $python"
 } finally { Pop-Location }

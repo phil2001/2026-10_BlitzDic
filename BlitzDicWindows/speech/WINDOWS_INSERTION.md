@@ -8,8 +8,20 @@ vollständiger Fingerabdruck gilt. Der Test mit 70.000 Zeichen besteht diesen Pf
 Andere Felder werden über Windows UI Automation geprüft und erhalten Unicode-
 Tastatureingaben über SendInput. Word erhält Text über seine native
 Dokumentschnittstelle. Die Zwischenablage wird dabei nicht verändert.
-Dafür wird das mit Windows 11 gelieferte Windows PowerShell/.NET verwendet;
-eine zusätzliche Installation ist nicht erforderlich.
+Dafür wird das mit Windows 11 gelieferte .NET Framework verwendet; eine
+zusätzliche Installation ist nicht erforderlich. Die UI-Automation-Anbindung
+(`uia_target.cs`) wird beim Build einmal mit dem in Windows enthaltenen
+C#-Compiler zu `blitzdic-uia.exe` übersetzt (`scripts/build-uia.ps1`). Früher
+startete jede Erfassung und jedes Einfügen Windows PowerShell und übersetzte den
+Code neu; das dauerte auf einem schnellen PC 1,4–2,2 s je Aufruf, die Exe etwa
+0,2–0,3 s. Zur Fehlersuche gibt `BLITZDIC_UIA_TRACE=1` Zwischenschritte und
+Ausnahmen auf stderr aus.
+
+Erfassen und Einfügen laufen in einem dauerhaften Hilfsprozess
+(`worker.py --target-service`, `src/target-service.js`), der beim App-Start
+bereitsteht. Vor jeder Aufnahme und jedem Einfügen entfällt damit ein
+Python-Start. Zeitüberschreitung oder Abbruch beenden den Hilfsprozess wie zuvor
+den Einzelprozess; die nächste Anfrage startet einen neuen.
 
 Vor dem Einfügen prüft die UI-Automation-Anbindung das fokussierte Element,
 Prozess, Fenster, Laufzeitkennung, Textauswahl und einen SHA-256-Fingerabdruck

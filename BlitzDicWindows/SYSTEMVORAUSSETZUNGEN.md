@@ -31,6 +31,12 @@ eingerichtet und in BlitzDic über seine Adresse konfiguriert.
 | Internet | Einmalig für den Installerdownload; danach lokale Transkription ohne Modelldownload offline | Einmalig für den Installerdownload; danach lokale Transkription ohne Modelldownload offline |
 | Audio | Mikrofon mit Windows-Zugriffserlaubnis oder Audiodatei | Mikrofon mit Windows-Zugriffserlaubnis oder Audiodatei |
 
+**Dauerhaft geladenes Modell:** Damit ein Diktat nicht auf das Laden des Modells
+wartet, hält BlitzDic das gewählte Modell ständig in einem bereiten Sprachprozess.
+Die installierte App startet dazu standardmäßig mit Windows im Infobereich
+(abschaltbar unter Einstellungen). Das belegt dauerhaft grob 1 GB Arbeitsspeicher;
+ein eigener Messwert für den Leerlauf steht noch aus. Bei 16 GB ist das eingeplant.
+
 **Planungsempfehlung:** Für App, Laufzeiten, beide Modelle und Downloadreserve
 zunächst mindestens 5 GB freien SSD-Speicher vorsehen. Für 0.3.10-dev.9 wurden
 1,15 GB für den Installer und 1,86 GB für die entpackte App einschließlich der

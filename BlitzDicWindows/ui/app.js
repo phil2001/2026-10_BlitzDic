@@ -420,6 +420,7 @@ $('discover').onclick = attempt(async () => {
 });
 $('test').onclick = attempt(async () => { status('Verbindung wird geprüft …'); await api.connection(providerConfig()); status('Verbindung funktioniert.'); });
 $('save-settings').onclick = attempt(async () => {
+  settings.startWithWindows = $('start-with-windows').checked;
   settings.historyEnabled = $('history-enabled').checked;
   settings.recordingIndicator = $('recording-indicator-enabled').checked;
   settings.muteOutputWhileRecording = $('mute-output-enabled').checked;
@@ -610,6 +611,10 @@ try {
   $('mode').value = settings.mode; $('speech-model').value = settings.speech.preset;
   $('speech-language').value = settings.speech.language;
   customVisibility();
+  $('start-with-windows').checked = settings.startWithWindows !== false;
+  if (!data.autostart?.available) $('start-with-windows-hint').textContent += ' Wirkt nur im installierten Programm.';
+  else if (data.autostart.deactivated && settings.startWithWindows !== false)
+    $('start-with-windows-hint').textContent += ' Derzeit in Windows deaktiviert (Task-Manager → Autostart). Zum Einschalten dort aktivieren oder hier aus- und wieder einschalten und jeweils speichern.';
   $('history-enabled').checked = settings.historyEnabled;
   $('recording-indicator-enabled').checked = settings.recordingIndicator !== false;
   $('mute-output-enabled').checked = settings.muteOutputWhileRecording === true;

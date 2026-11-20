@@ -36,6 +36,31 @@ Transcription sets Hugging Face offline mode and uses local model files;
 there is no remote recognition fallback. Both engines currently run on CPU.
 Downloaded presets are pinned to the tested repository commits in worker.py.
 
+### Preloaded worker
+
+`worker.py --preload <engine> <directory>` loads that model before reading its
+single request from stdin. The app (`WarmSpeech` in `src/speech.js`) keeps at
+most one such worker for the selected model, so a dictation does not wait for
+process start and model loading. It is started at app start, after a settings
+change, when a recording starts and after each transcription ends. It is never
+started while a transcription is running: no second loaded model and no
+competing CPU load. The worker stays loaded while unused (the practice PCs have
+at least 16 GB); it holds the model in memory, about 1 GB, not yet measured
+separately. Because every worker ends after its one request, this memory does
+not grow over time. `WarmSpeech` accepts an `idleMs` limit if a PC ever needs it.
+A request for another model starts a cold worker as before. Only transcription
+actions use the preloaded worker. Cancellation still ends the worker that
+handles the request. A failed preload is not fatal; the request loads again and
+reports its error.
+
+The installed app registers itself in the user's Windows autostart
+(`HKCU\...\Run`, value `BlitzDic`, argument `--autostart`). Started that way it
+opens no window and stays in the tray, so shortcuts and the loaded model are
+ready after login. Settings → „Mit Windows starten“ (default on) switches this.
+A deactivation in Task Manager or Windows Settings is respected; only switching
+the setting itself changes it. The uninstaller removes the entry, an update keeps
+it (`installer/autostart.nsh`). Development runs never register autostart.
+
 ## Verified on 2026-10-31
 
 Windows System.Speech generated this fixture locally:
@@ -52,7 +77,9 @@ npm.cmd test
 ```
 
 Both actual-model tests passed. Without the environment
-variable, those two tests are explicitly skipped. Synthetic microphone capture and bundled packaged inference have since passed. Physical microphone tests, German accuracy evaluation, GPU operation and a clean installation test remain pending.
+variable, the actual-model tests are explicitly skipped. Each preset also has a
+preloaded-worker variant that reports cold and preloaded time as a test
+diagnostic; `BLITZDIC_TEST_RUNTIME` can point it at the frozen worker. Synthetic microphone capture and bundled packaged inference have since passed. Physical microphone tests, German accuracy evaluation, GPU operation and a clean installation test remain pending.
 
 ## Installed-app hotkey checks
 

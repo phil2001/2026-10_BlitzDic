@@ -13,3 +13,6 @@ models/
 node_modules/
 .runtime/
 __pycache__/
+
+# Kompiliertes UIA-Hilfsprogramm (scripts/build-uia.ps1)
+BlitzDicWindows/speech/blitzdic-uia.exe

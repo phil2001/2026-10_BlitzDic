@@ -5,7 +5,7 @@ import { access } from 'node:fs/promises';
 import { PrivateStore } from '../src/store.js';
 import { windowsCrypto } from '../src/windows-storage.js';
 import { Dictation } from '../src/dictation.js';
-import { runSpeech, speechPresets } from '../src/speech.js';
+import { runSpeech, speechPresets, speechModel, WarmSpeech } from '../src/speech.js';
 import { providers, listModels, testConnection, validateConfig } from '../src/providers.js';
 import { modeForContext, normalizeWebsiteModes } from '../src/website-modes.js';
 import { Meetings } from '../src/meetings.js';
@@ -16,6 +16,8 @@ import { EscapeControl } from '../src/escape-control.js';
 import { OutputMute } from '../src/output-mute.js';
 import { LiveNotes } from '../src/live-notes.js';
 import { checkRelease, releasesURL, supportInfo } from '../src/releases.js';
+import { autostartArgument, loginItemDeactivated, syncLoginItem } from '../src/login-item.js';
+import { TargetService } from '../src/target-service.js';
 import { release as windowsRelease } from 'node:os';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -24,18 +26,32 @@ let holdShortcuts;
 let escapeControl;
 let outputMute;
 let liveNotes;
+let speechWorkers;
+let targets;
 const uiURL = pathToFileURL(join(root, 'ui/index.html')).href;
+// Started by Windows at login: stay in the tray; tray, shortcuts and model are ready.
+const startHidden = process.argv.includes(autostartArgument);
+const autostart = wanted => syncLoginItem(app, wanted !== false, { path: process.execPath });
 app.setName('BlitzDic');
 if (!app.requestSingleInstanceLock()) app.quit();
 else app.whenReady().then(async () => {
   store = new PrivateStore(join(app.getPath('userData'), 'private'), await windowsCrypto());
+  // Only the installed app registers itself; a development Electron would not start BlitzDic.
+  if (app.isPackaged) { try { autostart((await store.settings()).startWithWindows); } catch {} }
   const pythonPath = app.isPackaged ? join(process.resourcesPath, 'speech-runtime/blitzdic-speech.exe') : join(root, '.runtime/venv/Scripts/python.exe');
   const modelRoot = app.isPackaged ? join(process.resourcesPath, 'models') : join(root, 'models');
   const speakerModelsAvailable = () => Promise.all(['model.int8.onnx', 'nemo_en_titanet_small.onnx']
     .map(file => access(join(modelRoot, 'diarization', file)))).then(() => true, () => false);
-  flow = new Dictation({ store, modelRoot, pythonPath });
+  // Transcriptions use a worker that has already loaded the selected model.
+  speechWorkers = new WarmSpeech({ pythonPath });
+  const transcribe = (request, options) => speechWorkers.run(request, options);
+  const prepareSpeech = () => store.settings()
+    .then(settings => { speechWorkers.prepare(speechModel(settings.speech, modelRoot)); }, () => {});
+  // Field capture before a recording and insertion after it, without a process start.
+  targets = new TargetService({ pythonPath });
+  flow = new Dictation({ store, modelRoot, pythonPath, transcribe });
   meetings = new Meetings({store});
-  liveNotes = new LiveNotes({modelRoot,pythonPath});
+  liveNotes = new LiveNotes({modelRoot,pythonPath,recognize:transcribe});
   indicator = new RecordingIndicator(() => { if (!window.isDestroyed()) window.webContents.send('stop-recording'); });
   await indicator.setEnabled((await store.settings()).recordingIndicator !== false);
   let insertionTarget = null, recording = false, capturePending = false, captureEpoch = 0;
@@ -105,7 +121,7 @@ else app.whenReady().then(async () => {
         if (epoch !== captureEpoch) return null;
         const settings = await store.settings();
         const website = mode === 'verbatim' && settings.websiteModes?.length > 0;
-        const {target: captured, reason, executable, websiteHost: host} = await runSpeech({ action: 'capture-target', website }, { pythonPath, timeoutMs: 5000 });
+        const {target: captured, reason, executable, websiteHost: host} = await targets.request({ action: 'capture-target', website }, { timeoutMs: 5000 });
         if (epoch === captureEpoch) {
           insertionTarget = captured;
           let canRewrite = false;
@@ -127,7 +143,7 @@ else app.whenReady().then(async () => {
     if (!recording) mode = await captureOriginalTarget(mode);
     if (mode !== null) window.webContents.send('shortcut', mode);
   }
-  window = new BrowserWindow({ width: 1200, height: 820, minWidth: 760, minHeight: 620, title: 'BlitzDic',
+  window = new BrowserWindow({ width: 1200, height: 820, minWidth: 760, minHeight: 620, title: 'BlitzDic', show: !startHidden,
     webPreferences: { preload: join(root, 'desktop/preload.cjs'), contextIsolation: true, nodeIntegration: false, sandbox: true } });
   window.setMenuBarVisibility(false);
   // A simple original waveform mark, BGRA bitmap, independent of upstream branding.
@@ -170,8 +186,12 @@ else app.whenReady().then(async () => {
     if (event.sender !== window.webContents || event.senderFrame !== window.webContents.mainFrame || event.senderFrame.url !== uiURL) throw new Error('Unzulässiger Aufruf.');
     return fn(...args);
   });
-  handle('load', async () => ({ version: app.getVersion(), settings: await store.settings(), history: await store.history(), providers, speechPresets, modelsBundled: app.isPackaged,
-    speakerModelsAvailable: await speakerModelsAvailable() }));
+  handle('load', async () => {
+    let autostartDeactivated = false;
+    try { autostartDeactivated = app.isPackaged && loginItemDeactivated(app, process.execPath); } catch {}
+    return { version: app.getVersion(), settings: await store.settings(), history: await store.history(), providers, speechPresets, modelsBundled: app.isPackaged,
+      speakerModelsAvailable: await speakerModelsAvailable(), autostart: { available: app.isPackaged, deactivated: autostartDeactivated } };
+  });
   function registerShortcuts(settings) {
     shortcutBehavior = settings.shortcutBehavior === 'hold' ? 'hold' : 'toggle';
     globalShortcut.unregisterAll();
@@ -196,15 +216,26 @@ else app.whenReady().then(async () => {
         throw new Error('Escape ist zum Beenden einer Aufnahme und Abbrechen der Verarbeitung reserviert.');
       if (settings.shortcutBehavior !== undefined && !['hold', 'toggle'].includes(settings.shortcutBehavior))
         throw new Error('Unbekannte Kürzelbedienung.');
+      if (settings.startWithWindows !== undefined && typeof settings.startWithWindows !== 'boolean')
+        throw new Error('Ungültige Autostart-Einstellung.');
+      const autostartBefore = (await store.settings()).startWithWindows !== false;
       if (settings.shortcutBehavior === 'hold') await runSpeech({action: 'validate-hold-shortcuts',
         shortcuts: Object.values(settings.shortcuts ?? {})}, {pythonPath, timeoutMs: 5000});
       await store.saveSettings(settings);
+      prepareSpeech();
+      let autostartWarning = null;
+      // Only a changed choice touches the Run key, and may re-enable a Task Manager deactivation.
+      if (app.isPackaged && (settings.startWithWindows !== false) !== autostartBefore) {
+        try { syncLoginItem(app, settings.startWithWindows !== false, { path: process.execPath, explicit: true }); }
+        catch { autostartWarning = 'der Windows-Autostart konnte nicht geändert werden.'; }
+      }
       muteEnabled = settings.muteOutputWhileRecording === true;
       const muteWarning = await syncOutputMute();
       await indicator.setEnabled(settings.recordingIndicator !== false);
       const failed = registerShortcuts(settings);
       if (failed.length) throw new Error(`Einstellungen gespeichert, aber Tastenkürzel nicht verfügbar: ${failed.join(', ')}`);
       if (muteWarning) throw new Error(`Einstellungen gespeichert, aber ${muteWarning}`);
+      if (autostartWarning) throw new Error(`Einstellungen gespeichert, aber ${autostartWarning}`);
       return settings;
     });
     settingsQueue = operation.catch(() => {});
@@ -240,7 +271,7 @@ else app.whenReady().then(async () => {
       if (target && entry.text.trim()) {
         try {
           const text = fitInsertion(entry.text, target.before ?? null, target.after ?? null);
-          const insertion = await runSpeech({ action: 'insert-text', target, text }, { pythonPath, signal, timeoutMs: 5000 });
+          const insertion = await targets.request({ action: 'insert-text', target, text }, { signal, timeoutMs: 5000 });
           if (!insertion.inserted) entry.warning = [entry.warning, insertion.reason].filter(Boolean).join('\n');
         } catch (error) { entry.warning = [entry.warning, `Automatisches Einfügen fehlgeschlagen: ${error.message}`].filter(Boolean).join('\n'); }
       }
@@ -297,6 +328,7 @@ else app.whenReady().then(async () => {
     if (!['dictation', 'meeting'].includes(kind)) throw new Error('Ungültiger Aufnahmetyp.');
     const epoch = captureEpoch;
     recordingStarting = true; recordingKind = kind; mutePreparing = false;
+    prepareSpeech(); // After an idle timeout the model loads while the user speaks.
     await syncEscape();
     if (epoch !== captureEpoch) throw new Error('Abgebrochen.');
   });
@@ -342,10 +374,15 @@ else app.whenReady().then(async () => {
   });
   flow.on('state', state => { if (!window.isDestroyed()) window.webContents.send('state', state); });
   await window.loadURL(uiURL);
+  prepareSpeech();
+  targets.start();
   const failed = registerShortcuts(await store.settings());
   if (failed.length) window.webContents.send('shortcut-error', failed.join(', '));
 }).catch(error => { dialog.showErrorBox('BlitzDic konnte nicht starten', error.message); app.quit(); });
-app.on('second-instance', () => { window?.show(); window?.focus(); });
+app.on('second-instance', (_event, argv) => {
+  if (argv.includes(autostartArgument)) return; // A login start must not pop up a running app.
+  window?.show(); window?.focus();
+});
 app.on('window-all-closed', () => { flow?.cancel(); app.quit(); });
-app.on('before-quit', () => { quitting = true; liveNotes?.cancel();outputMute?.destroy(); escapeControl?.destroy(); holdShortcuts?.destroy(); flow?.cancel(); meetings?.cancel(); indicator?.destroy(); });
+app.on('before-quit', () => { quitting = true; speechWorkers?.destroy(); targets?.destroy(); liveNotes?.cancel();outputMute?.destroy(); escapeControl?.destroy(); holdShortcuts?.destroy(); flow?.cancel(); meetings?.cancel(); indicator?.destroy(); });
 app.on('will-quit', () => { globalShortcut.unregisterAll(); tray?.destroy(); });

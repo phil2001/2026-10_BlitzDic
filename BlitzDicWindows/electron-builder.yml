@@ -41,3 +41,4 @@ nsis:
   perMachine: false
   allowToChangeInstallationDirectory: true
   deleteAppDataOnUninstall: false
+  include: installer/autostart.nsh

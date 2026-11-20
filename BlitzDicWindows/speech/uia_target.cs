@@ -1,8 +1,6 @@
-﻿$ErrorActionPreference = 'Stop'
-[Console]::InputEncoding = [Text.UTF8Encoding]::new($false)
-[Console]::OutputEncoding = [Text.UTF8Encoding]::new($false)
-Add-Type -AssemblyName UIAutomationClient, UIAutomationTypes
-Add-Type -ReferencedAssemblies UIAutomationClient, UIAutomationTypes -TypeDefinition @'
+﻿// Windows UI Automation bridge for capturing the focused text field and inserting
+// text. Compiled once at build time (scripts/build-uia.ps1) with the .NET Framework
+// compiler that ships with Windows; replaces compiling it in PowerShell per call.
 using System;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
@@ -246,19 +244,46 @@ public static class BlitzDicUia {
         return true;
     }
 }
-'@
-try {
-    $request = [Console]::In.ReadToEnd() | ConvertFrom-Json
-    if ($request.action -eq 'capture') {
-        $signature = if ($null -ne $request.scope) {
-            [BlitzDicUia]::CaptureScoped([long]$request.scope.window, [uint32]$request.scope.process)
-        } else { [BlitzDicUia]::Capture() }
-        $websiteHost = if ($request.website -eq $true -and $signature) { [BlitzDicUia]::WebsiteHost() } else { $null }
-        @{ signature = $signature; reason = [BlitzDicUia]::Reason; before = [BlitzDicUia]::Before; after = [BlitzDicUia]::After; websiteHost = $websiteHost } | ConvertTo-Json -Compress
-    } elseif ($request.action -eq 'insert') {
-        @{ inserted = [BlitzDicUia]::Insert($request.signature, $request.text) } | ConvertTo-Json -Compress
-    } else { throw 'Unbekannte UI-Automation-Aktion.' }
-} catch {
-    @{ error = 'Windows-UI-Automation konnte das Eingabefeld nicht zuverlässig bedienen.' } | ConvertTo-Json -Compress
-    exit 1
+
+// One JSON request on stdin, one JSON result on stdout; same requests, results and
+// exit codes as the former PowerShell bridge. C# 5: the Windows-supplied compiler.
+public static class BlitzDicUiaProgram {
+    static object Value(Dictionary<string, object> values, string name) {
+        object value; return values != null && values.TryGetValue(name, out value) ? value : null;
+    }
+    [STAThread] // As in Windows PowerShell: Word's COM selection is called from an STA.
+    public static int Main() {
+        var utf8 = new UTF8Encoding(false);
+        Console.InputEncoding = utf8; Console.OutputEncoding = utf8;
+        var json = new System.Web.Script.Serialization.JavaScriptSerializer();
+        json.MaxJsonLength = 8 * 1024 * 1024;
+        try {
+            // Tolerate a byte order mark, as the PowerShell bridge's ConvertFrom-Json did.
+            var request = json.Deserialize<Dictionary<string, object>>(Console.In.ReadToEnd().TrimStart('﻿'));
+            var action = Value(request, "action") as string;
+            Dictionary<string, object> result;
+            if (action == "capture") {
+                object scopeValue = Value(request, "scope");
+                string signature;
+                if (scopeValue != null) {
+                    var scope = (Dictionary<string, object>)scopeValue;
+                    signature = BlitzDicUia.CaptureScoped(Convert.ToInt64(scope["window"]), Convert.ToUInt32(scope["process"]));
+                } else signature = BlitzDicUia.Capture();
+                object website = Value(request, "website");
+                string host = website is bool && (bool)website && !String.IsNullOrEmpty(signature) ? BlitzDicUia.WebsiteHost() : null;
+                result = new Dictionary<string, object> {
+                    { "signature", signature }, { "reason", BlitzDicUia.Reason },
+                    { "before", BlitzDicUia.Before }, { "after", BlitzDicUia.After }, { "websiteHost", host } };
+            } else if (action == "insert") {
+                result = new Dictionary<string, object> {
+                    { "inserted", BlitzDicUia.Insert(Value(request, "signature") as string, Value(request, "text") as string) } };
+            } else throw new InvalidOperationException("Unbekannte UI-Automation-Aktion.");
+            Console.Out.Write(json.Serialize(result));
+            return 0;
+        } catch (Exception error) {
+            if (Environment.GetEnvironmentVariable("BLITZDIC_UIA_TRACE") == "1") Console.Error.WriteLine(error);
+            Console.Out.Write("{\"error\":\"Windows-UI-Automation konnte das Eingabefeld nicht zuverlässig bedienen.\"}");
+            return 1;
+        }
+    }
 }

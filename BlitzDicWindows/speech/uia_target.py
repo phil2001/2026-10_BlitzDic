@@ -1,4 +1,9 @@
-"""Windows UI Automation bridge; system PowerShell/.NET, no optional installation."""
+"""Windows UI Automation bridge: blitzdic-uia.exe, compiled from uia_target.cs.
+
+The helper is built once (scripts/build-uia.ps1) with the .NET Framework compiler
+included in Windows. Starting PowerShell and compiling C# for every capture and
+insertion took over a second each, even on a fast PC.
+"""
 import json
 import os
 from pathlib import Path
@@ -6,11 +11,16 @@ import subprocess
 import sys
 
 
+def helper():
+    executable = Path(__file__).with_name('blitzdic-uia.exe')
+    if not executable.is_file():
+        raise RuntimeError('UIA-Hilfsprogramm fehlt. Bitte scripts/build-uia.ps1 ausführen.')
+    return executable
+
+
 def request(action, **args):
-    executable = Path(os.environ['SystemRoot']) / 'System32/WindowsPowerShell/v1.0/powershell.exe'
     try:
-        result = subprocess.run([str(executable), '-NoLogo', '-NoProfile', '-NonInteractive',
-            '-ExecutionPolicy', 'Bypass', '-File', str(Path(__file__).with_suffix('.ps1'))],
+        result = subprocess.run([str(helper())],
             input=json.dumps({'action': action, **args}), capture_output=True, text=True,
             encoding='utf-8', timeout=4, creationflags=subprocess.CREATE_NO_WINDOW)
     except subprocess.TimeoutExpired as error:

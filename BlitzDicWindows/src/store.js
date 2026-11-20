@@ -13,6 +13,7 @@ export const defaultSettings = () => ({
   recordingIndicator: true,
   muteOutputWhileRecording: false,
   shortcutBehavior: 'toggle',
+  startWithWindows: true,
 });
 
 // Entire settings/history payload is encrypted by the operating system adapter.

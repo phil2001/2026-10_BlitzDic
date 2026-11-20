@@ -22,6 +22,9 @@ try {
         if (Test-Path -LiteralPath $full) { throw "Ausgabe existiert bereits: $full. Bitte einen neuen Build-Ordner wählen." }
     }
     New-Item -ItemType Directory -Path $WorkDirectory | Out-Null
-    & $python -m PyInstaller --name blitzdic-speech --onedir --distpath $OutputDirectory --workpath (Join-Path $WorkDirectory 'work') --specpath $WorkDirectory --add-data ((Join-Path $projectRoot 'speech/uia_target.ps1') + ';.') --collect-all sherpa_onnx --collect-all onnx_asr --collect-all faster_whisper --additional-hooks-dir speech/build-hooks --collect-all onnxruntime --collect-all tokenizers --collect-all av --copy-metadata huggingface-hub speech/worker.py
+    # Field capture/insertion helper, compiled from speech/uia_target.cs for this build.
+    $uiaHelper = [IO.Path]::GetFullPath((Join-Path $projectRoot (Join-Path $WorkDirectory 'uia/blitzdic-uia.exe')))
+    & (Join-Path $PSScriptRoot 'build-uia.ps1') -Output $uiaHelper
+    & $python -m PyInstaller --name blitzdic-speech --onedir --distpath $OutputDirectory --workpath (Join-Path $WorkDirectory 'work') --specpath $WorkDirectory --add-data ($uiaHelper + ';.') --collect-all sherpa_onnx --collect-all onnx_asr --collect-all faster_whisper --additional-hooks-dir speech/build-hooks --collect-all onnxruntime --collect-all tokenizers --collect-all av --copy-metadata huggingface-hub speech/worker.py
     if ($LASTEXITCODE -ne 0) { throw 'Sprach-Laufzeit konnte nicht gebaut werden.' }
 } finally { $env:PATH = $originalBuildPath; Pop-Location }

@@ -2,6 +2,13 @@
 
 Downloads are explicit. Transcription always uses already installed local files.
 The desktop process owns cancellation by terminating this worker.
+
+`--target-service` stays running and answers capture/insert requests line by
+line (target_service.py), so no worker starts before a recording or insertion.
+
+`--preload <engine> <directory>` loads that model before stdin is read, so a
+worker started ahead of time answers the next request without loading delay.
+The request still names its model; a different one is loaded as usual.
 """
 import json
 import os
@@ -32,6 +39,31 @@ PRESETS = {
 }
 
 
+def preload(engine, directory):
+    """Warm the cache key that run() uses for the same request directory."""
+    os.environ["HF_HUB_OFFLINE"] = "1"
+    root = str(Path(directory).resolve())
+    if engine == 'whisper':
+        load_whisper(root)
+    elif engine == 'parakeet':
+        load_parakeet(root)
+    else:
+        raise ValueError("Unbekannte Spracherkennungs-Engine.")
+
+
+def target_action(request):
+    """Capture the focused field or insert into it; single-use or via --target-service."""
+    from windows_target import capture, insert, foreground_app
+    if request['action'] == 'capture-target':
+        executable = foreground_app()
+        target = capture(website=request.get('website') is True, scope=request.get('scope'))
+        same_app = foreground_app() == executable
+        return {'target': target, 'reason': capture.reason if not target else '',
+                'executable': executable if same_app else '',
+                'websiteHost': capture.website_host if same_app else None}
+    return insert(request.get('target'), request.get('text'))
+
+
 def run(request):
     from language_options import prepare_language
     request = prepare_language(request)
@@ -48,15 +80,7 @@ def run(request):
         from diarization import run as diarize
         return diarize(request)
     if request['action'] in ('capture-target', 'insert-text'):
-        from windows_target import capture, insert, foreground_app
-        if request['action'] == 'capture-target':
-            executable = foreground_app()
-            target = capture(website=request.get('website') is True, scope=request.get('scope'))
-            same_app = foreground_app() == executable
-            return {'target': target, 'reason': capture.reason if not target else '',
-                    'executable': executable if same_app else '',
-                    'websiteHost': capture.website_host if same_app else None}
-        return insert(request.get('target'), request.get('text'))
+        return target_action(request)
     root = Path(request["modelDirectory"]).resolve()
     preset = PRESETS.get(request.get("preset"))
     engine = preset["engine"] if preset else request.get("engine")
@@ -139,6 +163,11 @@ if __name__ == "__main__":
             from output_mute import serve
             serve()
             sys.exit(0)
+        if sys.argv[1:] == ['--target-service']:
+            import windows_target, uia_target  # Load before the first request.
+            from target_service import serve
+            serve(target_action)
+            sys.exit(0)
         if sys.argv[1:] == ['--output-mute-status']:
             from output_mute import Endpoint
             endpoint = Endpoint()
@@ -147,11 +176,18 @@ if __name__ == "__main__":
             finally:
                 endpoint.close()
             sys.exit(0)
+        # Libraries may log to stdout; reserve stdout for the IPC response.
+        from contextlib import redirect_stdout
+        if len(sys.argv) == 4 and sys.argv[1] == '--preload':
+            try:
+                with redirect_stdout(sys.stderr):
+                    preload(sys.argv[2], sys.argv[3])
+            except Exception as error:
+                # Not fatal: the request below loads again and reports its own error.
+                print(f'Vorladen fehlgeschlagen: {error}', file=sys.stderr)
         # PyInstaller can ignore PYTHONIOENCODING and inherit a Windows code
         # page. Electron always sends UTF-8 JSON, including paths and dictation.
         request = json.loads(sys.stdin.buffer.read().decode('utf-8'))
-        # Libraries may log to stdout; reserve stdout for the IPC response.
-        from contextlib import redirect_stdout
         with redirect_stdout(sys.stderr):
             result = run(request)
         print(json.dumps(result, ensure_ascii=True))

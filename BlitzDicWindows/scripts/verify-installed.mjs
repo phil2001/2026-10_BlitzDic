@@ -12,7 +12,7 @@ const resources = resolve(dirname(executablePath), 'resources');
 const licenseRoot = resolve(resources, 'licenses/dependencies');
 for (const relative of ['models/whisper/model.bin', 'models/parakeet-ultra/encoder-model.int8.onnx',
   'models/parakeet-ultra/decoder_joint-model.int8.onnx', 'speech-runtime/blitzdic-speech.exe',
-  'speech-runtime/_internal/uia_target.ps1', 'licenses/dependencies/inventory.json'])
+  'speech-runtime/_internal/blitzdic-uia.exe', 'licenses/dependencies/inventory.json'])
   await access(resolve(resources, relative));
 const inventory = JSON.parse(await readFile(resolve(resources, 'licenses/dependencies/inventory.json'), 'utf8'));
 assert.deepEqual(inventory.missingPackageNotices, []);
