@@ -34,6 +34,12 @@ file formats continue to be decoded by the shared PyAV path.
 
 Transcription sets Hugging Face offline mode and uses local model files;
 there is no remote recognition fallback. Both engines currently run on CPU.
+Whisper uses one thread per physical core, at most 8 (`cpu_threads.py`);
+faster-whisper alone would use 4. Parakeet keeps ONNX Runtime's default, which
+already uses all physical cores. `BLITZDIC_CPU_THREADS` (1–64) overrides both for
+measurements. The best value on hybrid CPUs (performance plus efficiency cores)
+has not been measured yet. The worker keeps normal process priority: a lower one
+could make Windows prefer efficiency cores and slow recognition.
 Downloaded presets are pinned to the tested repository commits in worker.py.
 
 ### Preloaded worker

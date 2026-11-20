@@ -25,6 +25,7 @@ jobs:
       - run: python scripts/test-wav-encode.py
       - run: python scripts/test-language-options.py
       - run: python scripts/test-preload.py
+      - run: python scripts/test-cpu-threads.py
       - run: python scripts/test-hold-keys.py
       - run: python scripts/test-escape-control.py
       - run: python scripts/test-target-scope.py

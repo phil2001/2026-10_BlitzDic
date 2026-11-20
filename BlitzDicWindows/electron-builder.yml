@@ -30,6 +30,19 @@ extraResources:
     to: licenses/Speech-model-provenance.json
   - from: licenses/speech-models
     to: licenses/speech-models
+# Electron fuses, flipped in the packaged BlitzDic.exe (development runs unaffected).
+electronFuses:
+  # The installed exe cannot be misused as a general Node.js interpreter.
+  runAsNode: false
+  # Only the packaged app.asar is loaded, checked against its embedded hash.
+  onlyLoadAppFromAsar: true
+  enableEmbeddedAsarIntegrityValidation: true
+  enableCookieEncryption: true
+  # Still enabled for the packaged tests: verify-installed.mjs drives the app with
+  # Playwright (needs --inspect) and its TLS fixture trusts a test CA through
+  # NODE_EXTRA_CA_CERTS. Disable both once signed releases get another test path.
+  enableNodeOptionsEnvironmentVariable: true
+  enableNodeCliInspectArguments: true
 win:
   target:
     - target: nsis

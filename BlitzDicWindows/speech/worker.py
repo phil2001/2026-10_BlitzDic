@@ -22,14 +22,24 @@ from functools import lru_cache
 @lru_cache(maxsize=2)
 def load_whisper(directory):
     from faster_whisper import WhisperModel
-    return WhisperModel(directory, device='cpu', compute_type='int8', local_files_only=True)
+    from cpu_threads import inference_threads
+    # faster-whisper would use 4 threads; see cpu_threads.py.
+    return WhisperModel(directory, device='cpu', compute_type='int8', local_files_only=True,
+                        cpu_threads=inference_threads())
 
 
 @lru_cache(maxsize=2)
 def load_parakeet(directory):
     import onnx_asr
-    return onnx_asr.load_model('nemo-parakeet-tdt-0.6b-v3', directory,
-                              quantization='int8', providers=['CPUExecutionProvider'])
+    from cpu_threads import override
+    sess_options = None
+    # ONNX Runtime already uses all physical cores; only a measurement override changes it.
+    if override():
+        import onnxruntime
+        sess_options = onnxruntime.SessionOptions()
+        sess_options.intra_op_num_threads = override()
+    return onnx_asr.load_model('nemo-parakeet-tdt-0.6b-v3', directory, quantization='int8',
+                              sess_options=sess_options, providers=['CPUExecutionProvider'])
 
 PRESETS = {
     "whisper": {"repo": "Systran/faster-whisper-small", "engine": "whisper",
