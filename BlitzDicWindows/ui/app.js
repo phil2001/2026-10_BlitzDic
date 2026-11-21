@@ -590,7 +590,7 @@ try {
         available: `Version ${result.version} ist verfügbar. Du kannst sie unter Veröffentlichungen herunterladen.`,
         current: `Keine neuere stabile Windows-Version gefunden. Letzte Veröffentlichung: ${result.version}.`,
       }[result.state] || 'Veröffentlichung konnte nicht geprüft werden.';
-    } catch (error) {updateStatus.textContent = error.message;}
+    } catch (error) {updateStatus.textContent = errorText(error);}
     finally {updateCheck.disabled = false;}
   };
   releasesOpen.onclick = attempt(() => api['releases-open']());
