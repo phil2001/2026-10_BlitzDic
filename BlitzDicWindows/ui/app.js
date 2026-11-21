@@ -1,6 +1,7 @@
 import { Recorder } from '../src/recorder.js';
 import { parseAppModes } from '../src/app-modes.js';
 import { parseWebsiteModes } from '../src/website-modes.js';
+import { accelerator, checkRecordedShortcut, formatParts, formatShortcut, keyFromEvent, modifiersFromEvent, parseShortcut, planShortcuts } from '../src/shortcuts.js';
 import { meetingSpeakers, namedMeetingTranscript, normalizeSpeakerNames, speakerSectionHeading } from '../src/meeting-speakers.js';
 const $ = id => document.getElementById(id);
 const api = window.blitz;
@@ -17,10 +18,11 @@ const cancelStartup = () => {
   dictationStartup = null; meetingStartup = null;
 };
 const status = text => { $('status').textContent = text; };
+const errorText = error => error.message.replace(/^Error invoking remote method '[^']+': (?:Error|AbortError): /, '');
 const attempt = fn => async () => {
   try { await fn(); }
   catch (error) {
-    const message = error.message.replace(/^Error invoking remote method '[^']+': (?:Error|AbortError): /, '');
+    const message = errorText(error);
     status(error.name === 'AbortError' || /\bAbortError:/.test(error.message) || message === 'Spracherkennung abgebrochen.' ? 'Abgebrochen.' : message);
   }
 };
@@ -250,6 +252,81 @@ function recordingUI(active, processing = false) {
   $('level').hidden = !active; $('cancel').hidden = !active && !busy;
 }
 async function save() { await api.settings(settings); }
+// Settings field that records the pressed keys instead of typed text, so the shortcut is exactly
+// what Windows reports on this PC. Keys that Windows hands to BlitzDic itself as a shortcut (its
+// own ones, or Alt + Leertaste) are forwarded by the main process while the field is recording.
+let recordingShortcut = null;
+api.onShortcutCaptured(key => recordingShortcut?.forwarded(key));
+function shortcutField(mode, title) {
+  const label = document.createElement('label'); label.textContent = title;
+  const input = document.createElement('input');
+  input.id = `shortcut-${mode}`; input.className = 'shortcut-field'; input.readOnly = true;
+  input.title = 'Ins Feld klicken und die gewünschten Tasten drücken.';
+  const show = () => { input.value = formatShortcut(settings.shortcuts[mode]); };
+  let pressed = null;
+  const reset = () => { pressed = {modifiers: new Set(), keys: []}; input.value = 'Tasten drücken …'; };
+  const add = (modifiers, keys) => {
+    for (const modifier of modifiers) pressed.modifiers.add(modifier);
+    for (const key of keys) if (!pressed.keys.includes(key) && pressed.keys.length < 2) pressed.keys.push(key);
+    input.value = `${formatParts([...pressed.modifiers], pressed.keys)}${pressed.keys.length < 2 ? ' + …' : ''}`;
+  };
+  const field = {forwarded(key) { if (!pressed) return; const {modifiers, keys} = parseShortcut(key); add(modifiers, keys); }};
+  input.addEventListener('focus', async () => {
+    reset(); recordingShortcut = field;
+    try {
+      const {unavailable} = await api['shortcut-capture'](true);
+      if (unavailable.length && recordingShortcut === field)
+        status(`${unavailable.map(formatShortcut).join(', ')} ist gerade von einem anderen Programm belegt und kann nicht aufgenommen werden.`);
+    } catch {}
+  });
+  input.addEventListener('blur', () => {
+    pressed = null; show();
+    if (recordingShortcut === field) { recordingShortcut = null; api['shortcut-capture'](false).catch(() => {}); }
+  });
+  input.addEventListener('keydown', event => {
+    if (!pressed) return;
+    const plain = !event.ctrlKey && !event.altKey && !event.metaKey;
+    if (event.key === 'Tab' && plain) return; // Keyboard navigation keeps working.
+    event.preventDefault(); event.stopPropagation();
+    if (event.repeat) return;
+    if (event.key === 'Escape') { input.blur(); return; }
+    if (plain && !event.shiftKey && ['Backspace', 'Delete'].includes(event.key) && !pressed.keys.length) { commit(''); return; }
+    try { const key = keyFromEvent(event); add(modifiersFromEvent(event), key ? [key] : []); }
+    catch (error) { status(error.message); }
+  });
+  input.addEventListener('keyup', event => {
+    if (!pressed) return;
+    event.preventDefault();
+    if (event.ctrlKey || event.altKey || event.shiftKey || event.metaKey) return; // Keys are still held.
+    if (pressed.keys.length) { commit(accelerator([...pressed.modifiers], ...pressed.keys)); return; }
+    if (pressed.modifiers.size) { status('Zusätzlich zu Strg, Alt oder Win eine Taste drücken.'); reset(); }
+  });
+  async function commit(value) {
+    try {
+      if (value) {
+        const parsed = parseShortcut(value);
+        checkRecordedShortcut(parsed);
+        value = accelerator(parsed.modifiers, ...parsed.keys);
+        const before = planShortcuts(settings.shortcuts).problems;
+        const added = planShortcuts({...settings.shortcuts, [mode]: value}).problems.filter(problem => !before.includes(problem));
+        if (added.length) throw new Error(added[0]);
+      }
+    } catch (error) { status(error.message); reset(); return; }
+    pressed = null;
+    settings.shortcuts = {...settings.shortcuts, [mode]: value};
+    try {
+      await save();
+      status(value ? `Tastenkürzel gespeichert: ${formatShortcut(value)}` : `Kein Tastenkürzel mehr für ${title}.`);
+    } catch (error) {
+      // Saved but not available (e.g. taken by another program), or rejected: show what is stored.
+      try { settings.shortcuts = (await api.load()).settings.shortcuts; } catch {}
+      status(errorText(error));
+    }
+    input.blur(); show();
+  }
+  show(); label.append(input);
+  return label;
+}
 async function refreshMicrophones() {
   let devices;
   try { devices = await navigator.mediaDevices.enumerateDevices(); }
@@ -450,8 +527,16 @@ api.onState(state => {
 });
 api.onShortcut(mode => {
   if (busy || meetingBusy || dictationStartup || meetingStartup || meetingRecorder.state !== 'idle' || !settings || recorder.state === 'starting') return;
-  if (recorder.state === 'idle') $('mode').value = mode;
+  if (recorder.state === 'idle') { $('mode').value = mode; shortcutStarted = Date.now(); }
   $('record').click();
+});
+// Last key of a sequence such as Alt + Leertaste + 1: the dictation that just started uses that mode.
+// It can arrive before the recording has visibly started, so a recent shortcut start counts too.
+let shortcutStarted = 0;
+api.onShortcutMode(mode => {
+  if (recorder.state === 'idle' && !dictationStartup && Date.now() - shortcutStarted > 3000) return;
+  $('mode').value = mode;
+  status(`Schreibmodus für dieses Diktat: ${$('mode').selectedOptions[0]?.textContent ?? mode}`);
 });
 api.onShortcutError(text => status(`Tastenkürzel nicht verfügbar: ${text}`));
 api.onCancelRecording(() => $('cancel').click());
@@ -461,7 +546,7 @@ api.onHoldStart(({token, mode}) => {
   if (busy || meetingBusy || dictationStartup || meetingStartup || !settings || recorder.state !== 'idle' || meetingRecorder.state !== 'idle') {
     api['hold-rejected'](token).catch(() => {}); return;
   }
-  heldGesture = token; $('mode').value = mode; $('record').click();
+  heldGesture = token; $('mode').value = mode; shortcutStarted = Date.now(); $('record').click();
 });
 api.onHoldStop(token => {
   if (heldGesture !== token) return;
@@ -544,7 +629,7 @@ try {
   });
   $('settings').append(replacementHeading, replacementLabel, replacementSave);
   const appTitle = document.createElement('h3'); appTitle.textContent = 'Schreibmodus pro Programm';
-  const appNote = document.createElement('p'); appNote.textContent = 'Gilt beim Start über das Wortgenau-Tastenkürzel (standardmäßig Strg+Umschalt+1). Die anderen Modus-Tastenkürzel behalten ihre feste Wahl. Eine Regel pro Zeile, zum Beispiel: winword.exe => clean. Modi: verbatim, clean, calm, emoji.';
+  const appNote = document.createElement('p'); appNote.textContent = 'Gilt beim Start über das Wortgenau-Tastenkürzel (standardmäßig Alt + Leertaste). Die anderen Modus-Tastenkürzel behalten ihre feste Wahl. Eine Regel pro Zeile, zum Beispiel: winword.exe => clean. Modi: verbatim, clean, calm, emoji.';
   const appRules = document.createElement('textarea'); appRules.id = 'app-mode-rules';
   appRules.setAttribute('aria-label', 'Programmregeln für Schreibmodi');
   appRules.value = (settings.appModes || []).map(rule => `${rule.executable} => ${rule.mode}`).join('\n');
@@ -594,12 +679,11 @@ try {
     }
     behavior.disabled = false; behaviorNote(); status('Kürzelbedienung gespeichert.');
   });
-  for (const [mode, title] of Object.entries({verbatim:'Wortgenau',clean:'Überarbeiten',calm:'Ruhig formulieren',emoji:'Mit Emojis'})) {
-    const label = document.createElement('label'); label.textContent = title;
-    const input = document.createElement('input'); input.value = settings.shortcuts[mode];
-    input.onchange = attempt(async () => { settings.shortcuts[mode] = input.value.trim(); await save(); status('Tastenkürzel gespeichert.'); });
-    label.append(input); $('settings').append(label);
-  }
+  const shortcutHint = document.createElement('p'); shortcutHint.id = 'shortcut-hint';
+  shortcutHint.textContent = 'Zum Ändern ins Feld klicken und die Tasten drücken. Für eine Tastenfolge wie Alt + Leertaste + 1 die Alt-Taste halten und Leertaste und 1 nacheinander drücken; Alt + Leertaste startet dabei Wortgenau, die Zahl wählt den Schreibmodus. Rücktaste entfernt ein Kürzel, Escape bricht ab.';
+  $('settings').append(shortcutHint);
+  for (const [mode, title] of Object.entries({verbatim:'Wortgenau',clean:'Überarbeiten',calm:'Ruhig formulieren',emoji:'Mit Emojis'}))
+    $('settings').append(shortcutField(mode, title));
   $('speech-model').add(new Option('Eigenes kompatibles Modell', 'custom'));
   const customBox = document.createElement('div');
   const engineLabel = document.createElement('label'); engineLabel.textContent = 'Modellformat';

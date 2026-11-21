@@ -34,7 +34,9 @@ try {
   if (expected) assert.ok(corrected.note.includes(expected), `Erwartet: ${expected}`);
   await page.locator('nav button[data-page="settings"]').click();
   await page.locator('#term-correction').uncheck(); await page.locator('#save-settings').click();
-  await page.waitForFunction(() => document.querySelector('#status').textContent === 'Einstellungen gespeichert.');
+  // Also saved when another program holds a shortcut (the status then adds that warning).
+  await page.waitForFunction(() => document.querySelector('#status').textContent.startsWith('Einstellungen gespeichert'));
+  assert.equal((await page.evaluate(() => window.blitz.load())).settings.termCorrection, false);
   await page.locator('nav button[data-page="dictation"]').click();
   const raw = await transcribe();
   console.log('Ohne Korrektur:', raw.text);

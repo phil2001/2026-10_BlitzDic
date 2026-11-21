@@ -52,16 +52,20 @@ try {
     `--use-file-for-fake-audio-capture=${root}/.runtime/test-speech.wav`], env});
   page = await dictation.firstWindow();
   await page.waitForSelector('#provider option', {state: 'attached'});
-  await page.evaluate(async ({preset, appRule, cancelRewrite, baseURL, hold}) => {
+  await page.evaluate(async ({preset, appRule, cancelRewrite, baseURL, hold, shortcutNumber}) => {
     const {settings} = await window.blitz.load(); settings.speech.preset = preset; settings.speech.language = 'en';
     settings.shortcutBehavior = hold ? 'hold' : 'toggle';
+    // The keyboard helper sends Ctrl+Shift+number. Only that shortcut is registered, so other
+    // programs (e.g. an installed BlitzDic) may hold the remaining numbers.
+    settings.shortcuts = {verbatim: '', clean: '', calm: '', emoji: ''};
+    settings.shortcuts[['verbatim', 'clean', 'calm', 'emoji'][shortcutNumber - 1]] = `Control+Shift+${shortcutNumber}`;
     if (appRule || cancelRewrite) {
       if (appRule) settings.appModes = [{executable: 'electron.exe', mode: 'clean'}];
       settings.provider = {provider: 'custom', location: 'local', baseURL, model: 'rule-fixture', apiKey: ''};
     }
     await window.blitz.settings(settings);
-  }, {preset, appRule, cancelRewrite, baseURL, hold});
-  assert.equal(await dictation.evaluate(({globalShortcut}) => globalShortcut.isRegistered('Control+Shift+1')), true);
+  }, {preset, appRule, cancelRewrite, baseURL, hold, shortcutNumber});
+  assert.equal(await dictation.evaluate(({globalShortcut}, number) => globalShortcut.isRegistered(`Control+Shift+${number}`), shortcutNumber), true);
   target = await electron.launch({args: [resolve(import.meta.dirname, 'uia-test-app.cjs'),
     `--user-data-dir=${root}/.runtime/hotkey-target-${runId}`], env});
   editor = await target.firstWindow();

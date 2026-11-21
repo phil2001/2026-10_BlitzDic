@@ -8,7 +8,9 @@ export const defaultSettings = () => ({
   mode: 'verbatim', modeSettings: { customTerms: [], replacements: [] },
   appModes: [],
   websiteModes: [],
-  shortcuts: { verbatim: 'CommandOrControl+Shift+1', clean: 'CommandOrControl+Shift+2', calm: 'CommandOrControl+Shift+3', emoji: 'CommandOrControl+Shift+4' },
+  // Alt+Space starts Wortgenau; the digit after it (Alt held) picks the other writing modes.
+  shortcuts: { verbatim: 'Alt+Space', clean: 'Alt+Space+1', calm: 'Alt+Space+2', emoji: 'Alt+Space+3' },
+  shortcutLayout: 2,
   historyEnabled: true, historyLimit: 100,
   recordingIndicator: true,
   muteOutputWhileRecording: false,
@@ -16,6 +18,8 @@ export const defaultSettings = () => ({
   startWithWindows: true,
   termCorrection: true,
 });
+
+const legacyShortcuts = { verbatim: 'CommandOrControl+Shift+1', clean: 'CommandOrControl+Shift+2', calm: 'CommandOrControl+Shift+3', emoji: 'CommandOrControl+Shift+4' };
 
 // Entire settings/history payload is encrypted by the operating system adapter.
 // A failed decrypt is surfaced; it must never silently erase existing history.
@@ -49,7 +53,11 @@ export class PrivateStore {
     const speech = { ...defaults.speech, ...saved.speech };
     // Migrate the former automatic/empty preference to the requested German default.
     if (!['de', 'en', 'de-medical'].includes(speech.language)) speech.language = 'de-medical';
-    return { ...defaults, ...saved, speech, provider: { ...defaults.provider, ...saved.provider } };
+    // Untouched former defaults move to the new keys once; own shortcuts stay as they are.
+    const legacy = (saved.shortcutLayout ?? 1) < 2 && saved.shortcuts &&
+      Object.entries(legacyShortcuts).every(([mode, value]) => saved.shortcuts[mode] === value);
+    const shortcuts = legacy ? defaults.shortcuts : saved.shortcuts ?? defaults.shortcuts;
+    return { ...defaults, ...saved, speech, provider: { ...defaults.provider, ...saved.provider }, shortcuts, shortcutLayout: 2 };
   }
   saveSettings(settings) { return this.update('settings', defaultSettings(), () => settings); }
   history() { return this.read('history', []); }

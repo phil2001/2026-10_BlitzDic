@@ -12,6 +12,8 @@ import { Meetings } from '../src/meetings.js';
 import { fitInsertion } from '../src/insertion-fit.js';
 import { RecordingIndicator } from './recording-indicator.js';
 import { HoldShortcuts } from '../src/hold-shortcuts.js';
+import { ShortcutKeys } from '../src/shortcut-keys.js';
+import { planShortcuts } from '../src/shortcuts.js';
 import { EscapeControl } from '../src/escape-control.js';
 import { OutputMute } from '../src/output-mute.js';
 import { LiveNotes } from '../src/live-notes.js';
@@ -23,6 +25,7 @@ import { release as windowsRelease } from 'node:os';
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 let window, flow, store, tray, meetings, indicator, quitting = false;
 let holdShortcuts;
+let shortcutKeys;
 let escapeControl;
 let outputMute;
 let liveNotes;
@@ -137,15 +140,36 @@ else app.whenReady().then(async () => {
       finally { capturePending = false; syncEscape().catch(escapeError); }
       return epoch === captureEpoch ? mode : null;
   }
-  async function triggerShortcut(mode, shortcut) {
+  // gesture.choice is the last key of a sequence such as Alt+Space+1, possibly pressed while
+  // the target field is still being captured; it overrides the mode of the dictation it starts.
+  async function triggerShortcut(mode, shortcut, gesture = {}) {
     if (flow.active || meetings.active || capturePending || holdShortcuts.active) return;
     if (shortcutBehavior === 'hold') {
-      if (!recording) await holdShortcuts.press(shortcut, () => captureOriginalTarget(mode));
+      if (!recording) await holdShortcuts.press(shortcut, async () => {
+        const resolved = await captureOriginalTarget(mode);
+        gesture.started = resolved !== null;
+        return resolved === null ? null : gesture.choice ?? resolved;
+      });
       return;
     }
-    if (!recording) mode = await captureOriginalTarget(mode);
-    if (mode !== null) window.webContents.send('shortcut', mode);
+    if (recording) gesture.stopped = true;
+    else mode = await captureOriginalTarget(mode);
+    if (mode === null) return;
+    gesture.started = !gesture.stopped;
+    window.webContents.send('shortcut', gesture.started ? gesture.choice ?? mode : mode);
   }
+  function chooseShortcutMode(mode, gesture) {
+    if (gesture.stopped) return; // The first part ended a dictation; the digit has nothing to change.
+    gesture.choice = mode;
+    if (gesture.started) window.webContents.send('shortcut-mode', mode);
+  }
+  shortcutKeys = new ShortcutKeys({
+    register: (key, callback) => globalShortcut.register(key, callback),
+    unregister: key => globalShortcut.unregister(key),
+    press: (mode, key, gesture) => { triggerShortcut(mode, key, gesture).catch(escapeError); },
+    choose: chooseShortcutMode,
+    captured: key => { if (window && !window.isDestroyed()) window.webContents.send('shortcut-captured', key); },
+  });
   window = new BrowserWindow({ width: 1200, height: 820, minWidth: 760, minHeight: 620, title: 'BlitzDic', show: !startHidden,
     webPreferences: { preload: join(root, 'desktop/preload.cjs'), contextIsolation: true, nodeIntegration: false, sandbox: true } });
   window.setMenuBarVisibility(false);
@@ -169,9 +193,9 @@ else app.whenReady().then(async () => {
   window.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
   window.webContents.on('will-navigate', event => event.preventDefault());
   const restoreOutput = () => {liveNotes.cancel();recordingKind = null; mutePreparing = false; syncOutputMute();};
-  window.webContents.on('render-process-gone', restoreOutput);
+  window.webContents.on('render-process-gone', () => { restoreOutput(); shortcutKeys.capture(false); });
   window.webContents.on('did-start-navigation', details => {
-    if (details.isMainFrame && !details.isInPlace) restoreOutput();
+    if (details.isMainFrame && !details.isInPlace) { restoreOutput(); shortcutKeys.capture(false); }
   });
   session.defaultSession.setPermissionRequestHandler((contents, permission, callback, details) =>
     callback(contents === window.webContents &&
@@ -197,15 +221,7 @@ else app.whenReady().then(async () => {
   });
   function registerShortcuts(settings) {
     shortcutBehavior = settings.shortcutBehavior === 'hold' ? 'hold' : 'toggle';
-    globalShortcut.unregisterAll();
-    const failed = [];
-    for (const [mode, shortcut] of Object.entries(settings.shortcuts || {})) {
-      if (/(?:^|\+)esc(?:ape)?$/i.test(shortcut)) {failed.push(shortcut); continue;}
-      try {
-        if (!globalShortcut.register(shortcut, () => triggerShortcut(mode, shortcut))) failed.push(shortcut);
-      } catch { failed.push(shortcut); }
-    }
-    return failed;
+    return shortcutKeys.apply(settings.shortcuts || {});
   }
   let settingsQueue = Promise.resolve();
   handle('settings', settings => {
@@ -224,8 +240,11 @@ else app.whenReady().then(async () => {
       if (settings.termCorrection !== undefined && typeof settings.termCorrection !== 'boolean')
         throw new Error('Ungültige Einstellung zur Fachbegriff-Korrektur.');
       const autostartBefore = (await store.settings()).startWithWindows !== false;
-      if (settings.shortcutBehavior === 'hold') await runSpeech({action: 'validate-hold-shortcuts',
-        shortcuts: Object.values(settings.shortcuts ?? {})}, {pythonPath, timeoutMs: 5000});
+      // Holding is watched on the shortcut itself, or on the first part of a key sequence.
+      const {direct, sequences} = planShortcuts(settings.shortcuts);
+      const heldKeys = [...new Set([...direct.keys(), ...sequences.keys()])];
+      if (settings.shortcutBehavior === 'hold' && heldKeys.length) await runSpeech({action: 'validate-hold-shortcuts',
+        shortcuts: heldKeys}, {pythonPath, timeoutMs: 5000});
       await store.saveSettings(settings);
       prepareSpeech();
       let autostartWarning = null;
@@ -286,6 +305,8 @@ else app.whenReady().then(async () => {
   handle('cancel', () => {
     cancelWorkflow();
   });
+  // A settings field records the next pressed keys; our own shortcuts are routed to it meanwhile.
+  handle('shortcut-capture', active => shortcutKeys.capture(active === true));
   handle('hold-rejected', token => {
     if (!holdShortcuts.active || holdShortcuts.active.token !== token) return;
     holdShortcuts.cancel(token); clearInsertion();

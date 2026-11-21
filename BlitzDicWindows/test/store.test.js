@@ -18,6 +18,23 @@ test('fixed language preferences migrate automatic mode and preserve explicit Ge
   }
 });
 
+test('untouched former shortcut defaults move to Alt+Space; own shortcuts stay', async () => {
+  const {store} = await fixture();
+  const fresh = await store.settings();
+  assert.deepEqual(fresh.shortcuts, {verbatim: 'Alt+Space', clean: 'Alt+Space+1', calm: 'Alt+Space+2', emoji: 'Alt+Space+3'});
+  const old = {verbatim: 'CommandOrControl+Shift+1', clean: 'CommandOrControl+Shift+2', calm: 'CommandOrControl+Shift+3', emoji: 'CommandOrControl+Shift+4'};
+  await store.saveSettings({shortcuts: old});
+  const migrated = await store.settings();
+  assert.equal(migrated.shortcuts.verbatim, 'Alt+Space');
+  assert.equal(migrated.shortcutLayout, 2);
+  // Chosen again on purpose after the change: kept.
+  await store.saveSettings({...migrated, shortcuts: old});
+  assert.deepEqual((await store.settings()).shortcuts, old);
+  const own = {verbatim: 'Control+Up', clean: 'CommandOrControl+Shift+2', calm: 'CommandOrControl+Shift+3', emoji: 'CommandOrControl+Shift+4'};
+  await store.saveSettings({shortcuts: own});
+  assert.deepEqual((await store.settings()).shortcuts, own);
+});
+
 async function fixture() {
   // Keep test artifacts inside the project; no recursive deletion.
   await mkdir('.runtime/store-tests', { recursive: true });

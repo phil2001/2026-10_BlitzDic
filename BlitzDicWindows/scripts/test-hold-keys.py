@@ -12,6 +12,8 @@ class HoldKeysTest(unittest.TestCase):
         self.assertEqual(shortcut_keys('Super+F24'), [[0x5B, 0x5C], [0x87]])
         self.assertEqual(shortcut_keys('AltGr+num3'), [[0xA5], [0x63]])
         self.assertEqual(shortcut_keys('Alt+PageDown'), [[0x12], [0x22]])
+        # Default dictation shortcut; a sequence like Alt+Space+1 is held on its first part.
+        self.assertEqual(shortcut_keys('Alt+Space'), [[0x12], [0x20]])
         self.assertEqual(shortcut_keys('Control+Plus')[0], [0x11])
         for value in ('', 'Control+', 'Control++', 'Shift', 'Command+A', 'F25', 'Bad+1', None):
             with self.assertRaises(ValueError): shortcut_keys(value)

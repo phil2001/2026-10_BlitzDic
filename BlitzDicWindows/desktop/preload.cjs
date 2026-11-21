@@ -4,12 +4,15 @@ const api = Object.fromEntries(methods.map(name => [name, (...args) => ipcRender
 for (const name of ['release-check', 'releases-open', 'support-info']) api[name] = () => ipcRenderer.invoke(name);
 api['meeting-rename'] = (...args) => ipcRenderer.invoke('meeting-rename', ...args);
 api['hold-rejected'] = token => ipcRenderer.invoke('hold-rejected', token);
+api['shortcut-capture'] = active => ipcRenderer.invoke('shortcut-capture', active === true);
 api['recording-starting'] = kind => ipcRenderer.invoke('recording-starting', kind);
 api['prepare-output'] = () => ipcRenderer.invoke('prepare-output');
 for (const name of ['meeting-live-start','meeting-live-update','meeting-live-catchup','meeting-live-stop']) api[name]=(...args)=>ipcRenderer.invoke(name,...args);
 api.onState = callback => { const listener = (_event, state) => callback(state); ipcRenderer.on('state', listener); return () => ipcRenderer.removeListener('state', listener); };
 api.onShortcut = callback => { const listener = (_event, mode) => callback(mode); ipcRenderer.on('shortcut', listener); return () => ipcRenderer.removeListener('shortcut', listener); };
-api.onShortcutError = callback => { const listener = (_event, text) => callback(text); ipcRenderer.on('shortcut-error', listener); return () => ipcRenderer.removeListener('shortcut-error', listener); };
+api.onShortcutMode = callback => ipcRenderer.on('shortcut-mode', (_event, mode) => callback(mode));
+api.onShortcutCaptured = callback => ipcRenderer.on('shortcut-captured', (_event, key) => callback(key));
+api.onShortcutError =callback => { const listener = (_event, text) => callback(text); ipcRenderer.on('shortcut-error', listener); return () => ipcRenderer.removeListener('shortcut-error', listener); };
 api.onCancelRecording = callback => { ipcRenderer.on('cancel-recording', () => callback()); };
 api.onStopRecording = callback => { ipcRenderer.on('stop-recording', () => callback()); };
 api.onHoldStart = callback => ipcRenderer.on('hold-start', (_event, gesture) => callback(gesture));
