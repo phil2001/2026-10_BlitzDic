@@ -18,7 +18,7 @@ import { EscapeControl } from '../src/escape-control.js';
 import { OutputMute } from '../src/output-mute.js';
 import { LiveNotes } from '../src/live-notes.js';
 import { checkRelease, releasesURL, supportInfo } from '../src/releases.js';
-import { autostartArgument, loginItemDeactivated, syncLoginItem } from '../src/login-item.js';
+import { autostartArgument, installedCopy, loginItemDeactivated, syncLoginItem } from '../src/login-item.js';
 import { TargetService } from '../src/target-service.js';
 import { release as windowsRelease } from 'node:os';
 
@@ -35,12 +35,14 @@ const uiURL = pathToFileURL(join(root, 'ui/index.html')).href;
 // Started by Windows at login: stay in the tray; tray, shortcuts and model are ready.
 const startHidden = process.argv.includes(autostartArgument);
 const autostart = wanted => syncLoginItem(app, wanted !== false, { path: process.execPath });
+// Only the copy installed by the setup manages autostart; unpacked builds and development runs leave it alone.
+const installed = app.isPackaged && installedCopy(process.execPath);
 app.setName('BlitzDic');
 if (!app.requestSingleInstanceLock()) app.quit();
 else app.whenReady().then(async () => {
   store = new PrivateStore(join(app.getPath('userData'), 'private'), await windowsCrypto());
-  // Only the installed app registers itself; a development Electron would not start BlitzDic.
-  if (app.isPackaged) { try { autostart((await store.settings()).startWithWindows); } catch {} }
+  // Only the installed app registers itself; a development Electron or an unpacked build must not.
+  if (installed) { try { autostart((await store.settings()).startWithWindows); } catch {} }
   const pythonPath = app.isPackaged ? join(process.resourcesPath, 'speech-runtime/blitzdic-speech.exe') : join(root, '.runtime/venv/Scripts/python.exe');
   const modelRoot = app.isPackaged ? join(process.resourcesPath, 'models') : join(root, 'models');
   const speakerModelsAvailable = () => Promise.all(['model.int8.onnx', 'nemo_en_titanet_small.onnx']
@@ -215,9 +217,9 @@ else app.whenReady().then(async () => {
   });
   handle('load', async () => {
     let autostartDeactivated = false;
-    try { autostartDeactivated = app.isPackaged && loginItemDeactivated(app, process.execPath); } catch {}
+    try { autostartDeactivated = installed && loginItemDeactivated(app, process.execPath); } catch {}
     return { version: app.getVersion(), settings: await store.settings(), history: await store.history(), providers, speechPresets, modelsBundled: app.isPackaged,
-      speakerModelsAvailable: await speakerModelsAvailable(), autostart: { available: app.isPackaged, deactivated: autostartDeactivated } };
+      speakerModelsAvailable: await speakerModelsAvailable(), autostart: { available: installed, deactivated: autostartDeactivated } };
   });
   function registerShortcuts(settings) {
     shortcutBehavior = settings.shortcutBehavior === 'hold' ? 'hold' : 'toggle';
@@ -249,7 +251,7 @@ else app.whenReady().then(async () => {
       prepareSpeech();
       let autostartWarning = null;
       // Only a changed choice touches the Run key, and may re-enable a Task Manager deactivation.
-      if (app.isPackaged && (settings.startWithWindows !== false) !== autostartBefore) {
+      if (installed && (settings.startWithWindows !== false) !== autostartBefore) {
         try { syncLoginItem(app, settings.startWithWindows !== false, { path: process.execPath, explicit: true }); }
         catch { autostartWarning = 'der Windows-Autostart konnte nicht geändert werden.'; }
       }

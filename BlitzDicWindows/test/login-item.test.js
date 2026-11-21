@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { autostartArgument, loginItemDeactivated, loginItemName, syncLoginItem } from '../src/login-item.js';
+import { fileURLToPath } from 'node:url';
+import { autostartArgument, installedCopy, loginItemDeactivated, loginItemName, syncLoginItem } from '../src/login-item.js';
 
 const exe = 'C:\\Users\\Praxis\\AppData\\Local\\Programs\\BlitzDic\\BlitzDic.exe';
 
@@ -71,4 +72,14 @@ test('machine-wide entries of the same name are not touched', () => {
   assert.equal(loginItemDeactivated(app, exe), false);
   syncLoginItem(app, false, { path: exe });
   assert.equal(app.calls.length, 0);
+});
+
+test('only a copy installed by the setup manages autostart, not an unpacked or test build', () => {
+  const files = new Set([String.raw`C:\Program Files\BlitzDic\Uninstall BlitzDic.exe`]);
+  const exists = path => files.has(path);
+  assert.equal(installedCopy(String.raw`C:\Program Files\BlitzDic\BlitzDic.exe`, exists), true);
+  assert.equal(installedCopy(String.raw`C:\Projekte\BlitzDic\dist\windows-1\win-unpacked\BlitzDic.exe`, exists), false);
+  assert.equal(installedCopy(undefined, exists), false);
+  // The real file check: this test file's folder has no uninstaller.
+  assert.equal(installedCopy(fileURLToPath(import.meta.url)), false);
 });

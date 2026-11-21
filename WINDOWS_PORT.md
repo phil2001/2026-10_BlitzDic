@@ -2315,3 +2315,20 @@ Build: `windows-2026-11-21T08-49-41-312Z-0fcda3`. Installer 1,193,978,735 bytes,
 On `win-unpacked`: `verify-installed.mjs`, `verify-term-correction-ui.mjs`,
 `verify-windows-package.ps1` and `verify-shortcut-keys.mjs` (synthetic keys, screen locked)
 passed. Release v1.0.0 is deleted as agreed with the user; the tag v1.0.0 stays.
+
+## 2026-11-21: only the installed copy manages Windows autostart
+
+Found while installing 1.0.1 on the development PC: every packaged copy re-pointed the
+account-wide Run entry `BlitzDic` to its own executable at start (meant for a moved
+installation). Packaged test runs from `dist/.../win-unpacked` had pointed it at a build folder
+that was later deleted, so BlitzDic would not have started at the next login. Repaired on this
+PC by starting the installed 1.0.1 with `--autostart` once.
+
+Fix (in source, ships with the next release): `installedCopy()` in `src/login-item.js` treats a
+copy as installed only when `Uninstall BlitzDic.exe` lies next to it. Only then does BlitzDic
+sync, switch or report autostart; other copies show "Wirkt nur im installierten Programm."
+Unit test added (143 passed, 4 skipped). Checked with an unpacked package of this source
+(speech runtime of the 1.0.1 build): started with a fresh profile and autostart switched off
+and on, the Run entry stayed `"C:\Program Files\BlitzDic\BlitzDic.exe" --autostart`. With a
+placeholder uninstaller next to it the same copy registered itself as expected; the entry was
+then restored and checked.
