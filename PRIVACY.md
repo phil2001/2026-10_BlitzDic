@@ -25,7 +25,7 @@ wird über den gewählten Anbieter eingerichtet. BlitzDic hat kein eigenes Backe
 und enthält keine absichtlich eingebaute Telemetrie.
 
 Die manuelle Versionsprüfung unter Einstellungen fragt ausschließlich die letzte
-stabile Veröffentlichung im GitHub-Repository `phil2001/2026-10_BlitzDic` ab.
+stabile Veröffentlichung im GitHub-Repository `phil2001/BlitzDic` ab.
 Sie läuft nur auf Knopfdruck; GitHub erhält dabei die üblichen Verbindungsdaten
 wie die IP-Adresse, keine Diktate, Einstellungen, API-Schlüssel oder Gerätekennung.
 Es gibt keinen automatischen Download oder Installationsschritt. Der gesonderte

@@ -14,14 +14,16 @@ auf einem frischen Windows-11-PC ohne Entwicklertools ist noch zu verifizieren.
 Für optionale KI-Textüberarbeitung kann ein gemeinsamer LLM-Server im Netzwerk
 konfiguriert werden; dann wird auf den Arbeitsplätzen kein LM Studio benötigt.
 
-**Status: Version 1.0.0, erste öffentliche Veröffentlichung.** Der Installer ist nicht
+**Status: Version 1.0.1.** Das Repository heißt `phil2001/BlitzDic` (früher
+`2026-10_BlitzDic`); Versionen bis 1.0.0 finden seit der Umbenennung keine Updates und
+werden einmal von Hand auf 1.0.1 aktualisiert. Der Installer ist nicht
 signiert. Die Installation auf einem frischen Windows-11-PC ohne Entwicklertools ist noch
 nicht geprüft. Erkennung und Fachbegriff-Korrektur ersetzen keine Prüfung des Textes.
 
 Kurzer Arbeitsstand und nächste Schritte: [STATUS.md](STATUS.md).
 
 **Herunterladen und aktualisieren:** Den Installer gibt es unter
-[Veröffentlichungen](https://github.com/phil2001/2026-10_BlitzDic/releases/latest).
+[Veröffentlichungen](https://github.com/phil2001/BlitzDic/releases/latest).
 Für ein Update in BlitzDic unter **Einstellungen → Über BlitzDic** auf **Auf neue Version
 prüfen** klicken. Ist eine neuere Version da, mit **Veröffentlichungen öffnen** das neue
 Setup herunterladen und starten; es ersetzt die installierte Version, Einstellungen und
@@ -59,9 +61,9 @@ Ein zusätzliches lokales LLM hat eigene RAM-/VRAM-Anforderungen.
 
 ## Installation und Bedienung
 
-Die aktuelle Version ist **1.0.0**: `BlitzDic Setup 1.0.0.exe` (etwa 1,19 GB) mit
-`SHA256SUMS.txt` unter [Veröffentlichungen](https://github.com/phil2001/2026-10_BlitzDic/releases/tag/v1.0.0)
-(Build `windows-2026-11-21T08-23-05-801Z-23d6fe`). Er enthält beide Sprachmodelle, die lokale
+Die aktuelle Version ist **1.0.1**: `BlitzDic Setup 1.0.1.exe` (etwa 1,19 GB) mit
+`SHA256SUMS.txt` unter [Veröffentlichungen](https://github.com/phil2001/BlitzDic/releases/tag/v1.0.1)
+(Build `windows-2026-11-21T08-49-41-312Z-0fcda3`). Er enthält beide Sprachmodelle, die lokale
 Sprachlaufzeit, Parakeet Ultra als Standard, die Fachbegriff-Korrektur und die Tastenkürzel
 Alt+Leertaste (+1/2/3) mit Tastenaufnahme in den Einstellungen.
 Installation: Setup starten, bei der Windows-Warnung **Weitere Informationen → Trotzdem
@@ -77,7 +79,7 @@ separat gebaut und ersetzen die installierte dev.20 bisher nicht.
 Dev.23 beschriftet die Pegelanzeigen für Hilfstechnologien und kennzeichnet die
 aktuelle Navigationsseite. Diese Zustände und die Navigation per Enter sind im
 gebauten Paket geprüft; ein vollständiger Screenreader-Test steht noch aus.
-Dev.24 liegt auch als unveröffentlichter [Release-Entwurf im privaten Repository](https://github.com/phil2001/2026-10_BlitzDic/releases/tag/untagged-844c147fb152289d0ade)
+Dev.24 liegt auch als unveröffentlichter [Release-Entwurf im privaten Repository](https://github.com/phil2001/BlitzDic/releases/tag/untagged-844c147fb152289d0ade)
 mit vollständigem Installer und SHA256SUMS.txt bereit. Ein berechtigter GitHub-
 Zugang ist erforderlich. Der Entwurf ist noch keine freigegebene Veröffentlichung.
 Details zu Build, Prüfsumme und Tests stehen im [Arbeitsstand](WINDOWS_PORT.md).
@@ -278,7 +280,7 @@ erwartet den entpackten Artefaktordner mit Wheel und `build-provenance.txt`.
 Das Skript prüft Quellstand, Buildprofil und Prüfsumme und gibt den Pfad zur
 neuen Python-Umgebung aus. Diesen Pfad als `BLITZDIC_BUILD_PYTHON` setzen und
 in den folgenden Befehlen statt `.runtime/venv/Scripts/python.exe` verwenden.
-[Ruy-Build auf GitHub](https://github.com/phil2001/2026-10_BlitzDic/actions/workflows/ct2-ruy.yml)
+[Ruy-Build auf GitHub](https://github.com/phil2001/BlitzDic/actions/workflows/ct2-ruy.yml)
 
 Die Sprecherlaufzeit kann zusätzlich aus dem eigenen Windows-Quellbuild
 eingebunden werden: `setup-speech.ps1 -SpeakerArtifactDirectory` erwartet das

@@ -9,7 +9,7 @@ dependency's cache. The complete CI log records that run's configuration;
 the workflow now retains only the top-level cache for future source builds.
 
 The first successful wheel build was produced by
-[run 41982775391](https://github.com/phil2001/2026-10_BlitzDic/actions/runs/41982775391).
+[run 41982775391](https://github.com/phil2001/BlitzDic/actions/runs/41982775391).
 Wheel: `sherpa_onnx-2.0.1-cp312-cp312-win_amd64.whl`.
 SHA-256: `40a45982f4d01fff01ae7d2345dc4f82f2a1d801885a6006743a836452bcd898`.
 That run failed its subsequent verification because the pinned upstream
@@ -27,7 +27,7 @@ speech worker processed the 105-second synthetic speech fixture with this
 runtime, returning 30 ordered speech intervals assigned to one speaker.
 This test checks inference, not accuracy on multiple real speakers.
 The corrected CI verification of the same wheel also passed in
-[run 41992637746](https://github.com/phil2001/2026-10_BlitzDic/actions/runs/41992637746).
+[run 41992637746](https://github.com/phil2001/BlitzDic/actions/runs/41992637746).
 
 The actual build log selects Eigen 5.0.1, not the 3.4.0 version mentioned in
 kaldifst's fallback recipe. The supplementary `eigen-5.0.1` folder includes

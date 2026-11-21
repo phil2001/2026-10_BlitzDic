@@ -209,7 +209,7 @@ clean Windows VM. The installer predates per-program mode preferences and the
 three supplemental license notices; a later build must include those changes.
 The physical microphone, Office, meetings, visual polish and native-library license
 review remain open. Latest GitHub Windows tests for ed54fba completed successfully:
-https://github.com/phil2001/2026-10_BlitzDic/actions/runs/41220060386
+https://github.com/phil2001/BlitzDic/actions/runs/41220060386
 
 ## Meeting summaries, 2026-10-31
 
@@ -1549,20 +1549,20 @@ and physical microphone still require a run on the target system.
 The experimental Ruy build of CTranslate2 4.8.4 recognized the Whisper Small
 fixture with CPU INT8 on the Windows CI runner. The checked DLL and extension
 import tables contained no Intel OpenMP, MKL or oneDNN DLLs.
-[Ruy experiment](https://github.com/phil2001/2026-10_BlitzDic/actions/runs/41823772496)
+[Ruy experiment](https://github.com/phil2001/BlitzDic/actions/runs/41823772496)
 For a package comparison, `BLITZDIC_BUILD_PYTHON` can point at a separate
 Python executable under `.runtime`. License collection, binary inventory and
 PyInstaller then use that interpreter. The default remains `.runtime/venv`.
 
 ## Windows package with the Ruy CPU backend
 
-Dev.11 uses the wheel from [the verified CI run](https://github.com/phil2001/2026-10_BlitzDic/actions/runs/41825821014).
+Dev.11 uses the wheel from [the verified CI run](https://github.com/phil2001/BlitzDic/actions/runs/41825821014).
 Its CTranslate2 source commit is `5de572ef60b67a0276c5989ee73d0072808ff4c3`
 (the target of tag `v4.8.4`). Wheel SHA-256 is
 `8D9C1E6AC5A33518051C8B6381EE1011F7349D35C8BDFCE083DB4CB39DAB6A85`.
 The wheel contains notices for CTranslate2, Ruy, cpu_features, spdlog, cpuinfo
 and clog. The artifact is temporary and the pinned recipe is in the
-[`build/ct2-ruy` workflow](https://github.com/phil2001/2026-10_BlitzDic/blob/a40c978/.github/workflows/ct2-ruy-experiment.yml).
+[`build/ct2-ruy` workflow](https://github.com/phil2001/BlitzDic/blob/a40c978/.github/workflows/ct2-ruy-experiment.yml).
 
 Build in a fresh `.runtime` Python environment with the locked requirements,
 PyInstaller 6.22.3, the clean PyAV wheel and this CTranslate2 wheel supplied
@@ -1585,7 +1585,7 @@ Microsoft runtime terms, other native dependencies and clean Windows 11
 installation remain separate release checks.
 
 The pinned wheel recipe is also available as a manual workflow on `main`.
-The [manual run on Windows CI](https://github.com/phil2001/2026-10_BlitzDic/actions/runs/41828636061)
+The [manual run on Windows CI](https://github.com/phil2001/BlitzDic/actions/runs/41828636061)
 passed the PE import checks and transcribed the Whisper Small fixture using
 CPU INT8. The downloaded wheel matched its manifest with SHA-256
 `6ABD8D4FAD8A700E8875587B88F93000B4C18E2B81E3219CAF55B1F065E792A7`.
@@ -1627,7 +1627,7 @@ absent compared with dev.11 were `INSTALLER` and `REQUESTED` metadata markers
 from six Python distributions. Resource, native-origin and notice checks
 passed on the extracted package. Both models transcribed through the last
 section of the 105.2-second English fixture with offline model loading.
-[Windows CI for the package source](https://github.com/phil2001/2026-10_BlitzDic/actions/runs/41830883286)
+[Windows CI for the package source](https://github.com/phil2001/BlitzDic/actions/runs/41830883286)
 also passed. The setup wizard and microphone remain to be tested on a clean
 Windows 11 system.
 
@@ -1740,7 +1740,7 @@ failed a subsequent version check because upstream's `version.cc` contains
 the older literal `96255a1b`. The checkout and CMake log identify the pinned
 source. The corrected check verifies the source literal separately from
 the checkout and wheel provenance. Reverification of the existing artifact
-passed in [CI run 41992637746](https://github.com/phil2001/2026-10_BlitzDic/actions/runs/41992637746),
+passed in [CI run 41992637746](https://github.com/phil2001/BlitzDic/actions/runs/41992637746),
 including real inference through the normal BlitzDic worker.
 
 The actual source build selected Eigen 5.0.1 through Sherpa's own recipe.
@@ -2107,7 +2107,7 @@ has 1,186,214,226 bytes and the exact local SHA-256 above. The uploaded
 the local text file. Verification is retained in
 `.runtime/release-dev22/upload-evidence.json`. No release was published.
 Windows CI passed for that source commit:
-https://github.com/phil2001/2026-10_BlitzDic/actions/runs/42036212596.
+https://github.com/phil2001/BlitzDic/actions/runs/42036212596.
 
 ## Development package 0.3.10-dev.23: accessible meter names and navigation
 
@@ -2169,7 +2169,7 @@ https://www.microsoft.com/en-us/evalcenter/evaluate-windows-11-enterprise.
 
 Windows CI passed for dev.23 source commit
 `d87c9c7b0c68e45e778d5b6f982965c7079d1617`:
-https://github.com/phil2001/2026-10_BlitzDic/actions/runs/42039015645.
+https://github.com/phil2001/BlitzDic/actions/runs/42039015645.
 The dev.23 installer and matching `SHA256SUMS.txt` are uploaded in private draft
 release `435267059`. Draft/prerelease remain true and the source target is the
 exact tested commit. GitHub's installer size/SHA-256 and checksum-file digest
@@ -2201,7 +2201,7 @@ de-medical with bundled models. Only the project shortcut is updated.
 No VM, clinical validation or universal Windows-PC certification was added.
 
 Dev.24 source commit `bbc80e35fe7657ae004b8d9d5af259032b9062b8` passed Windows
-CI: https://github.com/phil2001/2026-10_BlitzDic/actions/runs/42062270677.
+CI: https://github.com/phil2001/BlitzDic/actions/runs/42062270677.
 Private draft release `435494089` now holds the installer and matching checksum
 file. Uploaded installer size (1,186,216,835 bytes), SHA-256, checksum-file digest,
 source target and draft/prerelease flags match local evidence in
@@ -2294,3 +2294,24 @@ Build: `windows-2026-11-21T08-23-05-801Z-23d6fe`. Installer 1,193,977,340 bytes,
 `d7594a2ae2dafb9d010e0f6d2a89c572cc28cc410f4446858f80cac43292a98a`. On `win-unpacked`:
 `verify-installed.mjs`, `verify-term-correction-ui.mjs`, `verify-windows-package.ps1` and
 `verify-shortcut-keys.mjs` with real keystrokes passed.
+
+## 2026-11-21: repository renamed to BlitzDic, release 1.0.1
+
+User request: rename `phil2001/2026-10_BlitzDic` to `phil2001/BlitzDic` everywhere; the local
+folder stays. GitHub redirects web and git URLs, but the old API URL now answers 301 to
+`/repositories/1440779940/...`, and the update check refuses redirects. So 0.3.10-dev.* and
+1.0.0 report "GitHub ist nicht erreichbar" after the rename; their "Veröffentlichungen öffnen"
+still reaches the page through the web redirect.
+
+1.0.1 queries `https://api.github.com/repositories/1440779940/releases/latest` (the permanent
+repository id) and derives the allowed download prefix from the release's `html_url`, which
+must be a release page of the `phil2001` account; asset URLs must lie in that same repository.
+New test covers a renamed repository, a mixed-repository asset and another account. Links in
+README, STATUS, PRIVACY, SUPPORT, the work log and the sherpa BUILD notes use the new name;
+the git remote points to `https://github.com/phil2001/BlitzDic`.
+
+Build: `windows-2026-11-21T08-49-41-312Z-0fcda3`. Installer 1,193,978,735 bytes, SHA-256
+`7c800454d4d5bd087aae1906b2e0ffff98c051c0019b7db0cb3786d122e525b4`. Node 142 passed, 4 skipped.
+On `win-unpacked`: `verify-installed.mjs`, `verify-term-correction-ui.mjs`,
+`verify-windows-package.ps1` and `verify-shortcut-keys.mjs` (synthetic keys, screen locked)
+passed. Release v1.0.0 is deleted as agreed with the user; the tag v1.0.0 stays.

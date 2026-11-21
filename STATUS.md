@@ -8,10 +8,12 @@ Die lokale Diktier-App mit Whisper und Parakeet steht im Vordergrund. Keine neue
 Test-VM, keine zusätzlichen Funktionen und keine umfangreiche Testinfrastruktur.
 Weitere Arbeiten werden nach Rückmeldung zur Benutzung festgelegt.
 
-- Version **1.0.0**, erste öffentliche Veröffentlichung: **BlitzDic Setup 1.0.0.exe** unter
-  [Veröffentlichungen](https://github.com/phil2001/2026-10_BlitzDic/releases/tag/v1.0.0) und im
-  Hauptordner, Windows 11 **x64** (SHA-256 `d7594a2ae2dafb9d010e0f6d2a89c572cc28cc410f4446858f80cac43292a98a`).
-  Das Repository ist dafür öffentlich. Updates: in der App „Auf neue Version prüfen“, dann das
+- Version **1.0.1**: **BlitzDic Setup 1.0.1.exe** unter
+  [Veröffentlichungen](https://github.com/phil2001/BlitzDic/releases/tag/v1.0.1) und im
+  Hauptordner, Windows 11 **x64** (SHA-256 `7c800454d4d5bd087aae1906b2e0ffff98c051c0019b7db0cb3786d122e525b4`).
+  Das Repository ist öffentlich und heißt seit 21.11.2026 `phil2001/BlitzDic` (früher
+  `2026-10_BlitzDic`). Release 1.0.0 wurde entfernt, weil seine Update-Prüfung den alten Namen
+  nutzt; der Git-Tag v1.0.0 bleibt. Updates: in der App „Auf neue Version prüfen“, dann das
   neue Setup über „Veröffentlichungen öffnen“ herunterladen und starten.
   Installiert ist auf diesem PC noch dev.25 unter `C:\Program Files\BlitzDic`.
 - Voreinstellung neuer Installationen: **Wortgenau**, **Parakeet Ultra (NVIDIA / Moondream)**,
@@ -26,7 +28,7 @@ Weitere Arbeiten werden nach Rückmeldung zur Benutzung festgelegt.
 - Die lokale Ausgabe wurde direkt gestartet; die ältere registrierte
   Testinstallation dev.20 wurde dabei nicht entfernt oder aktualisiert.
 - Dev.24-Installer und Prüfsumme liegen lokal und als unveröffentlichter
-  [privater Release-Entwurf](https://github.com/phil2001/2026-10_BlitzDic/releases/tag/untagged-844c147fb152289d0ade)
+  [privater Release-Entwurf](https://github.com/phil2001/BlitzDic/releases/tag/untagged-844c147fb152289d0ade)
   vor. Hochgeladene Größe und SHA-256 sind abgeglichen. Der Installer ist unsigniert; eine Freigabe für alle Ordinations-PCs ist
   damit noch nicht belegt.
 

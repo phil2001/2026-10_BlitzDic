@@ -2,7 +2,7 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {checkRelease, supportInfo, releasesURL} from '../src/releases.js';
 
-const stable = (tag = 'v0.3.10') => ({tag_name: tag, draft: false, prerelease: false,
+const stable = (tag = 'v0.3.10') => ({tag_name: tag, draft: false, prerelease: false, html_url: `${releasesURL}/tag/${tag}`,
   assets: [{name: 'BlitzDic Setup 0.3.10.exe', size: 123,
     browser_download_url: `${releasesURL}/download/${tag}/BlitzDic%20Setup%200.3.10.exe`}]});
 const fixture = data => ({fetchImpl: async () => Response.json(data)});
@@ -23,9 +23,25 @@ test('release check distinguishes stable upgrades, development builds and missin
   assert.equal((await checkRelease('0.3.9', fixture(foreign))).state, 'no-windows-installer');
 });
 
-test('update check contacts only the fork endpoint with no user data and rejects redirects', async () => {
+test('a renamed repository keeps working, but only in the same GitHub account', async () => {
+  assert.equal(releasesURL, 'https://github.com/phil2001/BlitzDic/releases');
+  const renamed = stable();
+  renamed.html_url = 'https://github.com/phil2001/BlitzDic-Neu/releases/tag/v0.3.10';
+  renamed.assets[0].browser_download_url = 'https://github.com/phil2001/BlitzDic-Neu/releases/download/v0.3.10/BlitzDic%20Setup%200.3.10.exe';
+  assert.equal((await checkRelease('0.3.9', fixture(renamed))).state, 'available');
+  // Asset in another repository than the release page, or a release page of another account: refused.
+  const mixed = stable(); mixed.assets[0].browser_download_url = renamed.assets[0].browser_download_url;
+  assert.equal((await checkRelease('0.3.9', fixture(mixed))).state, 'no-windows-installer');
+  const otherAccount = stable();
+  otherAccount.html_url = 'https://github.com/someone/BlitzDic/releases/tag/v0.3.10';
+  otherAccount.assets[0].browser_download_url = 'https://github.com/someone/BlitzDic/releases/download/v0.3.10/BlitzDic%20Setup%200.3.10.exe';
+  assert.equal((await checkRelease('0.3.9', fixture(otherAccount))).state, 'no-windows-installer');
+  assert.equal((await checkRelease('0.3.9', fixture({...stable(), html_url: undefined}))).state, 'no-windows-installer');
+});
+
+test('update check contacts only the repository-id endpoint with no user data and rejects redirects', async () => {
   const result = await checkRelease('0.3.10-dev.20', {fetchImpl: async (url, options) => {
-    assert.equal(url, 'https://api.github.com/repos/phil2001/2026-10_BlitzDic/releases/latest');
+    assert.equal(url, 'https://api.github.com/repositories/1440779940/releases/latest');
     assert.equal(options.redirect, 'error'); assert.equal(options.credentials, 'omit');
     assert.equal(options.body, undefined); assert.equal(options.headers.Authorization, undefined);
     return new Response(null, {status: 404});

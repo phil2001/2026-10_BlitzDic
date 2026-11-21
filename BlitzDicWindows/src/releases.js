@@ -1,5 +1,9 @@
-export const releasesURL = 'https://github.com/phil2001/2026-10_BlitzDic/releases';
-const endpoint = 'https://api.github.com/repos/phil2001/2026-10_BlitzDic/releases/latest';
+export const releasesURL = 'https://github.com/phil2001/BlitzDic/releases';
+// The repository is addressed by its permanent GitHub id (phil2001/BlitzDic, formerly
+// 2026-10_BlitzDic): a rename would otherwise turn the request into a refused redirect.
+const endpoint = 'https://api.github.com/repositories/1440779940/releases/latest';
+// Download links carry the repository's current name; they must stay in this owner's account.
+const releasePage = /^https:\/\/github\.com\/phil2001\/([A-Za-z0-9._-]+)\/releases\/tag\/[^/]+$/;
 
 function version(value) {
   if (typeof value !== 'string' || value.length > 100) return null;
@@ -54,7 +58,9 @@ export async function checkRelease(installedVersion, {fetchImpl = fetch, timeout
   const latest = version(release?.tag_name);
   if (!latest || latest.pre.length || release.draft !== false || release.prerelease !== false)
     throw new Error('Keine gültige stabile Veröffentlichung gefunden.');
-  const assetPrefix = `${releasesURL}/download/${encodeURIComponent(release.tag_name)}/`;
+  const repository = releasePage.exec(typeof release.html_url === 'string' ? release.html_url : '')?.[1];
+  if (!repository) return {state: 'no-windows-installer', version: release.tag_name};
+  const assetPrefix = `https://github.com/phil2001/${repository}/releases/download/${encodeURIComponent(release.tag_name)}/`;
   const releaseVersion = release.tag_name.replace(/^v/, '');
   // GitHub normalizes spaces in uploaded asset names to dots. Accept only
   // these two exact product/version names and their matching repository URL.
