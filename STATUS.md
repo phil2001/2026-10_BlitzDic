@@ -1,6 +1,6 @@
 # Status: BlitzDic für Windows 11
 
-Stand: 20.11.2026
+Stand: 21.11.2026
 
 ## Aktueller Auftrag und nutzbarer Stand
 
@@ -8,11 +8,18 @@ Die lokale Diktier-App mit Whisper und Parakeet steht im Vordergrund. Keine neue
 Test-VM, keine zusätzlichen Funktionen und keine umfangreiche Testinfrastruktur.
 Weitere Arbeiten werden nach Rückmeldung zur Benutzung festgelegt.
 
-- Installer: **BlitzDic Setup 0.3.10-dev.25.exe** im Hauptordner, Windows 11 **x64**
-  (SHA-256 `b6bde70bbb2e94b1d39b534a6f20f10bd03ce1964ec255cd0cd4c7d86c3bb8fa`).
+- Version **1.0.0**, erste öffentliche Veröffentlichung: **BlitzDic Setup 1.0.0.exe** unter
+  [Veröffentlichungen](https://github.com/phil2001/2026-10_BlitzDic/releases/tag/v1.0.0) und im
+  Hauptordner, Windows 11 **x64** (SHA-256 `d7594a2ae2dafb9d010e0f6d2a89c572cc28cc410f4446858f80cac43292a98a`).
+  Das Repository ist dafür öffentlich. Updates: in der App „Auf neue Version prüfen“, dann das
+  neue Setup über „Veröffentlichungen öffnen“ herunterladen und starten.
+  Installiert ist auf diesem PC noch dev.25 unter `C:\Program Files\BlitzDic`.
 - Voreinstellung neuer Installationen: **Wortgenau**, **Parakeet Ultra (NVIDIA / Moondream)**,
   **Medizinisches Deutsch** mit **Fachbegriff-Korrektur**.
 - **Whisper Small** ist unter **Modelle** auswählbar.
+- Tastenkürzel (seit dev.26): **Alt+Leertaste** Wortgenau,
+  **Alt+Leertaste+1/2/3** Überarbeiten, Ruhig formulieren, Mit Emojis. Kürzelfelder nehmen
+  die gedrückten Tasten auf. Auf diesem PC belegt Google Gemini Alt+Leertaste.
 - Ältere Einträge: dev.24 lief auf dem früheren Arbeitsrechner über **BlitzDic Lokal.lnk**.
 - Beide Modelle und die Sprachlaufzeit sind enthalten. Für Diktate sind kein
   zusätzliches Python, Visual Studio, CUDA, LM Studio oder OpenAI-Konto nötig.

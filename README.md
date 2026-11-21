@@ -14,15 +14,18 @@ auf einem frischen Windows-11-PC ohne Entwicklertools ist noch zu verifizieren.
 Für optionale KI-Textüberarbeitung kann ein gemeinsamer LLM-Server im Netzwerk
 konfiguriert werden; dann wird auf den Arbeitsplätzen kein LM Studio benötigt.
 
-**Status: Entwicklungsversion. Noch keine fertig geprüfte Veröffentlichung.**
+**Status: Version 1.0.0, erste öffentliche Veröffentlichung.** Der Installer ist nicht
+signiert. Die Installation auf einem frischen Windows-11-PC ohne Entwicklertools ist noch
+nicht geprüft. Erkennung und Fachbegriff-Korrektur ersetzen keine Prüfung des Textes.
 
 Kurzer Arbeitsstand und nächste Schritte: [STATUS.md](STATUS.md).
 
-**Lokale Version bereit:** Auf dem aktuellen Arbeitsrechner startet die
-Verknüpfung **BlitzDic Lokal** im Projektordner die vorhandene Windows-Ausgabe.
-Sie ist auf **Wortgenau** mit **Whisper** vorbereitet; **Parakeet Ultra** lässt
-sich unter **Modelle** auswählen. Beide Modelle sind enthalten, ein LLM-Server
-ist dafür nicht nötig. Weitere Tests wurden auf Wunsch des Benutzers zurückgestellt.
+**Herunterladen und aktualisieren:** Den Installer gibt es unter
+[Veröffentlichungen](https://github.com/phil2001/2026-10_BlitzDic/releases/latest).
+Für ein Update in BlitzDic unter **Einstellungen → Über BlitzDic** auf **Auf neue Version
+prüfen** klicken. Ist eine neuere Version da, mit **Veröffentlichungen öffnen** das neue
+Setup herunterladen und starten; es ersetzt die installierte Version, Einstellungen und
+Verlauf bleiben erhalten. BlitzDic lädt und installiert nichts selbst.
 
 ## Funktionen
 
@@ -56,15 +59,15 @@ Ein zusätzliches lokales LLM hat eigene RAM-/VRAM-Anforderungen.
 
 ## Installation und Bedienung
 
-Der aktuelle lokale Entwicklungsinstaller ist **0.3.10-dev.25**. Er liegt als
-`BlitzDic Setup 0.3.10-dev.25.exe` im Hauptordner des Projekts (etwa 1,19 GB, nicht in Git;
-Build `windows-2026-11-20T18-07-38-704Z-1ecd31`). Er enthält beide Sprachmodelle, die lokale
-Sprachlaufzeit, Parakeet Ultra als Standard und die Fachbegriff-Korrektur.
+Die aktuelle Version ist **1.0.0**: `BlitzDic Setup 1.0.0.exe` (etwa 1,19 GB) mit
+`SHA256SUMS.txt` unter [Veröffentlichungen](https://github.com/phil2001/2026-10_BlitzDic/releases/tag/v1.0.0)
+(Build `windows-2026-11-21T08-23-05-801Z-23d6fe`). Er enthält beide Sprachmodelle, die lokale
+Sprachlaufzeit, Parakeet Ultra als Standard, die Fachbegriff-Korrektur und die Tastenkürzel
+Alt+Leertaste (+1/2/3) mit Tastenaufnahme in den Einstellungen.
 Installation: Setup starten, bei der Windows-Warnung **Weitere Informationen → Trotzdem
 ausführen**, Lizenz bestätigen, Ordner wählen. Installiert wird ohne Administratorrechte für
 das angemeldete Windows-Konto.
-Der Installer ist noch nicht signiert; eine fertige Release-Datei ist noch nicht
-veröffentlicht. Die gebaute App wurde auf dem Entwicklungs-PC mit einem frischen
+Der Installer ist noch nicht signiert. Die gebaute App wurde auf dem Entwicklungs-PC mit einem frischen
 Testprofil geprüft. Eine Neuinstallation auf einem frischen Windows-11-PC bleibt
 zu prüfen. Die Testinstallation auf dem Entwicklungs-PC wurde nach Freigabe auf
 dev.20 aktualisiert; beide enthaltenen Modelle und die Oberfläche sind dort geprüft.
@@ -118,7 +121,13 @@ wähle den Ordner, der die Gewichte und die zugehörigen Konfigurations- und
 Tokenizerdateien enthält. BlitzDic lädt das gewählte Modell lokal aus diesem
 Ordner.
 
-Standard-Tastenkürzel: Strg+Umschalt+1 bis 4 für die vier Modi.
+Standard-Tastenkürzel: **Alt+Leertaste** diktiert wortgenau. Für die anderen Modi Alt halten,
+Leertaste und dann eine Zahl drücken: **Alt+Leertaste+1** Überarbeiten, **+2** Ruhig formulieren,
+**+3** Mit Emojis. Ältere Installationen mit den bisherigen Standardkürzeln (Strg+Umschalt+1 bis 4)
+erhalten die neuen automatisch; selbst gewählte Kürzel bleiben. Zum Ändern unter **Einstellungen**
+ins Kürzelfeld klicken und die gewünschten Tasten drücken. Alt+Leertaste öffnet sonst das
+Windows-Fenstermenü; belegt ein anderes Programm die Tasten (etwa Google Gemini), meldet BlitzDic
+das, und im Kürzelfeld lässt sich eine andere Kombination wählen.
 Einmal drücken startet, erneut drücken beendet die Aufnahme.
 Zum Einfügen den Cursor zuerst im Zielprogramm setzen und dort das Kürzel benutzen.
 Bleiben Feld, Inhalt und Auswahl unverändert, wird das Ergebnis dort eingefügt.

@@ -2239,3 +2239,58 @@ passed for Whisper and Parakeet. That script first failed with a UTF-8 BOM on st
 under console code page 65001 (Windows PowerShell 5.1 writes the preamble); it now uses
 a BOM-free input encoding while starting the worker. The setup itself was not run here;
 no GitHub release was created.
+
+## 2026-11-21: Alt+Space shortcuts and key recording in the settings
+
+User request: Alt+Space for Wortgenau, Alt+Space+1/2/3 for Überarbeiten, Ruhig formulieren
+and Mit Emojis; shortcut fields fill in the pressed keys instead of typed text.
+
+Windows registers one key plus modifiers per hotkey, so a sequence like Alt+Space+1 is a
+registered first part (Alt+Space, starts Wortgenau at once) plus its last keys (Alt+1/2/3),
+registered for two seconds after it only. A digit in that window switches the dictation just
+started; if the first part stopped a dictation, the digit is ignored. Held-key repeats within
+600 ms count once. Hold mode watches the first part for release. New code:
+`src/shortcuts.js` (parse, German display, plan, key mapping from the Windows virtual-key
+code), `src/shortcut-keys.js` (registration, sequence window, capture routing).
+Untouched former defaults (Ctrl+Shift+1..4) migrate once (`shortcutLayout: 2`); own
+shortcuts stay. Shortcut fields record keys; Backspace clears, Escape cancels. While a field
+records, BlitzDic's own hotkeys and a temporary Alt+Space are forwarded to it, so Alt+Space
+does not open the window menu. Taken keys are reported as "(von einem anderen Programm belegt)".
+
+On this PC Google Gemini owns Alt+Space (`%APPDATA%/Gemini/settings.json`, "shortcut");
+RegisterHotKey returns 1409. BlitzDic reports it; Alt+1/2/3 were free. The installed dev.25
+holds Ctrl+Shift+2..4, so `verify-hotkey.mjs` now registers only the shortcut it presses.
+
+Tests: Node 141 passed, 4 skipped (new: 11 shortcut tests, 1 store migration test); Python
+hold keys 2 passed. `verify-shortcut-keys.mjs` with real keystrokes (Ctrl+Up+1, since Alt+Space
+is taken here): fields record Strg + ↑ + 1 and Strg + ↑ (the latter forwarded from the
+registered hotkey), Backspace/Escape, Ctrl+Up+1 starts a dictation in Überarbeiten, Ctrl+Up
+stops it, rewrite fixture reached. Fixed on the way: a digit arriving before the page had
+started recording was lost; it now counts for three seconds after a shortcut start.
+`verify-hotkey.mjs` toggle and hold passed. Installer: dev.26 below.
+
+Build dev.26: `windows-2026-11-21T07-54-55-523Z-beda6f`, all build checks passed in one run
+(including the fused-runtime check). Installer 1,193,977,835 bytes, SHA-256
+`dd5a764693b200b187c4096c9d254d716940c81f77cb60f9f89e4440f35f64fc`, copied to the project root.
+On `win-unpacked`: `verify-installed.mjs`, `verify-term-correction-ui.mjs` (its settings save
+now also accepts the "Tastenkürzel nicht verfügbar" addition, since Gemini holds Alt+Space here),
+`verify-shortcut-keys.mjs` with synthetic keys (screen locked at the time) and
+`verify-windows-package.ps1` passed. Real keystrokes were checked on the source app only.
+
+## 2026-11-21: 1.0.0 — first public release
+
+User decision: publish stable releases publicly by making this repository public (the user
+was told that commit metadata contains a private e-mail address and that the work log is
+included), version 1.0.0, uploaded with GitHub CLI. Before the switch, all 144 commits were
+searched for tokens, keys, private keys, credential files, audio and patient data: nothing
+found besides test fixtures and third-party addresses in licence texts. Workflows use no
+secrets and no `pull_request_target`.
+
+The update check needs no code change: it reads the latest public, stable release and
+accepts `BlitzDic Setup 1.0.0.exe` or GitHub's dotted form. Dry run: installed
+0.3.10-dev.26 → available v1.0.0; installed 1.0.0 → current.
+
+Build: `windows-2026-11-21T08-23-05-801Z-23d6fe`. Installer 1,193,977,340 bytes, SHA-256
+`d7594a2ae2dafb9d010e0f6d2a89c572cc28cc410f4446858f80cac43292a98a`. On `win-unpacked`:
+`verify-installed.mjs`, `verify-term-correction-ui.mjs`, `verify-windows-package.ps1` and
+`verify-shortcut-keys.mjs` with real keystrokes passed.
