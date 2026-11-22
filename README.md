@@ -20,7 +20,8 @@ Repositorys steht er rechts unter **Releases**, bei schmalem Fenster weiter unte
    öffnen. Der Link führt immer zur neuesten Version. Eine Anmeldung bei GitHub ist nicht nötig.
 2. Ganz unten unter **Assets** die Datei **`BlitzDic.Setup.<Version>.exe`** herunterladen, zum
    Beispiel `BlitzDic.Setup.1.0.1.exe` (GitHub zeigt etwa 1,11 GB an). **Nicht** „Source code
-   (zip)“ – das ist nur der Quellcode, kein Installer.
+   (zip)“ – das ist nur der Quellcode, kein Installer. Blockiert Chrome den Download, siehe
+   [Häufige Probleme](#häufige-probleme).
 3. Die heruntergeladene Datei doppelklicken. Weil der Installer nicht signiert ist, zeigt Windows
    „Der Computer wurde durch Windows geschützt“: auf **Weitere Informationen** und dann auf
    **Trotzdem ausführen** klicken.
@@ -96,6 +97,19 @@ erhalten; wer sie ebenfalls entfernen will, löscht diesen Ordner von Hand.
 - **„Der Computer wurde durch Windows geschützt“ beim Installieren:** Der Installer ist nicht
   signiert. **Weitere Informationen → Trotzdem ausführen**. Wer sichergehen will, prüft vorher
   die Datei wie oben beschrieben.
+- **Chrome meldet „Diese Datei wurde vom erweiterten Sicherheitsprogramm blockiert“:** Das ist
+  kein Virusfund. Ist das Google-Konto im Erweiterten Sicherheitsprogramm von Google (Advanced
+  Protection), blockiert Chrome selten heruntergeladene, nicht signierte Dateien – das betrifft
+  vor allem frisch veröffentlichte BlitzDic-Versionen. Den Schutz deshalb nicht abschalten,
+  sondern die Datei in PowerShell herunterladen (bei einer neueren Version beide
+  Versionsnummern anpassen) und danach wie oben unter **Datei prüfen** vergleichen:
+
+  ```powershell
+  curl.exe -L -o "$env:USERPROFILE\Downloads\BlitzDic.Setup.1.0.1.exe" "https://github.com/phil2001/BlitzDic/releases/download/v1.0.1/BlitzDic.Setup.1.0.1.exe"
+  ```
+
+  Alternativ mit einem Chrome-Profil ohne dieses Google-Konto oder mit Microsoft Edge
+  herunterladen.
 - **„Tastenkürzel nicht verfügbar … (von einem anderen Programm belegt)“:** Ein anderes Programm
   nutzt dieselben Tasten, z. B. Google Gemini die Alt+Leertaste. Entweder dort das Kürzel ändern
   oder in BlitzDic unter **Einstellungen** andere Tasten ins Kürzelfeld drücken.
