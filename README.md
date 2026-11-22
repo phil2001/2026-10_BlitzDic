@@ -1,33 +1,112 @@
 # BlitzDic für Windows 11
 
-BlitzDic ist eine Windows-11-Diktier-App mit lokaler Spracherkennung durch
-**OpenAI Whisper Small** und **Parakeet Ultra (NVIDIA / Moondream)**.
-Beide Modelle und die Sprachlaufzeit sind im vollständigen Windows-Paket enthalten.
-Keine separate Python-Installation, kein LM Studio und kein nachträglicher Modelldownload nötig. Für reine Spracherkennung ist auch kein OpenAI-Konto erforderlich.
+BlitzDic ist eine Diktier-App für Windows 11. Du sprichst, BlitzDic schreibt – direkt in
+das Programm, in dem gerade der Cursor steht. Die Spracherkennung läuft **lokal auf dem PC**
+mit **Parakeet Ultra** (Standard) oder **OpenAI Whisper Small**. Beide Modelle sind im
+Installer enthalten: kein Python, kein Modelldownload, kein Konto nötig.
 
-**Bereitstellung in der Ordination:** Ein vollständiger BlitzDic-Installer pro
-Windows-11-x64-Arbeitsplatz ist das Ziel. Whisper, Parakeet und die benötigten
-Sprachlaufzeiten werden mitgeliefert. Auf den Arbeitsplätzen sollen weder Visual
-Studio noch Python, CUDA oder ein gesondertes C++-Laufzeitpaket installiert werden
-müssen. Visual Studio Community gehört zur Entwicklungsumgebung. Die Installation
-auf einem frischen Windows-11-PC ohne Entwicklertools ist noch zu verifizieren.
-Für optionale KI-Textüberarbeitung kann ein gemeinsamer LLM-Server im Netzwerk
-konfiguriert werden; dann wird auf den Arbeitsplätzen kein LM Studio benötigt.
+> **Hinweis:** Erkennung und Fachbegriff-Korrektur ersetzen keine Prüfung des Textes.
+> Bitte Fachbegriffe, Zahlen und Einheiten immer kontrollieren.
 
-**Status: Version 1.0.1.** Das Repository heißt `phil2001/BlitzDic` (früher
-`2026-10_BlitzDic`); Versionen bis 1.0.0 finden seit der Umbenennung keine Updates und
-werden einmal von Hand auf 1.0.1 aktualisiert. Der Installer ist nicht
-signiert. Die Installation auf einem frischen Windows-11-PC ohne Entwicklertools ist noch
-nicht geprüft. Erkennung und Fachbegriff-Korrektur ersetzen keine Prüfung des Textes.
+## Installation
 
-Kurzer Arbeitsstand und nächste Schritte: [STATUS.md](STATUS.md).
+Zum Installieren brauchst du **nur eine Datei, nicht das Repository**. Das Repository
+enthält den Quellcode; den fertigen Installer gibt es auf der Seite „Releases“.
 
-**Herunterladen und aktualisieren:** Den Installer gibt es unter
-[Veröffentlichungen](https://github.com/phil2001/BlitzDic/releases/latest).
-Für ein Update in BlitzDic unter **Einstellungen → Über BlitzDic** auf **Auf neue Version
-prüfen** klicken. Ist eine neuere Version da, mit **Veröffentlichungen öffnen** das neue
-Setup herunterladen und starten; es ersetzt die installierte Version, Einstellungen und
-Verlauf bleiben erhalten. BlitzDic lädt und installiert nichts selbst.
+1. Im Browser die Seite **[Releases – neueste Version](https://github.com/phil2001/BlitzDic/releases/latest)**
+   öffnen. Eine Anmeldung bei GitHub ist nicht nötig.
+2. Unter **Assets** die Datei **`BlitzDic.Setup.<Version>.exe`** herunterladen, zum Beispiel
+   `BlitzDic.Setup.1.0.1.exe` (etwa 1,2 GB).
+3. Die heruntergeladene Datei doppelklicken. Weil der Installer nicht signiert ist, zeigt Windows
+   „Der Computer wurde durch Windows geschützt“: auf **Weitere Informationen** und dann auf
+   **Trotzdem ausführen** klicken.
+4. Lizenz bestätigen und wählen, ob BlitzDic **für alle Benutzer** des PCs (Windows fragt dann
+   nach Administratorrechten) oder **nur für dein Konto** installiert wird. Ordner bestätigen.
+5. Fertig: BlitzDic erscheint als Symbol unten rechts im Infobereich und startet ab jetzt
+   automatisch mit Windows.
+
+**Datei prüfen (optional):** Im selben Release liegt `SHA256SUMS.txt`. In PowerShell ausführen
+(Dateiname bei Bedarf anpassen) und die angezeigte Zahl mit der Zahl in `SHA256SUMS.txt`
+vergleichen (Groß-/Kleinschreibung spielt keine Rolle). Stimmen beide überein, ist die Datei
+unverändert.
+
+```powershell
+Get-FileHash "$env:USERPROFILE\Downloads\BlitzDic.Setup.1.0.1.exe" -Algorithm SHA256
+```
+
+**Voraussetzungen:** Windows 11 (64 Bit), moderner Intel- oder AMD-Prozessor, 16 GB
+Arbeitsspeicher empfohlen, mindestens 5 GB freier Speicherplatz. Eine eigene Grafikkarte ist
+nicht nötig. Für die Fachbegriff-Korrektur muss **Deutsch** in Windows installiert sein
+(Einstellungen → Zeit und Sprache → Sprache und Region); auf deutschen PCs ist das üblich.
+Details: [Systemvoraussetzungen](BlitzDicWindows/SYSTEMVORAUSSETZUNGEN.md).
+
+## Aktualisieren
+
+1. In BlitzDic **Einstellungen → Über BlitzDic → Auf neue Version prüfen** klicken.
+2. Meldet BlitzDic eine neue Version, auf **Veröffentlichungen öffnen** klicken und dort das
+   neue Setup herunterladen.
+3. BlitzDic beenden (Rechtsklick auf das Symbol im Infobereich → **Beenden**) und das neue
+   Setup starten. Es ersetzt die installierte Version; **Einstellungen und Verlauf bleiben
+   erhalten**.
+
+BlitzDic prüft nur auf Knopfdruck und lädt oder installiert nichts selbst.
+Versionen **vor 1.0.1** finden keine Updates mehr (das Repository hieß früher
+`2026-10_BlitzDic`): diese bitte einmal von Hand wie oben unter „Installation“ auf die neueste
+Version bringen. Danach klappt das Aktualisieren wieder über die App.
+
+## Erste Schritte
+
+1. Den Cursor in das Programm setzen, in das geschrieben werden soll (Word, Browser,
+   Praxissoftware …).
+2. **Alt + Leertaste** drücken, sprechen, erneut **Alt + Leertaste** drücken. Der erkannte
+   Text wird an der Cursorposition eingefügt und bleibt zusätzlich in BlitzDic sichtbar.
+3. **Escape** beendet eine laufende Aufnahme; während der Verarbeitung bricht Escape ab.
+
+| Tasten | Schreibmodus |
+| --- | --- |
+| **Alt + Leertaste** | Wortgenau – genau wie gesprochen |
+| **Alt + Leertaste + 1** | Überarbeiten |
+| **Alt + Leertaste + 2** | Ruhig formulieren |
+| **Alt + Leertaste + 3** | Mit Emojis |
+
+Für die Zahlen die Alt-Taste gedrückt halten und Leertaste und Zahl nacheinander drücken.
+Die Modi außer Wortgenau brauchen einen KI-Dienst für die Textüberarbeitung; ihn richtest du
+unter **Verbindungen** ein (siehe unten).
+
+**Tasten ändern:** **Einstellungen → Globale Tastenkürzel**, ins Feld klicken und die gewünschten
+Tasten drücken – BlitzDic übernimmt genau die gedrückte Kombination. Rücktaste entfernt ein
+Kürzel, Escape bricht ab.
+
+**Fachbegriffe:** Bei der Diktatsprache **Medizinisches Deutsch** (Standard) korrigiert BlitzDic
+fast richtig erkannte Fachbegriffe, z. B. „Apexaban“ → „Apixaban“, und zeigt jede Anpassung
+unter dem Text an. Abschaltbar unter **Einstellungen**.
+
+## Deinstallieren
+
+Windows-Einstellungen → **Apps → Installierte Apps → BlitzDic → Deinstallieren**. Der
+Autostart wird dabei entfernt. Einstellungen und Verlauf bleiben in `%APPDATA%\BlitzDic`
+erhalten; wer sie ebenfalls entfernen will, löscht diesen Ordner von Hand.
+
+## Häufige Probleme
+
+- **„Der Computer wurde durch Windows geschützt“ beim Installieren:** Der Installer ist nicht
+  signiert. **Weitere Informationen → Trotzdem ausführen**. Wer sichergehen will, prüft vorher
+  die Datei wie oben beschrieben.
+- **„Tastenkürzel nicht verfügbar … (von einem anderen Programm belegt)“:** Ein anderes Programm
+  nutzt dieselben Tasten, z. B. Google Gemini die Alt+Leertaste. Entweder dort das Kürzel ändern
+  oder in BlitzDic unter **Einstellungen** andere Tasten ins Kürzelfeld drücken.
+- **„Fachbegriffe nicht korrigiert: Windows-Rechtschreibprüfung … nicht verfügbar“:** Deutsch
+  unter Einstellungen → Zeit und Sprache → Sprache und Region hinzufügen.
+- **Der Text wird nicht eingefügt:** Hat sich das Feld oder der Inhalt während des Diktats
+  geändert, fügt BlitzDic aus Sicherheitsgründen nicht ein. Der Text steht dann in BlitzDic
+  zum Kopieren bereit. Mehr dazu: [Windows-Einfügen](BlitzDicWindows/speech/WINDOWS_INSERTION.md).
+- **„GitHub ist nicht erreichbar“ bei der Update-Prüfung:** Internetverbindung prüfen. Bei
+  Versionen vor 1.0.1 einmal von Hand aktualisieren (siehe „Aktualisieren“).
+- **Fehler melden:** **Einstellungen → Über BlitzDic → Supportinformationen anzeigen**,
+  Text kopieren und als [Issue](https://github.com/phil2001/BlitzDic/issues) einreichen.
+  Bitte keine Patientendaten, Diktate oder Schlüssel mitschicken.
+
+Arbeitsstand und nächste Schritte der Entwicklung: [STATUS.md](STATUS.md).
 
 ## Funktionen
 
@@ -49,47 +128,13 @@ Verlauf bleiben erhalten. BlitzDic lädt und installiert nichts selbst.
 - Manuelle Versionsprüfung im eigenen GitHub-Repository und lokal vorbereitete
   Supportinformationen zur Prüfung und zum Kopieren.
 
-## Voraussetzungen
+## Bedienung im Detail
 
-Windows 11 x64, moderner Intel-/AMD-Mehrkernprozessor. 16 GB RAM empfohlen;
-eine verbindliche RAM-Mindestgrenze ist noch nicht ermittelt. Eine NVIDIA-GPU
-ist für den aktuellen CPU-Betrieb nicht erforderlich. Beide Modelle belegen
-zusammen etwa 1,16 GB. Zunächst mindestens 5 GB freien SSD-Speicher einplanen.
-
-Details und Quellen: [Systemvoraussetzungen](BlitzDicWindows/SYSTEMVORAUSSETZUNGEN.md).
-Ein zusätzliches lokales LLM hat eigene RAM-/VRAM-Anforderungen.
-
-## Installation und Bedienung
-
-Die aktuelle Version ist **1.0.1**: `BlitzDic Setup 1.0.1.exe` (etwa 1,19 GB) mit
-`SHA256SUMS.txt` unter [Veröffentlichungen](https://github.com/phil2001/BlitzDic/releases/tag/v1.0.1)
-(Build `windows-2026-11-21T08-49-41-312Z-0fcda3`). Er enthält beide Sprachmodelle, die lokale
-Sprachlaufzeit, Parakeet Ultra als Standard, die Fachbegriff-Korrektur und die Tastenkürzel
-Alt+Leertaste (+1/2/3) mit Tastenaufnahme in den Einstellungen.
-Installation: Setup starten, bei der Windows-Warnung **Weitere Informationen → Trotzdem
-ausführen**, Lizenz bestätigen, Ordner wählen. Installiert wird ohne Administratorrechte für
-das angemeldete Windows-Konto.
-Der Installer ist noch nicht signiert. Die gebaute App wurde auf dem Entwicklungs-PC mit einem frischen
-Testprofil geprüft. Eine Neuinstallation auf einem frischen Windows-11-PC bleibt
-zu prüfen. Die Testinstallation auf dem Entwicklungs-PC wurde nach Freigabe auf
-dev.20 aktualisiert; beide enthaltenen Modelle und die Oberfläche sind dort geprüft.
-Dev.21 ergänzt die Versionsprüfung und Supportanzeige; dev.22 korrigiert die
-Erkennung der von GitHub normalisierten Installer-Dateinamen. Diese Builds wurden
-separat gebaut und ersetzen die installierte dev.20 bisher nicht.
-Dev.23 beschriftet die Pegelanzeigen für Hilfstechnologien und kennzeichnet die
-aktuelle Navigationsseite. Diese Zustände und die Navigation per Enter sind im
-gebauten Paket geprüft; ein vollständiger Screenreader-Test steht noch aus.
-Dev.24 liegt auch als unveröffentlichter [Release-Entwurf im privaten Repository](https://github.com/phil2001/BlitzDic/releases/tag/untagged-844c147fb152289d0ade)
-mit vollständigem Installer und SHA256SUMS.txt bereit. Ein berechtigter GitHub-
-Zugang ist erforderlich. Der Entwurf ist noch keine freigegebene Veröffentlichung.
-Details zu Build, Prüfsumme und Tests stehen im [Arbeitsstand](WINDOWS_PORT.md).
-Das Setup enthält jetzt eine Lizenzseite. Die MIT-Lizenz für den eigenen Code
-und die Bedingungen für enthaltene Microsoft-Laufzeitdateien sind dort getrennt
-benannt; die separate SDK-Datei ist ebenfalls zugeordnet. Die Originalbedingungen
-sind zusätzlich im installierten Lizenzordner verfügbar. Eine gesonderte
-Visual-Studio-Installation auf dem Arbeitsplatz ist dafür nicht nötig.
-Die passenden Electron-/FFmpeg-Originalquellen und Bauhinweise werden ebenfalls
-mitgeliefert. Sie benötigen auf den Arbeitsplätzen keine Entwicklungswerkzeuge.
+Das Setup zeigt eine Lizenzseite: MIT-Lizenz für BlitzDic sowie die Bedingungen der
+mitgelieferten Microsoft-Laufzeitdateien. Alle Lizenztexte und die zugehörigen
+Electron-/FFmpeg-Quellen liegen nach der Installation im Lizenzordner (**Einstellungen →
+Über BlitzDic → Lizenzen und Quellcode öffnen**). Build-, Prüf- und Versionsgeschichte:
+[Arbeitsstand](WINDOWS_PORT.md).
 
 1. Nach Installation BlitzDic öffnen. Standard ist **Parakeet Ultra**; unter **Modelle** lässt sich
    Whisper wählen. Bereits gespeicherte Einstellungen behalten ihr Modell.
@@ -103,7 +148,7 @@ mitgeliefert. Sie benötigen auf den Arbeitsplätzen keine Entwicklungswerkzeuge
    was auch die Windows-Rechtschreibprüfung als falsch meldet
    ([Messung](BlitzDicWindows/SYSTEMVORAUSSETZUNGEN.md)). Es ist kein medizinisch trainiertes
    Modell; Fachbegriffe, Zahlen und Einheiten prüfen.
-   Ab 0.3.10-dev.10 merkt sich BlitzDic die Mikrofonwahl für Diktate und Meetings.
+   BlitzDic merkt sich die Mikrofonwahl für Diktate und Meetings.
    Falls das Gerät fehlt, es erneut verbinden oder **Standardmikrofon** wählen.
 3. Für Schreibmodi außer Wortgenau unter **Verbindungen** einen LLM-Server einrichten.
    LM Studio verwendet üblicherweise `http://127.0.0.1:1234/v1`,
@@ -123,14 +168,11 @@ wähle den Ordner, der die Gewichte und die zugehörigen Konfigurations- und
 Tokenizerdateien enthält. BlitzDic lädt das gewählte Modell lokal aus diesem
 Ordner.
 
-Standard-Tastenkürzel: **Alt+Leertaste** diktiert wortgenau. Für die anderen Modi Alt halten,
-Leertaste und dann eine Zahl drücken: **Alt+Leertaste+1** Überarbeiten, **+2** Ruhig formulieren,
-**+3** Mit Emojis. Ältere Installationen mit den bisherigen Standardkürzeln (Strg+Umschalt+1 bis 4)
-erhalten die neuen automatisch; selbst gewählte Kürzel bleiben. Zum Ändern unter **Einstellungen**
-ins Kürzelfeld klicken und die gewünschten Tasten drücken. Alt+Leertaste öffnet sonst das
-Windows-Fenstermenü; belegt ein anderes Programm die Tasten (etwa Google Gemini), meldet BlitzDic
-das, und im Kürzelfeld lässt sich eine andere Kombination wählen.
-Einmal drücken startet, erneut drücken beendet die Aufnahme.
+Tastenkürzel (Übersicht unter „Erste Schritte“): Ältere Installationen mit den früheren
+Standardkürzeln (Strg+Umschalt+1 bis 4) erhalten die neuen automatisch; selbst gewählte Kürzel
+bleiben. Alt+Leertaste öffnet sonst das Windows-Fenstermenü; solange BlitzDic läuft, gehört die
+Kombination BlitzDic. Unter **Einstellungen → Kürzelbedienung** lässt sich statt „Drücken:
+starten / erneut drücken: beenden“ auch „Halten: aufnehmen / loslassen: beenden“ wählen.
 Zum Einfügen den Cursor zuerst im Zielprogramm setzen und dort das Kürzel benutzen.
 Bleiben Feld, Inhalt und Auswahl unverändert, wird das Ergebnis dort eingefügt.
 Bei einer Änderung oder verweigertem Zugriff bleibt der Text in BlitzDic verfügbar.
@@ -304,15 +346,14 @@ sie aus den lokalen Modellordnern. Sprachtests mit echten Gewichten werden über
 ## Versionen und Support
 
 Unter **Einstellungen → Über BlitzDic** prüft **Auf neue Version prüfen** auf
-Knopfdruck die letzte stabile Veröffentlichung im Zielrepository. Nur passende
-Windows-Installer werden als Update angeboten. **Veröffentlichungen öffnen**
-öffnet die feste GitHub-Seite im Standardbrowser; Download und Installation
-erfolgen manuell. Es gibt keine automatische Installation und derzeit keine
-Signaturprüfung eines heruntergeladenen Updates durch BlitzDic.
-Die Versionsprüfung ist anonym und kann nur öffentlich zugängliche Releases
-finden. Dieses Zielrepository ist derzeit privat. Für dessen private Releases
-**Veröffentlichungen öffnen** verwenden und im Browser mit einem berechtigten
-GitHub-Konto anmelden; BlitzDic speichert dafür keinen GitHub-Zugang.
+Knopfdruck die letzte stabile, öffentliche Veröffentlichung dieses Repositorys. Nur passende
+Windows-Installer werden als Update angeboten; Vorabversionen und Entwürfe nicht.
+**Veröffentlichungen öffnen** öffnet die Release-Seite im Standardbrowser; Download und
+Installation erfolgen manuell (siehe „Aktualisieren“). Es gibt keine automatische
+Installation und derzeit keine Signaturprüfung eines heruntergeladenen Updates durch BlitzDic.
+Die Prüfung ist anonym und sendet keine Einstellungen, Diktate oder Gerätekennungen. Ab 1.0.1
+fragt sie GitHub über die feste Nummer des Repositorys und funktioniert damit auch nach einer
+Umbenennung.
 **Supportinformationen anzeigen** zeigt ausschließlich Version und Windows-
 Plattform mit einer Vorlage für die Fehlerbeschreibung. Erst **Kopieren**
 überträgt diesen Text in die Zwischenablage. Es wird keine Nachricht versendet.
