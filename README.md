@@ -13,7 +13,8 @@ Installer enthalten: kein Python, kein Modelldownload, kein Konto nötig.
 Zum Installieren brauchst du **nur eine Datei, nicht das Repository**. Das Repository
 enthält den Quellcode; den fertigen Installer gibt es auf der Seite **„Releases“**. Das ist
 **kein Ordner im Code**, sondern ein eigener Bereich von GitHub: Auf der Startseite des
-Repositorys steht er rechts unter **Releases** (dort „BlitzDic … Latest“ anklicken).
+Repositorys steht er rechts unter **Releases**, bei schmalem Fenster weiter unten (dort
+„BlitzDic … Latest“ anklicken).
 
 1. Im Browser die Seite **[Releases – neueste Version](https://github.com/phil2001/BlitzDic/releases/latest)**
    öffnen. Der Link führt immer zur neuesten Version. Eine Anmeldung bei GitHub ist nicht nötig.
