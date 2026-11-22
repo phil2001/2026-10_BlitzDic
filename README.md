@@ -11,12 +11,15 @@ Installer enthalten: kein Python, kein Modelldownload, kein Konto nötig.
 ## Installation
 
 Zum Installieren brauchst du **nur eine Datei, nicht das Repository**. Das Repository
-enthält den Quellcode; den fertigen Installer gibt es auf der Seite „Releases“.
+enthält den Quellcode; den fertigen Installer gibt es auf der Seite **„Releases“**. Das ist
+**kein Ordner im Code**, sondern ein eigener Bereich von GitHub: Auf der Startseite des
+Repositorys steht er rechts unter **Releases** (dort „BlitzDic … Latest“ anklicken).
 
 1. Im Browser die Seite **[Releases – neueste Version](https://github.com/phil2001/BlitzDic/releases/latest)**
-   öffnen. Eine Anmeldung bei GitHub ist nicht nötig.
-2. Unter **Assets** die Datei **`BlitzDic.Setup.<Version>.exe`** herunterladen, zum Beispiel
-   `BlitzDic.Setup.1.0.1.exe` (etwa 1,2 GB).
+   öffnen. Der Link führt immer zur neuesten Version. Eine Anmeldung bei GitHub ist nicht nötig.
+2. Ganz unten unter **Assets** die Datei **`BlitzDic.Setup.<Version>.exe`** herunterladen, zum
+   Beispiel `BlitzDic.Setup.1.0.1.exe` (GitHub zeigt etwa 1,11 GB an). **Nicht** „Source code
+   (zip)“ – das ist nur der Quellcode, kein Installer.
 3. Die heruntergeladene Datei doppelklicken. Weil der Installer nicht signiert ist, zeigt Windows
    „Der Computer wurde durch Windows geschützt“: auf **Weitere Informationen** und dann auf
    **Trotzdem ausführen** klicken.
