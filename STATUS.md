@@ -1,6 +1,6 @@
 # Status: BlitzDic für Windows 11
 
-Stand: 21.11.2026
+Stand: 23.11.2026
 
 ## Aktueller Auftrag und nutzbarer Stand
 
@@ -8,14 +8,18 @@ Die lokale Diktier-App mit Whisper und Parakeet steht im Vordergrund. Keine neue
 Test-VM, keine zusätzlichen Funktionen und keine umfangreiche Testinfrastruktur.
 Weitere Arbeiten werden nach Rückmeldung zur Benutzung festgelegt.
 
-- Version **1.0.1**: **BlitzDic Setup 1.0.1.exe** unter
-  [Veröffentlichungen](https://github.com/phil2001/BlitzDic/releases/tag/v1.0.1) und im
-  Hauptordner, Windows 11 **x64** (SHA-256 `7c800454d4d5bd087aae1906b2e0ffff98c051c0019b7db0cb3786d122e525b4`).
+- Version **1.0.2**: **BlitzDic Setup 1.0.2.exe** unter
+  [Veröffentlichungen](https://github.com/phil2001/BlitzDic/releases/tag/v1.0.2), Windows 11
+  **x64** (SHA-256 `e1aa1fbfbd042aa691a5e37b8c1c41f6c620b92065948a895b8faea864a1926d`).
+  Neu: Einfügen in CGM PcPo (Visual-Basic-6-Felder der Kartei und TX Text Control), am
+  23.11.2026 auf dem Ordinations-PC mit PcPo installiert und dort laut Rückmeldung mit
+  Diktat erfolgreich getestet.
+  Außerdem verwaltet nur die installierte Kopie den Windows-Autostart.
   Das Repository ist öffentlich und heißt seit 21.11.2026 `phil2001/BlitzDic` (früher
   `2026-10_BlitzDic`). Release 1.0.0 wurde entfernt, weil seine Update-Prüfung den alten Namen
   nutzt; der Git-Tag v1.0.0 bleibt. Updates: in der App „Auf neue Version prüfen“, dann das
   neue Setup über „Veröffentlichungen öffnen“ herunterladen und starten.
-  Installiert ist auf diesem PC noch dev.25 unter `C:\Program Files\BlitzDic`.
+  Auf dem Entwicklungs-PC wurde am 21.11.2026 1.0.1 installiert.
 - Voreinstellung neuer Installationen: **Wortgenau**, **Parakeet Ultra (NVIDIA / Moondream)**,
   **Medizinisches Deutsch** mit **Fachbegriff-Korrektur**.
 - **Whisper Small** ist unter **Modelle** auswählbar.

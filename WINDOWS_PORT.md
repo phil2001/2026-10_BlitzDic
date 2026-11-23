@@ -2332,3 +2332,30 @@ Unit test added (143 passed, 4 skipped). Checked with an unpacked package of thi
 and on, the Run entry stayed `"C:\Program Files\BlitzDic\BlitzDic.exe" --autostart`. With a
 placeholder uninstaller next to it the same copy registered itself as expected; the entry was
 then restored and checked.
+
+## 2026-11-23: CGM PcPo fields (Visual Basic 6, TX Text Control), release 1.0.2
+
+User report: dictation worked in Word but never in the practice software CGM PcPo, while
+Wispr Flow (clipboard paste) worked there. PcPo is a 32-bit, non-elevated Visual Basic 6
+program. Its fields are `ThunderRT6TextBox` (VB6 TextBox, an ANSI Edit superclass),
+`RichTextWndClass` (VB6 RichTextBox on RichEdit, ANSI; the Kartei entry) and `TX34`
+(TX Text Control 34, Unicode; Befunde). The native path accepted only the class names `Edit`
+and `RichEdit*`, so these went to the UI Automation fallback, which rejected them.
+
+`windows_target.py` now routes those named classes through the native Edit path with the same
+checks. ANSI windows refuse text outside the Windows code page (for example emoji) instead of
+receiving "?". TX Text Control answers WM_GETTEXT/EM_GETSEL/EM_REPLACESEL but counts a CRLF
+paragraph break as one selection position; the insertion context maps the positions back.
+
+`scripts/verify-vb6-insertion.py` builds VB6-like ANSI fields in a 64-bit and a 32-bit host
+process and checks insertion, selection, stale targets, emoji refusal, password/read-only and
+the clipboard through `--target-service`. In PcPo itself (test patient) a two-line test text was
+inserted into the Kartei field and a TX field with the new code; length, cursor and paragraph
+break matched, and the mapped TX position pointed right after the test text. The user then
+installed 1.0.2 on the practice PC and confirmed dictation into PcPo.
+
+Build: `windows-2026-11-23T05-35-55-122Z-44c0e8`. Installer 1,193,952,028 bytes, SHA-256
+`e1aa1fbfbd042aa691a5e37b8c1c41f6c620b92065948a895b8faea864a1926d`. Node 143 passed, 4 skipped.
+Against the packaged speech runtime: `verify-vb6-insertion.py`, `verify-insertion.py` (Edit and
+RichEdit) passed; `verify-windows-package.ps1` passed with Whisper and Parakeet. 1.0.2 also ships
+the autostart and update-check message fixes made after 1.0.1.
