@@ -5,6 +5,16 @@ zu Fenster und Auswahl wird der vollständige Text per SHA-256 verglichen. Bei
 Änderungen während der Aufnahme bleibt das Diktat in BlitzDic. Große RichEdit-Texte
 ab 64.000 UTF-16-Einheiten verwenden UI Automation, damit kein gekürzter Text als
 vollständiger Fingerabdruck gilt. Der Test mit 70.000 Zeichen besteht diesen Pfad.
+Programme aus Visual Basic 5/6, etwa CGM PcPo, verwenden für dieselben Steuerelemente
+eigene Klassennamen: `ThunderTextBox`, `ThunderRT5TextBox` und `ThunderRT6TextBox`
+(Edit) sowie `RichTextWndClass` (RichTextBox auf RichEdit-Basis). Sie laufen über
+denselben Weg mit denselben Prüfungen; andere unbekannte Klassen bleiben bei UI
+Automation. Solche Felder sind ANSI-Fenster: Enthält der Text Zeichen außerhalb der
+Windows-Codepage, etwa Emojis, wird nicht eingefügt und der Text bleibt in BlitzDic,
+statt als „?“ anzukommen. TX Text Control 34 (Klasse `TX34`, Textverarbeitung in
+PcPo) beantwortet dieselben Nachrichten und läuft ebenfalls über diesen Weg. Es zählt
+einen Absatzwechsel bei der Auswahl als eine Position, liefert im Text aber CR+LF;
+der Randkontext für die Anpassung rechnet die Position deshalb um.
 Andere Felder werden über Windows UI Automation geprüft und erhalten Unicode-
 Tastatureingaben über SendInput. Word erhält Text über seine native
 Dokumentschnittstelle. Die Zwischenablage wird dabei nicht verändert.
@@ -56,6 +66,7 @@ Aus BlitzDicWindows auf einem interaktiven Windows-Desktop:
 ```powershell
 .runtime/venv/Scripts/python.exe scripts/verify-insertion.py
 .runtime/venv/Scripts/python.exe scripts/verify-insertion.py --rich --large
+.runtime/venv/Scripts/python.exe scripts/verify-vb6-insertion.py
 node scripts/verify-uia.mjs
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/verify-word-insertion.ps1
 ```
@@ -66,6 +77,20 @@ Schreibschutz, mehrzeilige Felder und unveränderte Zwischenablage. RichEdit50W:
 dieselben Prüfungen sowie der große Text über UI Automation. Chromium: textarea und
 contenteditable, Unicode, Markierungen sowie Text-, Cursor- und Fokusänderungen,
 Passwortschutz und Schreibschutz. Erfolgreich geprüft am 31.10.2026.
+
+VB6: Ein eigener Hilfsprozess legt ANSI-Felder wie Visual Basic 6 an
+(`ThunderRT6TextBox` ein- und mehrzeilig, `RichTextWndClass` auf RichEdit 1.0), einmal
+als 64-Bit- und einmal als 32-Bit-Prozess wie PcPo. Geprüft werden Umlaute und
+typografische Zeichen, Markierungen ersetzen, Cursoränderung, Abweisung von Emojis,
+Passwort- und Schreibschutz über den dauerhaften Hilfsprozess (`--target-service`)
+sowie die unveränderte Zwischenablage. Erfolgreich geprüft am 22.11.2026.
+
+PcPo selbst (CGM PcPo, Kartei `Ax_Ka`, Testpatient, 23.11.2026): Je ein zweizeiliger
+Probetext mit Umlauten und typografischen Anführungszeichen wurde mit diesem Code in
+das Karteifeld (`RichTextWndClass`) und ein TX-Text-Control-Feld (`TX34`) eingefügt.
+Länge, Cursor und Absatzwechsel stimmten; im TX-Feld zeigte die umgerechnete Position
+genau hinter den Probetext. Nicht dadurch belegt: der vollständige Ablauf mit Diktat
+in der installierten App sowie PcPo-Dialoge mit Windows-Forms-Feldern.
 
 Word: Unicode/Emoji, Markierungen ersetzen, Rückgängig/Wiederholen, Absätze,
 Abweisung bei geändertem Text, Cursor oder aktivem Dokument, Dokumentschutz und

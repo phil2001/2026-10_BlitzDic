@@ -1,7 +1,9 @@
 """Conservative native Edit/RichEdit insertion without touching the clipboard.
 
-Other controls use UI Automation to verify focus, document fingerprint and selection.
-Password contents are never read; document fingerprints are not persisted.
+Visual Basic 5/6 text boxes (for example in CGM PcPo) are Edit/RichEdit controls under
+their own class names and use the same native path. Other controls use UI Automation
+to verify focus, document fingerprint and selection. Password contents are never read;
+document fingerprints are not persisted.
 """
 import ctypes as c
 from ctypes import wintypes as w
@@ -38,6 +40,8 @@ class GUI(c.Structure):
 user32.GetGUIThreadInfo.argtypes = [w.DWORD, c.POINTER(GUI)]
 user32.GetGUIThreadInfo.restype = w.BOOL
 user32.GetClassNameW.argtypes = [w.HWND, w.LPWSTR, c.c_int]
+user32.IsWindowUnicode.argtypes = [w.HWND]
+kernel32.GetACP.restype = w.UINT
 user32.GetWindowLongW.argtypes = [w.HWND, c.c_int]
 user32.GetWindowThreadProcessId.argtypes = [w.HWND, c.POINTER(w.DWORD)]
 user32.SendMessageTimeoutW.argtypes = [w.HWND, w.UINT, c.c_size_t, c.c_ssize_t, w.UINT, w.UINT, c.POINTER(c.c_size_t)]
@@ -48,6 +52,43 @@ def message(hwnd, msg, wp=0, lp=0):
     if not user32.SendMessageTimeoutW(hwnd, msg, wp, lp, 2, 500, c.byref(result)):
         raise RuntimeError('Textfeld antwortet nicht oder verweigert den Zugriff.')
     return result.value
+
+# Visual Basic TextBox and RichTextBox (RICHTX32.OCX) controls, and TX Text Control 34
+# (word processing in CGM PcPo), which answers the same Edit messages. Only these named
+# classes are added; any other unknown class keeps the UI Automation checks.
+VB_TEXT_BOXES = ('thundertextbox', 'thunderrt5textbox', 'thunderrt6textbox')
+VB_RICH_TEXT_BOXES = ('richtextwndclass', 'tx34')
+# WM_GETTEXT returns CRLF paragraph breaks, but EM_GETSEL counts each one as one position.
+CRLF_AS_ONE = ('tx34',)
+
+def text_index(value, copied, position):
+    """UTF-16 index in `value` of a selection position that counts each CRLF once."""
+    units = c.cast(value, c.POINTER(c.c_uint16))
+    index = 0
+    while position > 0 and index < copied:
+        index += 2 if index + 1 < copied and units[index] == 13 and units[index + 1] == 10 else 1
+        position -= 1
+    return index
+
+def native_kind(class_name):
+    """'edit' or 'richedit' for controls answering the standard Edit messages, else None."""
+    if class_name == 'edit' or class_name in VB_TEXT_BOXES:
+        return 'edit'
+    if class_name.startswith('richedit') or class_name in VB_RICH_TEXT_BOXES:
+        return 'richedit'
+    return None
+
+def representable(hwnd, text):
+    """ANSI windows such as Visual Basic 6 fields receive text in the Windows code page."""
+    if user32.IsWindowUnicode(hwnd):
+        return True
+    try:
+        text.encode(f'cp{kernel32.GetACP()}')
+    except LookupError:
+        return text.isascii()
+    except UnicodeEncodeError:
+        return False
+    return True
 
 def capture(website=False, scope=None):
     capture.website_host = None
@@ -76,7 +117,8 @@ def capture(website=False, scope=None):
         capture.website_host = uia_capture.website_host
         capture.reason = uia_capture.reason
         return target
-    if class_name != 'edit' and not class_name.startswith('richedit'):
+    kind = native_kind(class_name)
+    if kind is None:
         return uia_fallback()
     style = user32.GetWindowLongW(info.hwndFocus, -16)
     if style & (0x20 | 0x800):  # ES_PASSWORD or ES_READONLY
@@ -89,7 +131,7 @@ def capture(website=False, scope=None):
     length = message(info.hwndFocus, 0xE)  # WM_GETTEXTLENGTH, UTF-16 units
     # WM_GETTEXT is documented only up to 64K for RichEdit. Larger rich
     # documents use TextPattern rather than a partial native fingerprint.
-    if class_name.startswith('richedit') and length >= 64000:
+    if kind == 'richedit' and length >= 64000:
         return uia_fallback()
     if length > 1000000:
         capture.reason = 'Dokument zu groß für sicheres automatisches Einfügen.'
@@ -112,15 +154,18 @@ def capture(website=False, scope=None):
         capture.reason = 'Fokus oder Auswahl während Zielerfassung geändert.'
         return None
     pid = w.DWORD(); thread = user32.GetWindowThreadProcessId(info.hwndFocus, c.byref(pid))
+    first, last = start.value, end.value
+    if class_name in CRLF_AS_ONE:
+        first, last = (text_index(value, copied, position) for position in (first, last))
     return {'window': info.hwndActive, 'focus': info.hwndFocus, 'pid': pid.value,
             'thread': thread, 'class': class_name, 'start': start.value, 'end': end.value,
             'length': length, 'hash': fingerprint,
             # Selection offsets are UTF-16 units, not Python character offsets.
             # Bound context in IPC; never persist it or send it to a provider.
-            'before': c.string_at(c.addressof(value) + max(0, start.value - 160) * 2,
-                                  min(start.value, 160) * 2).decode('utf-16-le', errors='ignore'),
-            'after': c.string_at(c.addressof(value) + end.value * 2,
-                                 min(max(0, length - end.value), 160) * 2).decode('utf-16-le', errors='ignore')}
+            'before': c.string_at(c.addressof(value) + max(0, first - 160) * 2,
+                                  min(first, 160) * 2).decode('utf-16-le', errors='ignore'),
+            'after': c.string_at(c.addressof(value) + last * 2,
+                                 min(max(0, length - last), 160) * 2).decode('utf-16-le', errors='ignore')}
 
 def insert(target, text):
     if target and target.get('kind') == 'uia':
@@ -134,6 +179,9 @@ def insert(target, text):
         return {'inserted': False, 'reason': 'Eingabefeld oder Cursorposition geändert; Text bleibt in BlitzDic.'}
     if not isinstance(text, str) or '\x00' in text or len(text) > 100000:
         raise ValueError('Text kann nicht automatisch eingefügt werden.')
+    if not representable(target['focus'], text):
+        return {'inserted': False, 'reason': 'Der Text enthält Zeichen (z. B. Emojis), die dieses Programm '
+                'nicht darstellen kann; Text bleibt in BlitzDic.'}
     value = c.create_unicode_buffer(text.replace('\r\n', '\n').replace('\n', '\r\n'))
     message(target['focus'], 0xC2, 1, c.addressof(value))  # EM_REPLACESEL, undoable
     return {'inserted': True}
