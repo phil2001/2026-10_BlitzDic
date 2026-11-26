@@ -1,7 +1,9 @@
 const {app, BrowserWindow} = require('electron');
-app.commandLine.appendSwitch('force-renderer-accessibility');
+// BLITZDIC_TEST_LAZY_ACCESSIBILITY=1 leaves accessibility as an ordinary app has it.
+const forced = process.env.BLITZDIC_TEST_LAZY_ACCESSIBILITY !== '1';
+if (forced) app.commandLine.appendSwitch('force-renderer-accessibility');
 app.whenReady().then(async () => {
-  app.setAccessibilitySupportEnabled(true);
+  if (forced) app.setAccessibilitySupportEnabled(true);
   const window = new BrowserWindow({width: 700, height: 420});
   await window.loadURL('data:text/html;charset=utf-8,' + encodeURIComponent(`
     <title>BlitzDic UI Automation test</title>

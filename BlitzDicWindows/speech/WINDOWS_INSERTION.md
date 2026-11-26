@@ -41,6 +41,18 @@ und schreibgeschützte Felder werden abgewiesen. Nicht unterstützte oder mehrde
 Auswahlen, Dokumente über einer Million Zeichen und gedrückte Zusatztasten führen
 zum Abbruch. Die App verschiebt den Fokus nicht selbst zurück.
 
+Chromium-Programme (Chrome, Edge, die ChatGPT-App) legen ihren Zugänglichkeitsbaum erst
+an, wenn ein UI-Automation-Client das erste Mal fragt. Bis er steht, meldet Windows als
+fokussiertes Element nur einen Bereich des Browserfensters ohne Tastaturfokus (Chrome:
+das Fenster selbst, Edge: eine innere „View“), auch wenn der Cursor im Webtextfeld
+steht. Bei langen Seiten wie einem langen ChatGPT-Verlauf dauert das spürbar: im Test mit
+8.000 Absätzen etwa 0,7 s. Früher wies die Erfassung genau dann das Feld ab; das erste
+Diktat blieb in BlitzDic, erst das zweite kam an. Die Erfassung vor der Aufnahme wartet
+deshalb in genau diesem Zustand bis zu 2 s und fragt alle 100 ms erneut, gebunden an das
+beim ersten Versuch aktive Fenster. Alle anderen Abweisungen gelten sofort, und die
+Prüfung unmittelbar vor dem Einfügen wartet nie. Bleibt der Baum aus, meldet BlitzDic
+„Eingabefeld der Anwendung noch nicht über UI Automation lesbar“.
+
 Einfügen per SendInput ist keine atomare Transaktion mit der Zielanwendung.
 Ein Fokuswechsel unmittelbar zwischen letzter Prüfung und Verarbeitung der
 Tastaturereignisse lässt sich damit nicht vollständig ausschließen. Windows kann
@@ -68,6 +80,7 @@ Aus BlitzDicWindows auf einem interaktiven Windows-Desktop:
 .runtime/venv/Scripts/python.exe scripts/verify-insertion.py --rich --large
 .runtime/venv/Scripts/python.exe scripts/verify-vb6-insertion.py
 node scripts/verify-uia.mjs
+node scripts/verify-chromium-first-capture.mjs
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/verify-word-insertion.ps1
 ```
 
@@ -76,7 +89,18 @@ Markierungen ersetzen, Rückgängig, Cursoränderung, Passwortschutz,
 Schreibschutz, mehrzeilige Felder und unveränderte Zwischenablage. RichEdit50W:
 dieselben Prüfungen sowie der große Text über UI Automation. Chromium: textarea und
 contenteditable, Unicode, Markierungen sowie Text-, Cursor- und Fokusänderungen,
-Passwortschutz und Schreibschutz. Erfolgreich geprüft am 31.10.2026.
+Passwortschutz und Schreibschutz. Erfolgreich geprüft am 31.10.2026. Dieses
+Testfenster erzwingt die Zugänglichkeit und zeigt den Erstzugriff deshalb nicht.
+
+Erstzugriff auf Chromium: `verify-chromium-first-capture.mjs` startet Edge
+(`BLITZDIC_TEST_BROWSER=chrome` für Chrome) mit neuem Profil und langer Seite, sodass die
+Erfassung vor dem Diktat der erste UI-Automation-Zugriff ist. Geprüft werden das Warten
+auf den Baum, Unicode/Emoji im `contenteditable`-Feld, eine fokussierte Schaltfläche ohne
+Wartezeit und ein Electron-Fenster ohne erzwungene Zugänglichkeit ohne Wartezeit. Jede
+Erfassung ist an Fenster und Prozess des Testfensters gebunden; ist ein anderes Programm
+im Vordergrund, wird nichts erfasst oder eingefügt. Erfolgreich geprüft am 26.11.2026
+mit Edge (zwei Läufe, je etwa 0,7 s Wartezeit). Nicht dadurch belegt: die ChatGPT-App
+selbst und langsamere PCs, auf denen der Baum länger als 2 s brauchen kann.
 
 VB6: Ein eigener Hilfsprozess legt ANSI-Felder wie Visual Basic 6 an
 (`ThunderRT6TextBox` ein- und mehrzeilig, `RichTextWndClass` auf RichEdit 1.0), einmal

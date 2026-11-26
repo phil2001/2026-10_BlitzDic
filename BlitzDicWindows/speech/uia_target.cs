@@ -14,6 +14,11 @@ public static class BlitzDicUia {
     [DllImport("user32.dll")] static extern IntPtr GetForegroundWindow();
     [DllImport("user32.dll")] static extern uint GetWindowThreadProcessId(IntPtr hwnd, out uint pid);
     [DllImport("user32.dll")] static extern short GetAsyncKeyState(int key);
+    [DllImport("user32.dll", CharSet=CharSet.Unicode)] static extern int GetClassName(IntPtr window, StringBuilder name, int size);
+    static bool IsChromiumWindow(IntPtr window) {
+        var name = new StringBuilder(64);
+        return GetClassName(window, name, name.Capacity) > 0 && name.ToString() == "Chrome_WidgetWin_1";
+    }
     [StructLayout(LayoutKind.Sequential)] struct POINT { public int x, y; }
     [DllImport("oleacc.dll")] static extern int AccessibleObjectFromWindow(IntPtr window, uint objectId,
         ref Guid interfaceId, [MarshalAs(UnmanagedType.Interface)] out object native);
@@ -45,7 +50,34 @@ public static class BlitzDicUia {
     public static string CaptureScoped(long window, uint process) {
         if (window <= 0 || process == 0) return Reject("Ungültiger Fensterbereich");
         RequiredWindow = new IntPtr(window); RequiredProcess = process;
-        return Capture();
+        return CaptureFocusedField();
+    }
+    // Chromium (Chrome, Edge, the ChatGPT app) builds its accessibility tree only when a UI
+    // Automation client first asks. Until it is there, the focused element is a pane of the
+    // browser window without keyboard focus (Chrome: the window itself, Edge: an inner
+    // "View"), even with the caret in a web text field; on a long page such as a long
+    // ChatGPT conversation this lasts most of a second. Capture() sets this for exactly
+    // that state; any other rejection is final at once.
+    static bool TreePending;
+    static IntPtr PendingWindow;
+    const int TreeWaitMilliseconds = 2000;
+    // Capture before a recording: waits briefly for that tree, bound to the window in the
+    // foreground at the first attempt. Insert() verifies without waiting.
+    public static string CaptureFocusedField() {
+        var timer = System.Diagnostics.Stopwatch.StartNew();
+        string signature = Capture();
+        if (signature != null || !TreePending) return signature;
+        if (RequiredWindow == IntPtr.Zero) {
+            uint owner; GetWindowThreadProcessId(PendingWindow, out owner);
+            RequiredWindow = PendingWindow; RequiredProcess = owner;
+        }
+        while (signature == null && TreePending && timer.ElapsedMilliseconds < TreeWaitMilliseconds) {
+            System.Threading.Thread.Sleep(100);
+            Trace("capture:wait-for-tree");
+            signature = Capture();
+        }
+        if (signature == null && TreePending) Reject("Eingabefeld der Anwendung noch nicht über UI Automation lesbar");
+        return signature;
     }
     // Minimal read-only UIA COM declarations, in Windows SDK vtable order.
     // The managed UIA API omits LegacyIAccessibleValue, needed for document URLs.
@@ -174,7 +206,7 @@ public static class BlitzDicUia {
     public static string Capture() {
         Trace("capture:start");
         Reason = "";
-        CapturedElement = null; CapturedWindow = IntPtr.Zero;
+        CapturedElement = null; CapturedWindow = IntPtr.Zero; TreePending = false;
         IntPtr window = GetForegroundWindow();
         if (window == IntPtr.Zero) return Reject("Kein Vordergrundfenster");
         if (RequiredWindow != IntPtr.Zero) {
@@ -185,6 +217,12 @@ public static class BlitzDicUia {
         if (element == null) return Reject("Kein fokussiertes Element");
         Trace("capture:focused");
         var current = element.Current;
+        if (Environment.GetEnvironmentVariable("BLITZDIC_UIA_TRACE") == "1")
+            Trace("capture:focused-element " + current.ControlType.ProgrammaticName + " class=" + current.ClassName +
+                " window=" + current.NativeWindowHandle + " foreground=" + window + " keyboard=" + current.HasKeyboardFocus);
+        if (!current.HasKeyboardFocus && current.ControlType == ControlType.Pane && IsChromiumWindow(window)) {
+            TreePending = true; PendingWindow = window;
+        }
         if (current.IsPassword || !current.IsEnabled || !current.HasKeyboardFocus) return Reject("Feld geschützt, inaktiv oder ohne Tastaturfokus");
         if (current.ControlType != ControlType.Edit && current.ControlType != ControlType.Document) return Reject("Kein Texteingabefeld");
         uint pid; GetWindowThreadProcessId(window, out pid);
@@ -356,7 +394,7 @@ public static class BlitzDicUiaProgram {
                 if (scopeValue != null) {
                     var scope = (Dictionary<string, object>)scopeValue;
                     signature = BlitzDicUia.CaptureScoped(Convert.ToInt64(scope["window"]), Convert.ToUInt32(scope["process"]));
-                } else signature = BlitzDicUia.Capture();
+                } else signature = BlitzDicUia.CaptureFocusedField();
                 object website = Value(request, "website");
                 string host = website is bool && (bool)website && !String.IsNullOrEmpty(signature) ? BlitzDicUia.WebsiteHost() : null;
                 result = new Dictionary<string, object> {
