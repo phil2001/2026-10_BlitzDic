@@ -24,6 +24,27 @@ BlitzDic bündelt die festgelegten Konvertierungen unverändert. Konvertierung u
 Quantisierung stammen von den genannten Herausgebern. Es besteht keine behauptete
 Unterstützung oder Empfehlung durch diese Herausgeber.
 
+## Medizinisches Wörterbuch der Fachbegriff-Korrektur
+
+`BlitzDicWindows/src/medical-terms-de-generated.txt` ist eine Liste einzelner Wörter, erzeugt mit
+`BlitzDicWindows/scripts/build-medical-lexicon.py`. Kodes, Gliederung und Texte der Werke sind
+nicht enthalten. Quellen:
+
+- ICD-10-GM Version 2026 und OPS Version 2027, Systematische Verzeichnisse, herausgegeben vom
+  Bundesinstitut für Arzneimittel und Medizinprodukte (BfArM) im Auftrag des Bundesministeriums
+  für Gesundheit unter Beteiligung der Arbeitsgruppe ICD des Kuratoriums für Fragen der
+  Klassifikation im Gesundheitswesen (KKG). Die ICD-10-GM beruht auf der ICD-10 der WHO
+  (© Weltgesundheitsorganisation 1992) und der ICD-10-AM (© Commonwealth of Australia 1998).
+  https://www.bfarm.de
+- Deutscher MeSH 2026, © ZB MED – Informationszentrum Lebenswissenschaften, CC-BY-4.0;
+  verwendet werden nur die deutschen Bezeichnungen, als Wortliste.
+  https://www.zbmed.de/open-science/terminologien/deutscher-mesh
+- Article 57 product data (Stand 05.11.2026), © European Medicines Agency; Produktnamen und
+  Wirkstoffe der in Österreich und EU-weit zugelassenen Arzneimittel, als Wortliste.
+  https://www.ema.europa.eu
+- Produktnamen sind Marken ihrer Inhaber. Es besteht keine behauptete Unterstützung oder
+  Empfehlung durch die genannten Herausgeber.
+
 ## Windows-Laufzeiten
 
 Electron, faster-whisper, CTranslate2, onnx-asr, ONNX Runtime, PyAV/FFmpeg

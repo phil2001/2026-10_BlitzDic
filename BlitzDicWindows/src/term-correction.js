@@ -9,6 +9,7 @@ export const correctionDefaults = Object.freeze({ threshold: 0.8, minLength: 7 }
 const endings = ['ern', 'ens', 'en', 'er', 'es', 'em', 'e', 'n', 's'];
 const letters = /\p{L}+/gu;
 const fold = word => word.toLocaleLowerCase('de');
+const addressed = /(?:^|[^\p{L}])(?:Frau|Herrn?|Familie|Fam\.|Dr\.|Prof\.|Mag\.|Ing\.|DI|DDr\.|Univ\.-Prof\.|OA|OÄ|Prim\.)\s+$/u;
 
 // Lines starting with "!" protect a word: never changed, never the result of a correction.
 export function parseLexicon(text) {
@@ -16,9 +17,14 @@ export function parseLexicon(text) {
   return { terms: lines.filter(line => !line.startsWith('!')), protect: lines.filter(line => line.startsWith('!')).map(line => line.slice(1).trim()) };
 }
 
+const lexiconFile = name => parseLexicon(readFileSync(fileURLToPath(new URL(name, import.meta.url)), 'utf8'));
 let medical;
-export const medicalLexicon = () =>
-  medical ??= parseLexicon(readFileSync(fileURLToPath(new URL('./medical-terms-de.txt', import.meta.url)), 'utf8'));
+// The hand-made dictionary, and as background the list generated from ICD-10-GM, OPS, German MeSH
+// and the EMA product data (scripts/build-medical-lexicon.py).
+export const medicalLexicon = () => medical ??= (() => {
+  const { terms, protect } = lexiconFile('./medical-terms-de.txt');
+  return { terms, protect, background: lexiconFile('./medical-terms-de-generated.txt').terms };
+})();
 
 // Edit distance, or limit + 1 as soon as it must exceed limit. Rows are reused between calls.
 let rows = [new Int32Array(64), new Int32Array(64)];
@@ -47,16 +53,21 @@ const letterPairs = key => {
   return pairs;
 };
 
-export function createCorrector(terms, { protect = [], threshold = correctionDefaults.threshold, minLength = correctionDefaults.minLength } = {}) {
-  const spelling = new Map(), known = new Set(), cache = new Map();
+// Background terms are corrected to like terms, but a large generated list also holds everyday
+// words ("flimmern"): they do not stop two unknown words from being joined ("Vorhof flimmern").
+export function createCorrector(terms, { protect = [], background = [], threshold = correctionDefaults.threshold, minLength = correctionDefaults.minLength } = {}) {
+  const spelling = new Map(), known = new Set(), knownMain = new Set(), cache = new Map();
   const keys = [], byPair = new Map();  // letter pair -> indexes of listed terms containing it
-  const target = new Set(terms);
-  for (const term of [...terms, ...protect]) {
+  const target = new Set([...terms, ...background]), main = new Set([...terms, ...protect]);
+  for (const term of [...terms, ...protect, ...background]) {
     for (const [word] of String(term).normalize('NFC').matchAll(letters)) {
       const key = fold(word);
       if (key.length < 3) continue;
-      known.add(key);
-      for (const ending of endings) if (key.endsWith(ending) && key.length - ending.length >= 4) known.add(key.slice(0, -ending.length));
+      const sets = main.has(term) ? [known, knownMain] : [known];
+      for (const set of sets) {
+        set.add(key);
+        for (const ending of endings) if (key.endsWith(ending) && key.length - ending.length >= 4) set.add(key.slice(0, -ending.length));
+      }
       if (!target.has(term) || spelling.has(key)) continue;  // The first spelling wins, so own terms come first.
       spelling.set(key, word);
       const id = keys.push(key) - 1;
@@ -66,7 +77,8 @@ export function createCorrector(terms, { protect = [], threshold = correctionDef
       }
     }
   }
-  const isKnown = key => known.has(key) || endings.some(ending => key.endsWith(ending) && known.has(key.slice(0, -ending.length)));
+  const inSet = (set, key) => set.has(key) || endings.some(ending => key.endsWith(ending) && set.has(key.slice(0, -ending.length)));
+  const isKnown = key => inSet(known, key), isKnownMain = key => inSet(knownMain, key);
   const shared = new Uint16Array(keys.length);
 
   // Closest listed term, or null when none is close enough or two are equally close.
@@ -117,13 +129,15 @@ export function createCorrector(terms, { protect = [], threshold = correctionDef
       let output = '', position = 0;
       for (let index = 0; index < words.length; index++) {
         const word = words[index][0], start = words[index].index, next = words[index + 1], options = [];
+        // A name after a form of address or a title stays as dictated ("Frau Kometter", "Dr. Mairhofer").
+        if (/\p{Lu}/u.test(word[0]) && addressed.test(text.slice(Math.max(0, start - 24), start))) continue;
         const sentenceStart = /^\p{Lu}/u.test(word) && /(?:^|[.!?\n])[\s"„»(]*$/u.test(text.slice(Math.max(0, start - 8), start));
         const single = suggest(word, sentenceStart);
         if (single) options.push({ ...single, end: start + word.length, words: [word] });
         // A compound split by the recognizer ("Vorhof flimmern"): two unknown words, never a known one
         // plus its neighbor, and only when the joined word is nearly exact.
         if (next && word.length >= 5 && next[0].length >= 3 && text.slice(start + word.length, next.index) === ' ' &&
-            !isKnown(fold(word)) && !isKnown(fold(next[0]))) {
+            !isKnownMain(fold(word)) && !isKnownMain(fold(next[0]))) {
           const joined = suggest(word + fold(next[0]), sentenceStart, true);
           if (joined && joined.score >= 0.9) options.push({ ...joined, end: next.index + next[0].length, words: [word, next[0]] });
         }
@@ -149,8 +163,8 @@ export function termCorrector(settings) {
   if (!own.length && !withMedical) return null;
   const key = JSON.stringify([withMedical, own]);
   if (memo.key !== key) {
-    const lexicon = withMedical ? medicalLexicon() : { terms: [], protect: [] };
-    memo = { key, corrector: createCorrector([...own, ...lexicon.terms], { protect: lexicon.protect }) };
+    const lexicon = withMedical ? medicalLexicon() : { terms: [], protect: [], background: [] };
+    memo = { key, corrector: createCorrector([...own, ...lexicon.terms], { protect: lexicon.protect, background: lexicon.background }) };
   }
   return memo.corrector;
 }

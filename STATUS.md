@@ -6,6 +6,14 @@ Stand: 23.11.2026
 
 Die lokale Diktier-App mit Whisper und Parakeet steht im Vordergrund. Keine neue
 Test-VM, keine zusätzlichen Funktionen und keine umfangreiche Testinfrastruktur.
+
+- Unveröffentlicht (26.11.2026): Fachbegriff-Korrektur mit erweitertem Wörterbuch
+  (`src/medical-terms-de-generated.txt`, rund 26.000 Begriffe aus ICD-10-GM 2026, OPS 2027,
+  deutschem MeSH 2026 und EMA-Artikel-57-Daten für Österreich/EU). Erzeugt mit
+  `scripts/build-medical-lexicon.py` aus dem lokalen, nicht versionierten Ordner `Lern-Daten`.
+  Messung mit künstlichen Fehlern: neue ICD/OPS- und Arzneimittelbegriffe werden zu fast 100 %
+  korrigiert (vorher 0 %). Synthetisches Diktat (Hedda) mit Parakeet: zusätzlich „Xerelto“ →
+  „Xarelto“, keine Fehlkorrektur. Mit echter Stimme und im Paket noch nicht geprüft.
 Weitere Arbeiten werden nach Rückmeldung zur Benutzung festgelegt.
 
 - Version **1.0.2**: **BlitzDic Setup 1.0.2.exe** unter

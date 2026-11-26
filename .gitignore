@@ -10,6 +10,10 @@ models/
 /BlitzDic Lokal.lnk
 /BlitzDic Setup *.exe
 
+# Quelldaten des medizinischen Wörterbuchs (eigene Nutzungsbedingungen; nur die erzeugte Wortliste
+# src/medical-terms-de-generated.txt wird versioniert)
+/Lern-Daten/
+
 # Entwicklungswerkzeuge
 node_modules/
 .runtime/

@@ -487,6 +487,7 @@ Fidaxomicin
 Flucloxacillin
 Fluconazol
 Fosfomycin
+Phosphomycin  # Schreibvariante; sonst wird sie zum MeSH-Synonym "Phosphonomycin"
 Ganciclovir
 Gentamicin
 Hydroxychloroquin

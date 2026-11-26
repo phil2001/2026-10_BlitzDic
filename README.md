@@ -83,8 +83,12 @@ Tasten drücken – BlitzDic übernimmt genau die gedrückte Kombination. Rückt
 Kürzel, Escape bricht ab.
 
 **Fachbegriffe:** Bei der Diktatsprache **Medizinisches Deutsch** (Standard) korrigiert BlitzDic
-fast richtig erkannte Fachbegriffe, z. B. „Apexaban“ → „Apixaban“, und zeigt jede Anpassung
-unter dem Text an. Abschaltbar unter **Einstellungen**.
+fast richtig erkannte Fachbegriffe, z. B. „Apexaban“ → „Apixaban“ oder „Xerelto“ → „Xarelto“,
+und zeigt jede Anpassung unter dem Text an. Abschaltbar unter **Einstellungen**. Das Wörterbuch
+umfasst ein handgepflegtes Grundwörterbuch und rund 26.000 Begriffe aus ICD-10-GM, OPS, dem
+deutschen MeSH und den in Österreich und EU-weit zugelassenen Arzneimitteln (EMA). Geändert wird
+ein Wort nur, wenn auch die Windows-Rechtschreibprüfung es als falsch meldet; Namen nach „Frau“,
+„Herr“ oder „Dr.“ bleiben unverändert.
 
 ## Deinstallieren
 

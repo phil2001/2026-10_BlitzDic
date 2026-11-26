@@ -4,8 +4,8 @@ import { readFileSync } from 'node:fs';
 import { createCorrector, correctRecognized, medicalLexicon, parseLexicon, termCorrector } from '../src/term-correction.js';
 import { defaultSettings } from '../src/store.js';
 
-const { terms, protect } = medicalLexicon();
-const medical = createCorrector(terms, { protect });
+const { terms, protect, background } = medicalLexicon();
+const medical = createCorrector(terms, { protect, background });
 const fixed = text => medical.correct(text).text;
 
 test('near-miss terms are corrected, keeping sentence capitals', () => {
@@ -43,9 +43,14 @@ test('medical counterparts are both listed and never turned into each other', ()
   }
 });
 
-test('everyday German, acronyms and short words are left alone', () => {
+test('everyday German, acronyms and short words are left alone', async () => {
+  // The hand-made dictionary holds no everyday words, so even without the spell check nothing changes.
   const text = 'Die Patientin kam kausal begründet; das Verbrechen, die Sicherheit, neurologisch unauffällig, EKG, Ileus, Inspektion, Infektion.';
-  assert.equal(fixed(text), text);
+  assert.equal(createCorrector(terms, { protect }).correct(text).text, text);
+  // The generated list is larger ("Erbrechen", "schwerster"): there the spell check keeps correct words.
+  const everyday = 'Die Schwester berichtet von Verbrechen, Begleitung und Überweisung.';
+  const result = await correctRecognized({ text: everyday }, defaultSettings(), { misspelled: async () => [] });
+  assert.equal(result.text, everyday);
 });
 
 test('two equally close terms leave the word unchanged', () => {
@@ -73,16 +78,16 @@ test('settings choose the dictionary: own terms always, medical only for Medizin
 });
 
 // Stands in for the Windows spell checker: these words count as correctly spelled.
-const spelledRight = new Set(['Mobilität', 'Vorhof', 'flimmern', 'zentral', 'Weiter', 'mit']);
+const spelledRight = new Set(['Verbrechen', 'Vorhof', 'flimmern', 'Schwester', 'Weiter', 'mit']);
 const misspelled = async words => words.filter(word => !spelledRight.has(word));
 
 test('only words the spell checker rejects are corrected', async () => {
   const asked = [];
-  const result = await correctRecognized({ text: 'Mobilität und zentral, dazu Apexaban.' }, defaultSettings(),
+  const result = await correctRecognized({ text: 'Verbrechen und Schwester, dazu Apexaban.' }, defaultSettings(),
     { misspelled: async words => { asked.push(...words); return misspelled(words); } });
-  assert.equal(result.text, 'Mobilität und zentral, dazu Apixaban.');
+  assert.equal(result.text, 'Verbrechen und Schwester, dazu Apixaban.');
   assert.deepEqual(result.corrections, [{ from: 'Apexaban', to: 'Apixaban' }]);
-  assert.deepEqual(asked.sort(), ['Apexaban', 'Mobilität', 'zentral']);
+  assert.deepEqual(asked.sort(), ['Apexaban', 'Schwester', 'Verbrechen']);
 });
 
 test('two correct words are joined only into exactly a listed term', async () => {
@@ -113,6 +118,33 @@ test('dictionary file has no word that is both a term and protected', () => {
   const listed = new Set(parsed.terms.map(term => term.toLocaleLowerCase('de')));
   assert.deepEqual(parsed.protect.filter(word => listed.has(word.toLocaleLowerCase('de'))), []);
   assert.ok(parsed.terms.length > 1000);
+});
+
+test('generated dictionary: single words of seven letters and more, none twice or protected', () => {
+  const text = readFileSync(new URL('../src/medical-terms-de-generated.txt', import.meta.url), 'utf8');
+  assert.match(text, /BfArM/);
+  assert.match(text, /CC BY 4\.0/);
+  assert.match(text, /European Medicines Agency/);
+  const keys = background.map(term => term.toLocaleLowerCase('de'));
+  assert.ok(keys.length > 15000);
+  assert.deepEqual(background.filter(term => !/^\p{L}{7,}$/u.test(term)), []);
+  assert.equal(new Set(keys).size, keys.length);
+  const main = new Set([...terms, ...protect].map(term => term.toLocaleLowerCase('de')));
+  assert.deepEqual(keys.filter(key => main.has(key)), []);
+});
+
+test('terms from ICD, OPS and Austrian and EU drug names are corrected', () => {
+  assert.equal(fixed('Weiter mit Elikuis und Xarrelto, dazu Novalgien.'), 'Weiter mit Eliquis und Xarelto, dazu Novalgien.');
+  assert.equal(fixed('Bekannte Spondylodiszitiss, Zustand nach Koloskopie und Hemikolektomy.'),
+    'Bekannte Spondylodiszitiss, Zustand nach Koloskopie und Hemikolektomy.');  // Other endings stay.
+  assert.equal(fixed('Kontrolle der Spondylodiscitis und Cholezystolitiasis.'), 'Kontrolle der Spondylodiszitis und Cholezystolithiasis.');
+  assert.equal(fixed('Bekanntes Vorhof flimmern bei kompleter Remission.'), 'Bekanntes Vorhofflimmern bei kompletter Remission.');
+});
+
+test('a name after a form of address or a title stays as dictated', () => {
+  for (const text of ['Frau Kometter kommt zur Kontrolle.', 'Befund an Herrn Dr. Mairhofer.', 'Familie Elikuis.'])
+    assert.equal(fixed(text), text);
+  assert.equal(fixed('Kometter kommt zur Kontrolle.'), 'Kompletter kommt zur Kontrolle.');  // Without an address the rule does not apply.
 });
 
 test('a long meeting transcript is corrected quickly', () => {
