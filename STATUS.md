@@ -14,6 +14,12 @@ Test-VM, keine zusätzlichen Funktionen und keine umfangreiche Testinfrastruktur
   Messung mit künstlichen Fehlern: neue ICD/OPS- und Arzneimittelbegriffe werden zu fast 100 %
   korrigiert (vorher 0 %). Synthetisches Diktat (Hedda) mit Parakeet: zusätzlich „Xerelto“ →
   „Xarelto“, keine Fehlkorrektur. Mit echter Stimme und im Paket noch nicht geprüft.
+- Unveröffentlicht (26.11.2026): Abgleich nach Klang (Kölner Phonetik mit Vokalstellen), wenn die
+  Schreibweise allein keinen Begriff findet. Künstliche Klangfehler bleiben statt zu rund 8 % nur
+  noch zu gut 1 % unkorrigiert; Namen unverändert. Hedda-Diktat: je Modell drei weitere richtige
+  Korrekturen (z. B. „Novalgen“, „Pantoprazul“, „Polakisuri“), keine Fehlkorrektur. Englische
+  Wörter werden öfter eingedeutscht („Complete“ → „Komplette“); Schutz vor Änderungen richtiger
+  Wörter bleibt die Windows-Rechtschreibprüfung („Patientin“ würde sonst zu „Patienten“).
 Weitere Arbeiten werden nach Rückmeldung zur Benutzung festgelegt.
 
 - Version **1.0.2**: **BlitzDic Setup 1.0.2.exe** unter

@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { createCorrector, correctRecognized, medicalLexicon, parseLexicon, termCorrector } from '../src/term-correction.js';
+import { createCorrector, correctRecognized, medicalLexicon, parseLexicon, soundKey, termCorrector } from '../src/term-correction.js';
 import { defaultSettings } from '../src/store.js';
 
 const { terms, protect, background } = medicalLexicon();
@@ -55,7 +55,8 @@ test('everyday German, acronyms and short words are left alone', async () => {
 
 test('two equally close terms leave the word unchanged', () => {
   const corrector = createCorrector(['Abcdefgh', 'Abcdxfgh']);
-  assert.deepEqual(corrector.correct('Abcdyfgh').changes, []);
+  assert.deepEqual(corrector.correct('Abcdzfgh').changes, []);
+  assert.equal(corrector.correct('Abcdyfgh').text, 'Abcdefgh');  // The sound settles it: "y" is a vowel like "e".
   assert.equal(createCorrector(['Abcdefgh']).correct('Abcdyfgh').text, 'Abcdefgh');
 });
 
@@ -136,9 +137,24 @@ test('generated dictionary: single words of seven letters and more, none twice o
 test('terms from ICD, OPS and Austrian and EU drug names are corrected', () => {
   assert.equal(fixed('Weiter mit Elikuis und Xarrelto, dazu Novalgien.'), 'Weiter mit Eliquis und Xarelto, dazu Novalgien.');
   assert.equal(fixed('Bekannte Spondylodiszitiss, Zustand nach Koloskopie und Hemikolektomy.'),
-    'Bekannte Spondylodiszitiss, Zustand nach Koloskopie und Hemikolektomy.');  // Other endings stay.
+    'Bekannte Spondylodiszitiss, Zustand nach Koloskopie und Hemikolektomie.');  // An extra "s" stays, "y" sounds like "ie".
   assert.equal(fixed('Kontrolle der Spondylodiscitis und Cholezystolitiasis.'), 'Kontrolle der Spondylodiszitis und Cholezystolithiasis.');
   assert.equal(fixed('Bekanntes Vorhof flimmern bei kompleter Remission.'), 'Bekanntes Vorhofflimmern bei kompletter Remission.');
+});
+
+test('misheard terms that sound alike are corrected, also at the end of the word', () => {
+  assert.equal(fixed('Begleitend Pantoprazul, bei Schmerzen Novalgen, bei Bedarf Seraktil.'),
+    'Begleitend Pantoprazol, bei Schmerzen Novalgin, bei Bedarf Seractil.');
+  assert.equal(fixed('Unter Metoprolohl und Hydrochlorothiazit, dazu Diklofenak und Zyprofloxacin.'),
+    'Unter Metoprolol und Hydrochlorothiazid, dazu Diclofenac und Ciprofloxacin.');
+  assert.equal(fixed('Seit drei Tagen Polakisuri.'), 'Seit drei Tagen Pollakisurie.');
+});
+
+test('sound keys: alike for alike sounds, apart for other endings and inflections', () => {
+  for (const [a, b] of [['Pantoprazul', 'Pantoprazol'], ['Metoprolohl', 'Metoprolol'], ['Diklofenak', 'Diclofenac'],
+    ['Zyprofloxacin', 'Ciprofloxacin'], ['Kolezystitis', 'Cholezystitis'], ['Ramiprill', 'Ramipril']]) assert.equal(soundKey(a), soundKey(b), a);
+  for (const [a, b] of [['druckdolente', 'druckdolent'], ['bronchoskopisch', 'Bronchoskopie'], ['Apexabans', 'Apixaban'],
+    ['Hypertonie', 'Hypotonie'], ['Infektion', 'Inspektion'], ['Dysphagie', 'Dysphasie']]) assert.notEqual(soundKey(a), soundKey(b), a);
 });
 
 test('a name after a form of address or a title stays as dictated', () => {

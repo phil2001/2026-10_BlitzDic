@@ -47,6 +47,36 @@ function distance(a, b, limit) {
   return previous[b.length];
 }
 
+// Sound of a word, after the Kölner Phonetik: letters that sound alike share a digit ("c"/"k", "c"/"z"
+// before e and i, "t"/"d", "v"/"f", "ph"/"f"), "h" is silent and doubled sounds count once. Unlike the original, every
+// vowel group stays as "0", so "Pantoprazul" and "Pantoprazol" sound alike, "druckdolente" and
+// "druckdolent" do not.
+const vowels = new Set('aeiouyäöüj');
+export function soundKey(word) {
+  const w = fold(word).replace(/ß/g, 's').replace(/[^a-zäöü]/g, '');
+  let code = '';
+  for (let i = 0; i < w.length; i++) {
+    const c = w[i], before = w[i - 1] ?? '', after = w[i + 1] ?? '';
+    let digit;
+    if (vowels.has(c)) digit = '0';
+    else if (c === 'h') continue;
+    else if (c === 'b') digit = '1';
+    else if (c === 'p') digit = after === 'h' ? '3' : '1';
+    else if (c === 'd' || c === 't') digit = 'csz'.includes(after) && after ? '8' : '2';
+    else if ('fvw'.includes(c)) digit = '3';
+    else if ('gkq'.includes(c)) digit = '4';
+    else if (c === 'c') digit = 'eiyäö'.includes(after || '-') || (before && 'sz'.includes(before)) ? '8' : '4';  // "Diclofenac" like "k"
+    else if (c === 'x') digit = 'ckq'.includes(before) && before ? '8' : '48';
+    else if (c === 'l') digit = '5';
+    else if (c === 'm' || c === 'n') digit = '6';
+    else if (c === 'r') digit = '7';
+    else if (c === 's' || c === 'z') digit = '8';
+    else continue;
+    for (const d of digit) if (code.at(-1) !== d) code += d;
+  }
+  return code;
+}
+
 const letterPairs = key => {
   const pairs = new Set();
   for (let i = 1; i < key.length; i++) pairs.add(key.slice(i - 1, i + 1));
@@ -55,9 +85,10 @@ const letterPairs = key => {
 
 // Background terms are corrected to like terms, but a large generated list also holds everyday
 // words ("flimmern"): they do not stop two unknown words from being joined ("Vorhof flimmern").
-export function createCorrector(terms, { protect = [], background = [], threshold = correctionDefaults.threshold, minLength = correctionDefaults.minLength } = {}) {
+export function createCorrector(terms, { protect = [], background = [], threshold = correctionDefaults.threshold, minLength = correctionDefaults.minLength, soundAlike = true } = {}) {
   const spelling = new Map(), known = new Set(), knownMain = new Set(), cache = new Map();
   const keys = [], byPair = new Map();  // letter pair -> indexes of listed terms containing it
+  const bySound = new Map();  // sound key -> listed terms
   const target = new Set([...terms, ...background]), main = new Set([...terms, ...protect]);
   for (const term of [...terms, ...protect, ...background]) {
     for (const [word] of String(term).normalize('NFC').matchAll(letters)) {
@@ -75,6 +106,11 @@ export function createCorrector(terms, { protect = [], background = [], threshol
         if (!byPair.has(pair)) byPair.set(pair, []);
         byPair.get(pair).push(id);
       }
+      if (soundAlike) {
+        const sound = soundKey(key);
+        if (!bySound.has(sound)) bySound.set(sound, []);
+        bySound.get(sound).push(key);
+      }
     }
   }
   const inSet = (set, key) => set.has(key) || endings.some(ending => key.endsWith(ending) && set.has(key.slice(0, -ending.length)));
@@ -86,6 +122,25 @@ export function createCorrector(terms, { protect = [], background = [], threshol
   // for words of five letters and more, every close term shares at least one pair.
   // The last two letters must match, so the word form stays: "bronchoskopisch" never becomes
   // "Bronchoskopie", "lymphozytäre" never "Lymphozytose".
+  // A misheard term that sounds the same ("Pantoprazul", "Metoprolohl", "Novalgen"): the ending may
+  // differ here in a vowel or a silent "h". That can change a word form too ("Patientin" would become
+  // "Patienten"), so correct words rely on the spelling guard in correctRecognized. The first letter (c, k and z count as
+  // one) and three quarters of the letters must match, and the closest such term must be the only one.
+  const initial = key => /^[ckz]/.test(key) ? 'k' : key[0];
+  const soundsLike = key => {
+    let best = null, tie = false;
+    for (const candidate of bySound.get(soundKey(key)) ?? []) {
+      if (initial(candidate) !== initial(key)) continue;
+      const longest = Math.max(key.length, candidate.length), limit = Math.floor(longest / 4);
+      const edits = distance(key, candidate, limit);
+      if (edits > limit) continue;
+      const score = 1 - edits / longest;
+      if (!best || score > best.score) { best = { score, key: candidate }; tie = false; }
+      else if (score === best.score) tie = true;
+    }
+    return tie ? null : best;
+  };
+
   const closest = key => {
     if (cache.has(key)) return cache.get(key);
     const pairs = letterPairs(key), touched = [], tail = key.slice(-2);
@@ -103,7 +158,7 @@ export function createCorrector(terms, { protect = [], background = [], threshol
       if (!best || score > best.score) { best = { score, key: candidate }; tie = false; }
       else if (score === best.score && candidate !== best.key) tie = true;
     }
-    const result = tie ? null : best;
+    const result = (tie ? null : best) ?? soundsLike(key);
     if (cache.size > 50000) cache.clear();
     cache.set(key, result);
     return result;
