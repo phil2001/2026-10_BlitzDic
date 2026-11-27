@@ -2359,3 +2359,21 @@ Build: `windows-2026-11-23T05-35-55-122Z-44c0e8`. Installer 1,193,952,028 bytes,
 Against the packaged speech runtime: `verify-vb6-insertion.py`, `verify-insertion.py` (Edit and
 RichEdit) passed; `verify-windows-package.ps1` passed with Whisper and Parakeet. 1.0.2 also ships
 the autostart and update-check message fixes made after 1.0.1.
+
+## 2026-11-27: Medical dictation improvements, release 1.0.4
+
+1.0.4 bundles the Chromium first-capture fix (version 1.0.3, not released) with the medical
+dictation work of 26/27 November: the term correction dictionary generated from ICD-10-GM 2026,
+OPS 2027, German MeSH 2026 and EMA Article 57 data (`scripts/build-medical-lexicon.py`, about
+26,000 words), sound-alike matching (Kölner Phonetik with vowel positions), uniform doses,
+schedules and units (`src/dose-format.js`) and the Whisper hint profile Allgemeinmedizin
+(`speech/language_options.py`, new setting `speech.medicalProfile`, default `allgemeinmedizin`).
+Measurements with synthetic misspellings and Hedda dictations are in STATUS.md.
+
+Build: `windows-2026-11-27T05-45-47-040Z-71801f`. Installer 1,194,065,637 bytes, SHA-256
+`3c8a1199b037b08bfa127bd4115817ead2e9246c9ad4adcdf6b7b872963dfa15`. Node 154 passed, 4 skipped;
+`test-language-options.py` passed. Against the unpacked package: `verify-windows-package.ps1`
+passed with Whisper and Parakeet; `verify-term-correction-ui.mjs` with the built app (Parakeet,
+Hedda urinary tract dictation) listed eight corrections including "Novalgen → Novalgin" and left
+the text raw when switched off; the packaged speech runtime with Whisper wrote "Ramipril 5 mg
+1-0-0" with the profile and "Ra-Emi-Brill 5 mg 1 0 0" without. The setup itself was not run here.

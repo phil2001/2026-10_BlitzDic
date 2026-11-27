@@ -1,32 +1,32 @@
 # Status: BlitzDic für Windows 11
 
-Stand: 23.11.2026
+Stand: 27.11.2026
 
 ## Aktueller Auftrag und nutzbarer Stand
 
 Die lokale Diktier-App mit Whisper und Parakeet steht im Vordergrund. Keine neue
 Test-VM, keine zusätzlichen Funktionen und keine umfangreiche Testinfrastruktur.
 
-- Unveröffentlicht (26.11.2026): Fachbegriff-Korrektur mit erweitertem Wörterbuch
+- In 1.0.4 (26.11.2026): Fachbegriff-Korrektur mit erweitertem Wörterbuch
   (`src/medical-terms-de-generated.txt`, rund 26.000 Begriffe aus ICD-10-GM 2026, OPS 2027,
   deutschem MeSH 2026 und EMA-Artikel-57-Daten für Österreich/EU). Erzeugt mit
   `scripts/build-medical-lexicon.py` aus dem lokalen, nicht versionierten Ordner `Lern-Daten`.
   Messung mit künstlichen Fehlern: neue ICD/OPS- und Arzneimittelbegriffe werden zu fast 100 %
   korrigiert (vorher 0 %). Synthetisches Diktat (Hedda) mit Parakeet: zusätzlich „Xerelto“ →
   „Xarelto“, keine Fehlkorrektur. Mit echter Stimme und im Paket noch nicht geprüft.
-- Unveröffentlicht (26.11.2026): Abgleich nach Klang (Kölner Phonetik mit Vokalstellen), wenn die
+- In 1.0.4 (26.11.2026): Abgleich nach Klang (Kölner Phonetik mit Vokalstellen), wenn die
   Schreibweise allein keinen Begriff findet. Künstliche Klangfehler bleiben statt zu rund 8 % nur
   noch zu gut 1 % unkorrigiert; Namen unverändert. Hedda-Diktat: je Modell drei weitere richtige
   Korrekturen (z. B. „Novalgen“, „Pantoprazul“, „Polakisuri“), keine Fehlkorrektur. Englische
   Wörter werden öfter eingedeutscht („Complete“ → „Komplette“); Schutz vor Änderungen richtiger
   Wörter bleibt die Windows-Rechtschreibprüfung („Patientin“ würde sonst zu „Patienten“).
-- Unveröffentlicht (26.11.2026): einheitliche Dosierungen bei Medizinisches Deutsch
+- In 1.0.4 (26.11.2026): einheitliche Dosierungen bei Medizinisches Deutsch
   (`src/dose-format.js`, Schalter der Fachbegriff-Korrektur): Schemata „100“/„1 0 0“ nach einer
   Dosis → „1-0-0“, ausgeschriebene Einheiten → „mg“, „µg“, „IE“, „mmol/l“, „mg/dl“, „/min“,
   Blutdruck „135 zu 85“ → „135/85“. Hedda-Dosisdiktat mit beiden Modellen: alle Schemata und
   Einheiten richtig, keine Fehlkorrektur. Hörfehler der Modelle bleiben (Parakeet „50 mg“ statt
   „50 Mikrogramm“, „2000“ statt „20.000“).
-- Unveröffentlicht (27.11.2026): **Fachgebiet** unter Diktat (nur Medizinisches Deutsch, wirkt nur
+- In 1.0.4 (27.11.2026): **Fachgebiet** unter Diktat (nur Medizinisches Deutsch, wirkt nur
   bei Whisper), Standard **Allgemeinmedizin**: Kontexthinweis mit häufigen Diagnosen und Präparaten
   (`speech/language_options.py`, etwa 150 Tokens; eigene Begriffe dann höchstens 300 Zeichen).
   Hedda-Diktate mit Whisper: Begriffe aus dem Hinweis deutlich besser (Dysurie, Pollakisurie,
@@ -36,7 +36,13 @@ Test-VM, keine zusätzlichen Funktionen und keine umfangreiche Testinfrastruktur
   (für „bei Belastung“) wird zu „Beibehaltung“ korrigiert.
 Weitere Arbeiten werden nach Rückmeldung zur Benutzung festgelegt.
 
-- Version **1.0.2**: **BlitzDic Setup 1.0.2.exe** unter
+- Version **1.0.4** (27.11.2026): **BlitzDic Setup 1.0.4.exe** unter
+  [Veröffentlichungen](https://github.com/phil2001/BlitzDic/releases/tag/v1.0.4), Windows 11
+  **x64** (SHA-256 `3c8a1199b037b08bfa127bd4115817ead2e9246c9ad4adcdf6b7b872963dfa15`).
+  Enthält die oben genannten medizinischen Verbesserungen und den Chromium-Fix aus 1.0.3
+  (erstes Diktat nach dem Browserstart kommt im Feld an; 1.0.3 wurde nicht veröffentlicht).
+  Gebautes Paket geprüft; auf den Ordinations-PCs noch nicht installiert.
+- Vorversion **1.0.2**: **BlitzDic Setup 1.0.2.exe** unter
   [Veröffentlichungen](https://github.com/phil2001/BlitzDic/releases/tag/v1.0.2), Windows 11
   **x64** (SHA-256 `e1aa1fbfbd042aa691a5e37b8c1c41f6c620b92065948a895b8faea864a1926d`).
   Neu: Einfügen in CGM PcPo (Visual-Basic-6-Felder der Kartei und TX Text Control), am

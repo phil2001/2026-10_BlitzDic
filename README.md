@@ -19,7 +19,7 @@ Repositorys steht er rechts unter **Releases**, bei schmalem Fenster weiter unte
 1. Im Browser die Seite **[Releases – neueste Version](https://github.com/phil2001/BlitzDic/releases/latest)**
    öffnen. Der Link führt immer zur neuesten Version. Eine Anmeldung bei GitHub ist nicht nötig.
 2. Ganz unten unter **Assets** die Datei **`BlitzDic.Setup.<Version>.exe`** herunterladen, zum
-   Beispiel `BlitzDic.Setup.1.0.2.exe` (GitHub zeigt etwa 1,11 GB an). **Nicht** „Source code
+   Beispiel `BlitzDic.Setup.1.0.4.exe` (GitHub zeigt etwa 1,11 GB an). **Nicht** „Source code
    (zip)“ – das ist nur der Quellcode, kein Installer. Blockiert Chrome den Download, siehe
    [Häufige Probleme](#häufige-probleme).
 3. Die heruntergeladene Datei doppelklicken. Weil der Installer nicht signiert ist, zeigt Windows
@@ -36,7 +36,7 @@ vergleichen (Groß-/Kleinschreibung spielt keine Rolle). Stimmen beide überein,
 unverändert.
 
 ```powershell
-Get-FileHash "$env:USERPROFILE\Downloads\BlitzDic.Setup.1.0.2.exe" -Algorithm SHA256
+Get-FileHash "$env:USERPROFILE\Downloads\BlitzDic.Setup.1.0.4.exe" -Algorithm SHA256
 ```
 
 **Voraussetzungen:** Windows 11 (64 Bit), moderner Intel- oder AMD-Prozessor, 16 GB
@@ -115,7 +115,7 @@ erhalten; wer sie ebenfalls entfernen will, löscht diesen Ordner von Hand.
   Versionsnummern anpassen) und danach wie oben unter **Datei prüfen** vergleichen:
 
   ```powershell
-  curl.exe -L -o "$env:USERPROFILE\Downloads\BlitzDic.Setup.1.0.2.exe" "https://github.com/phil2001/BlitzDic/releases/download/v1.0.2/BlitzDic.Setup.1.0.2.exe"
+  curl.exe -L -o "$env:USERPROFILE\Downloads\BlitzDic.Setup.1.0.4.exe" "https://github.com/phil2001/BlitzDic/releases/download/v1.0.4/BlitzDic.Setup.1.0.4.exe"
   ```
 
   Alternativ mit einem Chrome-Profil ohne dieses Google-Konto oder mit Microsoft Edge
