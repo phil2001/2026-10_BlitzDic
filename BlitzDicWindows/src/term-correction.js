@@ -3,6 +3,7 @@
 // only replaced when it is long, unknown and very close to exactly one listed term.
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
+import { formatDoses } from './dose-format.js';
 
 export const correctionDefaults = Object.freeze({ threshold: 0.8, minLength: 7 });
 // German inflection endings: "druckdolentes", "Pneumonien" and "Parese" are known forms.
@@ -228,7 +229,7 @@ export function termCorrector(settings) {
 // misspelled, so a correct word next to a listed term ("Infektion" next to "Inspektion") stays.
 // Two correctly spelled words are joined only into exactly a listed term ("Vorhof flimmern").
 // Without a spell checker nothing is changed: correctionSkipped tells the caller.
-export async function correctRecognized(recognized, settings, { misspelled } = {}) {
+async function correctTerms(recognized, settings, { misspelled } = {}) {
   const unchanged = { ...recognized, corrections: [] };
   const corrector = termCorrector(settings);
   if (!corrector) return unchanged;
@@ -249,4 +250,15 @@ export async function correctRecognized(recognized, settings, { misspelled } = {
     ...recognized, text, corrections: changes,
     segments: segments ? segments.map(segment => typeof segment?.text === 'string' ? { ...segment, text: corrector.correct(segment.text, allow).text } : segment) : recognized.segments,
   };
+}
+
+// Term correction, then for "Medizinisches Deutsch" a uniform notation of doses and schedules
+// ("5 mg 100" -> "5 mg 1-0-0"). Both are switched by termCorrection and listed in corrections.
+export async function correctRecognized(recognized, settings, options = {}) {
+  const corrected = await correctTerms(recognized, settings, options);
+  if (settings?.termCorrection === false || settings?.speech?.language !== 'de-medical' || typeof corrected.text !== 'string') return corrected;
+  const { text, changes } = formatDoses(corrected.text);
+  const segments = Array.isArray(corrected.segments)
+    ? corrected.segments.map(segment => typeof segment?.text === 'string' ? { ...segment, text: formatDoses(segment.text).text } : segment) : corrected.segments;
+  return { ...corrected, text, segments, corrections: [...corrected.corrections, ...changes] };
 }
