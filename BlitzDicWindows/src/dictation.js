@@ -33,7 +33,7 @@ export class Dictation extends EventEmitter {
         engine: preset?.engine ?? settings.speech.engine, modelDirectory,
         ...(Buffer.isBuffer(audioPath) ? { audioBase64: audioPath.toString('base64') } : { audioPath }),
         language: settings.speech.language,
-        ...(settings.speech.language === 'de-medical' ? {medicalTerms: settings.modeSettings.customTerms ?? []} : {}),
+        ...(settings.speech.language === 'de-medical' ? {medicalTerms: settings.modeSettings.customTerms ?? [], medicalProfile: settings.speech.medicalProfile ?? ''} : {}),
       }, { pythonPath: this.pythonPath, signal });
       signal.throwIfAborted();
       if (typeof recognized.text !== 'string') throw new Error('Ungültiges Transkript.');

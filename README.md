@@ -90,6 +90,12 @@ deutschen MeSH und den in Österreich und EU-weit zugelassenen Arzneimitteln (EM
 ein Wort nur, wenn auch die Windows-Rechtschreibprüfung es als falsch meldet; Namen nach „Frau“,
 „Herr“ oder „Dr.“ bleiben unverändert.
 
+**Dosierungen:** Ebenfalls bei **Medizinisches Deutsch** und mit demselben Schalter schreibt BlitzDic
+Einnahmeschemata, Einheiten und Blutdruckwerte einheitlich: „5 mg 100“ oder „5 mg 1 0 0“ →
+„5 mg 1-0-0“, „Milligramm pro Deziliter“ → „mg/dl“, „Mikrogramm“ → „µg“, „72 pro Minute“ →
+„72/min“, „Blutdruck 135 zu 85“ → „Blutdruck 135/85“. Angepasst wird nur direkt nach einer Zahl;
+auch diese Änderungen stehen unter dem Text.
+
 ## Deinstallieren
 
 Windows-Einstellungen → **Apps → Installierte Apps → BlitzDic → Deinstallieren**. Der
@@ -168,6 +174,9 @@ Electron-/FFmpeg-Quellen liegen nach der Installation im Lizenzordner (**Einstel
    Zur Wahl stehen **Medizinisches Deutsch** (Standard), **Deutsch** und **Englisch**.
    Bei Whisper legt die Auswahl die Sprache fest, und Medizinisches Deutsch ergänzt einen
    Kontexthinweis und eigene Begriffe. Parakeet erkennt die Sprache selbst.
+   Das **Fachgebiet** (bei Medizinisches Deutsch) wirkt nur bei Whisper: **Allgemeinmedizin**
+   (Standard) gibt Whisper häufige Diagnosen, Präparate und die Schreibweise „5 mg 1-0-0“ mit,
+   **Allgemein** nur den kurzen medizinischen Hinweis.
    Bei Medizinisches Deutsch korrigiert BlitzDic anschließend fast richtig erkannte Fachbegriffe
    („Apexaban“ → „Apixaban“) mit einem mitgelieferten Wörterbuch und den eigenen Begriffen.
    Jede Anpassung steht unter dem Text; abschaltbar unter **Einstellungen**. Geändert wird nur,

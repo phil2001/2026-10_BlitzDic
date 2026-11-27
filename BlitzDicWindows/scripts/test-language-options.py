@@ -4,7 +4,7 @@ import sys
 import unittest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'speech'))
-from language_options import prepare_language, whisper_language_options
+from language_options import PROFILES, prepare_language, whisper_language_options
 
 
 class LanguageOptionsTests(unittest.TestCase):
@@ -28,6 +28,17 @@ class LanguageOptionsTests(unittest.TestCase):
         self.assertLessEqual(len(options['hotwords']), 600)
         self.assertEqual(whisper_language_options({'language': 'en', 'medicalGerman': True}), {'language': 'en'})
         self.assertEqual(whisper_language_options({'language': 'de', 'medicalTerms': ['Befund']}), {'language': 'de'})
+
+    def test_general_practice_profile_replaces_the_general_hint_and_leaves_room(self):
+        options = whisper_language_options({'language': 'de-medical', 'medicalProfile': 'allgemeinmedizin', 'medicalTerms': ['A' * 60] * 20})
+        self.assertEqual(options['initial_prompt'], PROFILES['allgemeinmedizin'])
+        self.assertIn('Ramipril 5 mg 1-0-0', options['initial_prompt'])
+        self.assertLessEqual(len(options['initial_prompt']), 400)
+        self.assertLessEqual(len(options['hotwords']), 300)
+        for profile in ('', 'unbekannt', None):
+            self.assertEqual(whisper_language_options({'language': 'de-medical', 'medicalProfile': profile})['initial_prompt'],
+                             'Medizinisches Diktat in deutscher Sprache.')
+        self.assertEqual(whisper_language_options({'language': 'de', 'medicalProfile': 'allgemeinmedizin'}), {'language': 'de'})
 
 
 if __name__ == '__main__':

@@ -1,9 +1,11 @@
 import { readFile, writeFile, rename, mkdir } from 'node:fs/promises';
 import { join } from 'node:path';
 
+export const medicalProfiles = ['allgemeinmedizin', ''];
 export const defaultSettings = () => ({
   version: 1,
-  speech: { preset: 'parakeet-ultra', language: 'de-medical', microphone: '' },
+  // medicalProfile: Whisper hint text for Medizinisches Deutsch ('' = general medical hint).
+  speech: { preset: 'parakeet-ultra', language: 'de-medical', medicalProfile: 'allgemeinmedizin', microphone: '' },
   provider: { provider: 'ollama', location: 'local', baseURL: 'http://127.0.0.1:11434/v1', model: '', apiKey: '' },
   mode: 'verbatim', modeSettings: { customTerms: [], replacements: [] },
   appModes: [],
@@ -53,6 +55,7 @@ export class PrivateStore {
     const speech = { ...defaults.speech, ...saved.speech };
     // Migrate the former automatic/empty preference to the requested German default.
     if (!['de', 'en', 'de-medical'].includes(speech.language)) speech.language = 'de-medical';
+    if (!medicalProfiles.includes(speech.medicalProfile)) speech.medicalProfile = defaults.speech.medicalProfile;
     // Untouched former defaults move to the new keys once; own shortcuts stay as they are.
     const legacy = (saved.shortcutLayout ?? 1) < 2 && saved.shortcuts &&
       Object.entries(legacyShortcuts).every(([mode, value]) => saved.shortcuts[mode] === value);

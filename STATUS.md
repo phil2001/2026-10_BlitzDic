@@ -20,6 +20,20 @@ Test-VM, keine zusätzlichen Funktionen und keine umfangreiche Testinfrastruktur
   Korrekturen (z. B. „Novalgen“, „Pantoprazul“, „Polakisuri“), keine Fehlkorrektur. Englische
   Wörter werden öfter eingedeutscht („Complete“ → „Komplette“); Schutz vor Änderungen richtiger
   Wörter bleibt die Windows-Rechtschreibprüfung („Patientin“ würde sonst zu „Patienten“).
+- Unveröffentlicht (26.11.2026): einheitliche Dosierungen bei Medizinisches Deutsch
+  (`src/dose-format.js`, Schalter der Fachbegriff-Korrektur): Schemata „100“/„1 0 0“ nach einer
+  Dosis → „1-0-0“, ausgeschriebene Einheiten → „mg“, „µg“, „IE“, „mmol/l“, „mg/dl“, „/min“,
+  Blutdruck „135 zu 85“ → „135/85“. Hedda-Dosisdiktat mit beiden Modellen: alle Schemata und
+  Einheiten richtig, keine Fehlkorrektur. Hörfehler der Modelle bleiben (Parakeet „50 mg“ statt
+  „50 Mikrogramm“, „2000“ statt „20.000“).
+- Unveröffentlicht (27.11.2026): **Fachgebiet** unter Diktat (nur Medizinisches Deutsch, wirkt nur
+  bei Whisper), Standard **Allgemeinmedizin**: Kontexthinweis mit häufigen Diagnosen und Präparaten
+  (`speech/language_options.py`, etwa 150 Tokens; eigene Begriffe dann höchstens 300 Zeichen).
+  Hedda-Diktate mit Whisper: Begriffe aus dem Hinweis deutlich besser (Dysurie, Pollakisurie,
+  Vorhofflimmern, Novalgin, Ramipril, Metformin; Schemata direkt „1-0-0“); ein Diktat mit anderen
+  Präparaten etwa gleich; kurzes „Danke.“ ohne eingestreuten Hinweistext. Whisper schreibt damit
+  manchmal „5mg“, die Dosis-Schreibweise macht „5 mg“ daraus. Gefunden, noch offen: „Beibelastung“
+  (für „bei Belastung“) wird zu „Beibehaltung“ korrigiert.
 Weitere Arbeiten werden nach Rückmeldung zur Benutzung festgelegt.
 
 - Version **1.0.2**: **BlitzDic Setup 1.0.2.exe** unter

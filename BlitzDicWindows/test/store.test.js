@@ -18,6 +18,15 @@ test('fixed language preferences migrate automatic mode and preserve explicit Ge
   }
 });
 
+test('the medical subject defaults to general practice, keeps the general choice and repairs unknown values', async () => {
+  const {store} = await fixture();
+  assert.equal((await store.settings()).speech.medicalProfile, 'allgemeinmedizin');
+  for (const [saved, expected] of [[undefined, 'allgemeinmedizin'], ['', ''], ['allgemeinmedizin', 'allgemeinmedizin'], ['kardiologie', 'allgemeinmedizin']]) {
+    await store.saveSettings({speech: {language: 'de-medical', medicalProfile: saved}});
+    assert.equal((await store.settings()).speech.medicalProfile, expected);
+  }
+});
+
 test('untouched former shortcut defaults move to Alt+Space; own shortcuts stay', async () => {
   const {store} = await fixture();
   const fresh = await store.settings();

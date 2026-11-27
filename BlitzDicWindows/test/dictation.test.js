@@ -18,10 +18,12 @@ test('medical German and user terms reach ASR, while plain English does not rece
   await flow.process('audio.wav');
   assert.equal(requests[0].language,'de-medical');
   assert.deepEqual(requests[0].medicalTerms,['Fachwort']);
+  assert.equal(requests[0].medicalProfile,'allgemeinmedizin');
   settings.speech.language='en';
   await flow.process('audio.wav');
   assert.equal(requests[1].language,'en');
   assert.equal(Object.hasOwn(requests[1],'medicalTerms'),false);
+  assert.equal(Object.hasOwn(requests[1],'medicalProfile'),false);
 });
 test('near-miss medical terms are corrected before rewriting and kept visible', async () => {
   let rewritten;

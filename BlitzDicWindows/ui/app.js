@@ -221,7 +221,7 @@ $('meeting-record').onclick = attempt(async () => {
       setMeetingSummary({});
       const corrected = new Set((entry.corrections ?? []).map(change => `${change.from} → ${change.to}`)).size;
       status((entry.warning ? entry.warning + ' ' : '') + 'Meeting lokal transkribiert. ' +
-        (corrected ? `${corrected} Fachbegriff${corrected === 1 ? '' : 'e'} automatisch angepasst, bitte im Transkript prüfen. ` : '') + (meetingSourceEnded ? 'Die Audioquelle wurde beendet; der vorhandene Abschnitt wurde verarbeitet.' : 'Die Zusammenfassung kann jetzt gestartet werden.'));
+        (corrected ? `${corrected} automatische Anpassung${corrected === 1 ? '' : 'en'}, bitte im Transkript prüfen. ` : '') + (meetingSourceEnded ? 'Die Audioquelle wurde beendet; der vorhandene Abschnitt wurde verarbeitet.' : 'Die Zusammenfassung kann jetzt gestartet werden.'));
     } finally { meetingBusy = false; meetingRecordingUI(false); }
   } else {
     if ($('meeting-transcript').value.length > 500000) throw new Error('Transkript vor weiterem Aufnehmen auf höchstens 500.000 Zeichen kürzen oder aufteilen.');
@@ -349,7 +349,7 @@ function correctionSummary(corrections = []) {
   const pairs = [...new Set(corrections.map(change => `${change.from} → ${change.to}`))];
   if (!pairs.length) return '';
   const shown = pairs.slice(0, 12).join(' · ');
-  return `Fachbegriffe angepasst, bitte prüfen: ${shown}${pairs.length > 12 ? ` und ${pairs.length - 12} weitere` : ''}`;
+  return `Automatisch angepasst, bitte prüfen: ${shown}${pairs.length > 12 ? ` und ${pairs.length - 12} weitere` : ''}`;
 }
 async function result(entry) {
   if (!entry) return;
@@ -463,20 +463,27 @@ $('microphone').onchange = attempt(async () => {
 });
 $('mode').onchange = attempt(async () => { settings.mode = $('mode').value; await save(); });
 $('speech-language').onchange = attempt(async () => {
-  settings.speech.language = $('speech-language').value;
-  await save(); updateLocation(); status('Diktatsprache gespeichert.');
+  // The view first: a failed shortcut registration rejects save() although the settings are stored.
+  settings.speech.language = $('speech-language').value; updateLocation();
+  await save(); status('Diktatsprache gespeichert.');
 });
-$('speech-model').onchange = attempt(async () => { settings.speech.preset = $('speech-model').value; await save(); updateLocation(); });
+$('speech-profile').onchange = attempt(async () => {
+  settings.speech.medicalProfile = $('speech-profile').value; updateLocation();
+  await save(); status('Fachgebiet gespeichert.');
+});
+$('speech-model').onchange = attempt(async () => { settings.speech.preset = $('speech-model').value; updateLocation(); await save(); });
 function updateLocation() {
   const whisper = settings.speech.preset === 'whisper' || (settings.speech.preset === 'custom' && (settings.speech.engine || 'whisper') === 'whisper');
   const language = {de: 'Deutsch', en: 'Englisch', 'de-medical': 'Medizinisches Deutsch'}[settings.speech.language] || 'Medizinisches Deutsch';
   const medical = settings.speech.language === 'de-medical';
-  const dictionary = medical && settings.termCorrection !== false ? ' Fachbegriffe werden danach mit dem medizinischen Wörterbuch korrigiert und unter dem Text angezeigt.' : '';
+  const profile = settings.speech.medicalProfile === 'allgemeinmedizin';
+  $('speech-profile-label').hidden = !medical;
+  const dictionary = medical && settings.termCorrection !== false ? ' Fachbegriffe werden danach mit dem medizinischen Wörterbuch korrigiert, Dosierungen einheitlich geschrieben und beides unter dem Text angezeigt.' : '';
   // Parakeet chooses the language itself; the choice still selects the correction dictionary.
   $('speech-language-hint').textContent = whisper ? (medical ?
-    `Sprache fest auf Deutsch. Medizinischer Kontexthinweis und eigene Begriffe aus Einstellungen unterstützen Whisper.${dictionary} Kein separat medizinisch trainiertes Modell; Fachbegriffe, Zahlen und Einheiten prüfen.` :
+    `Sprache fest auf Deutsch. ${profile ? 'Ein allgemeinmedizinischer Kontexthinweis mit häufigen Diagnosen und Präparaten' : 'Ein medizinischer Kontexthinweis'} und eigene Begriffe aus Einstellungen unterstützen Whisper.${dictionary} Kein separat medizinisch trainiertes Modell; Fachbegriffe, Zahlen und Einheiten prüfen.` :
     `Sprache fest auf ${language}; keine automatische Sprachauswahl.`) :
-    (medical ? `Parakeet erkennt die Sprache selbst.${dictionary} Kein medizinisch trainiertes Modell; Fachbegriffe, Zahlen und Einheiten prüfen.` :
+    (medical ? `Parakeet erkennt die Sprache selbst.${dictionary} Das Fachgebiet wirkt nur bei Whisper. Kein medizinisch trainiertes Modell; Fachbegriffe, Zahlen und Einheiten prüfen.` :
       'Parakeet erkennt die Sprache selbst. Diese Auswahl bestimmt nur, ob das medizinische Wörterbuch zur Nachkorrektur verwendet wird (bei „Medizinisches Deutsch“).');
   $('processing-location').textContent = `Spracherkennung: ${{ whisper: 'Whisper', 'parakeet-ultra': 'Parakeet Ultra', custom: 'Eigenes Modell' }[settings.speech.preset]} · ${whisper ? language : `Sprache automatisch${medical ? ' · Medizinisches Wörterbuch' : ''}`} · Lokal auf diesem Computer.`;
 }
@@ -709,6 +716,7 @@ try {
   updateServerPlaceholder();
   $('mode').value = settings.mode; $('speech-model').value = settings.speech.preset;
   $('speech-language').value = settings.speech.language;
+  $('speech-profile').value = settings.speech.medicalProfile ?? '';
   customVisibility();
   $('start-with-windows').checked = settings.startWithWindows !== false;
   if (!data.autostart?.available) $('start-with-windows-hint').textContent += ' Wirkt nur im installierten Programm.';
